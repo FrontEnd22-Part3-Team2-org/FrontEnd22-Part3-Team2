@@ -5,7 +5,7 @@
  * @author 수경
  */
 
-// TODO: [수경]
+// TODO: [수경] 버튼 클릭 시 부모 컴포넌트로 색상 값 보내줘야 함
 
 'use client';
 
@@ -13,11 +13,11 @@ import CheckIcon from '@/components/common/Icon/Chip/CheckIcon';
 import { useState } from 'react';
 
 const COLORS: { name: string; className: string }[] = [
-  { name: 'green', className: 'bg-green-500' },
-  { name: 'purple', className: 'bg-purple-400' },
-  { name: 'orange', className: 'bg-orange-500' },
-  { name: 'blue', className: 'bg-blue-500' },
-  { name: 'pink', className: 'bg-pink-500' },
+  { name: 'green', className: 'bg-green-400' },
+  { name: 'purple', className: 'bg-purple-600' },
+  { name: 'orange', className: 'bg-orange-400' },
+  { name: 'blue', className: 'bg-blue-400' },
+  { name: 'pink', className: 'bg-pink-400' },
 ];
 
 export default function ColorChip() {
@@ -40,7 +40,7 @@ export default function ColorChip() {
               className={`w-10 h-10 rounded-full flex items-center justify-center
             ${color.className}`}
             >
-              {/* 👉 선택됐을 때만 아이콘 표시 */}
+              {/* 선택됐을 때만 아이콘 표시 */}
               {selected === color.name && <CheckIcon className="w-4 h-4" />}
             </button>
           );
