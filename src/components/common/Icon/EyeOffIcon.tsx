@@ -1,5 +1,5 @@
 /**
- * @file EyeIcon.tsx
+ * @file EyeOffIcon.tsx
  * @description 눈 감고있는 아이콘 컴포넌트입니다. 비밀번호 인풋에서 사용합니다.
  * @author 수경
  */
