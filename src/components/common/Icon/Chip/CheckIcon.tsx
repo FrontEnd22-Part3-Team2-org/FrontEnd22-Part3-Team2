@@ -1,12 +1,12 @@
 /**
- * @file EyeIcon.tsx
- * @description 눈 아이콘 컴포넌트입니다.
+ * @file CheckIcon.tsx
+ * @description 색상 라벨 안에 들어가는 체크 모양 아이콘 컴포넌트입니다.
  * @author 수경
  */
 
 import { SVGProps } from 'react';
 
-export default function EyeIcon(props: SVGProps<SVGSVGElement>) {
+export default function CheckIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 16 12"
