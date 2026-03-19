@@ -3,3 +3,7 @@
  * @description 유저의 프로필 이미지, 닉네임, 비밀번호를 수정하는 마이페이지입니다.
  * @note 프로필 이미지 업로드 API 연동과, 현재 비밀번호 검증 로직이 포함됩니다.
  */
+
+export default function MyPage() {
+  return <div>마이 페이지</div>;
+}
