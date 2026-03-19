@@ -4,6 +4,13 @@
  * @note 카드 생성, 수정, 삭제 시 화면이 즉각적으로 업데이트(상태 동기화) 되어야 합니다.
  */
 
+import ColorChip from '@/components/common/Icon/Chip/ColorChip';
+
 export default function DashboardPage() {
-  return <div>대시보드 상세 페이지</div>;
+  return (
+    <div>
+      대시보드 상세 페이지
+      <ColorChip />
+    </div>
+  );
 }
