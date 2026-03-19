@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: 새로운 기능 개발
-title: ''
+title: "[feat] "
 labels: ''
 assignees: ''
 
