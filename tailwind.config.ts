@@ -1,3 +1,25 @@
+/**
+ * @description Taskify 타이포그래피 및 컬러 시스템 활용 가이드
+ * * ### 1. 텍스트 스타일 (Font Size & Weight)
+ * Tailwind의 `text-{key}` 규칙을 사용하여 적용합니다.
+ * - **Usage:** `<p className="text-3xl-bold">...</p>`
+ * * | Size Key | 실제 수치 (Size / LineHeight / Weight) |
+ * |:---|:---|
+ * | `3xl-bold` | 32px / 42px / 700 |
+ * | `2xl-semibold` | 24px / 32px / 600 |
+ * | `lg-medium` | 16px / 26px / 500 |
+ * | `xs-regular` | 12px / 18px / 400 |
+ * * ### 2. 컬러 시스템 (Colors)
+ * 설정된 컬러는 아래와 같이 접두사를 붙여 사용합니다.
+ * - **텍스트 색상:** `text-{color}-{level}` (예: `text-gray-600`)
+ * - **배경 색상:** `bg-{color}-{level}` (예: `bg-white`)
+ * - **테두리 색상:** `border-{color}-{level}` (예: `border-gray-300`)
+ * * @example
+ * // 예시: 회색 배경에 큰 볼드체 텍스트
+ * <div className="bg-gray-600 text-3xl-bold text-white">
+ * 대시보드 관리
+ * </div>
+ */
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -9,11 +31,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /** Taskify의 메인 색상 */
         brand: {
           violet: '#5534DA',
           'violet-light': '#F1EFFD',
         },
-        // 100(가장 밝음) ~ 900(가장 어두움/Black)
+        /** 100(가장 밝음) ~ 900(가장 어두움/Black) */
         gray: {
           100: '#FAFAFA',
           200: '#EEEEEE',
