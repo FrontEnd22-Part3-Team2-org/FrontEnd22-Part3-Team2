@@ -2,11 +2,10 @@
  * @file Pagination.tsx
  * @description `< >`  두 화살표가 하나의 유닛으로 묶인 페이지네이션 컴포넌트입니다.
  *
- * Figma의 `button/pagination` 컴포넌트를 그대로 구현합니다.
- * - 전체 컨테이너에 `border` + `rounded` 적용, 가운데 구분선 포함
  * - `size="sm"` : 전체 72×36, 각 버튼 36×36
  * - `size="lg"` : 전체 80×40, 각 버튼 40×40
  * - 각 방향(`prev` / `next`)을 개별 disabled 처리 가능
+ * @author 하늘
  *
  * @example
  * <Pagination
@@ -114,7 +113,7 @@ export default function Pagination({
   return (
     <div
       className={cn(
-        'inline-flex items-center overflow-hidden rounded-[4px] border border-[#D9D9D9]',
+        'inline-flex items-center overflow-hidden rounded-[4px] border border-gray-300',
         containerSize,
         className,
       )}
@@ -127,7 +126,7 @@ export default function Pagination({
         aria-label="이전 페이지"
         className={cn(
           'flex items-center justify-center transition-colors',
-          'hover:bg-[#F1EFFD] disabled:cursor-not-allowed disabled:bg-white',
+          'hover:bg-brand-violet-light disabled:cursor-not-allowed disabled:bg-white',
           btnSize,
         )}
       >
@@ -135,7 +134,7 @@ export default function Pagination({
       </button>
 
       {/* 가운데 구분선 */}
-      <div className="h-full w-px shrink-0 bg-[#D9D9D9]" aria-hidden="true" />
+      <div className="h-full w-px shrink-0 bg-gray-300" aria-hidden="true" />
 
       {/* 다음 버튼 */}
       <button
@@ -145,7 +144,7 @@ export default function Pagination({
         aria-label="다음 페이지"
         className={cn(
           'flex items-center justify-center transition-colors',
-          'hover:bg-[#F1EFFD] disabled:cursor-not-allowed disabled:bg-white',
+          'hover:bg-brand-violet-light disabled:cursor-not-allowed disabled:bg-white',
           btnSize,
         )}
       >
