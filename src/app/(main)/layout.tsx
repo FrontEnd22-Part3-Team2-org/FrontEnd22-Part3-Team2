@@ -12,6 +12,7 @@
 
 // import Header from '@/components/layout/Header';
 // ...
+import SideMenu from '@/components/layout/SideMenu';
 
 export default function MainLayout({
   children,
@@ -19,9 +20,8 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="main-layout-container flex">
-      {/* 임시 사이드바 틀 */}
-      <aside className="w-64 bg-gray-100">임시 사이드바</aside>
+    <div className="flex min-h-screen">
+      <SideMenu />
 
       <div className="flex flex-col flex-1">
         {/* 임시 헤더 틀 */}
