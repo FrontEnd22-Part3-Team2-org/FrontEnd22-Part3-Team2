@@ -6,19 +6,13 @@
  * @author 수경
  */
 
-// TODO: [수경] 부모 컴포넌트로부터 prop을 받아서 화면에 보여주도록 수정 필요
-
-'use client';
-
-import { useState } from 'react';
+// TODO: [수경] 부모 컴포넌트로부터 prop을 받아서 화면에 보여주도록 수정 필요 👉 부모 컴포넌트 생기면 작업
 
 export default function CountCardChip() {
-  const [count, setCount] = useState<number>(5);
-
   return (
     <>
-      <div className="w-5 h-5 flex items-center justify-center rounded bg-[#EEEEEE]">
-        <span className="text-[#787486] text-xs-medium">{count}</span>
+      <div className="w-5 h-5 flex items-center justify-center rounded bg-gray-200">
+        <span className="text-gray-500 text-xs-medium">5</span>
       </div>
     </>
   );
