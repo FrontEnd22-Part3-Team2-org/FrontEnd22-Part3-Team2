@@ -6,36 +6,17 @@
  * @author 수경
  */
 
-// TODO : [수경] 드롭다운 컴포넌트와 props 연결
-
-export default function StatusChip() {
-  const status = 'In Progress';
-
-  return (
-    <div>
-      <button className="flex items-center gap-2 bg-brand-violet-light px-3 py-1 rounded-2xl">
-        <span className="w-2 h-2 rounded-full bg-brand-violet"></span>
-        <p className="text-brand-violet text-md-regular">{status}</p>
-      </button>
-    </div>
-  );
+interface StatusTagProps {
+  status: string;
 }
 
-// 드롭다운 컴포넌트와 props 연결
-// import { Status, STATUSES } from './StatusConfig';
+export default function StatusChip({ status }: StatusTagProps) {
+  const label = status;
 
-// interface StatusTagProps {
-//   status: Status;
-// }
-// export default function StatusChip({ status }: StatusTagProps) {
-//   const config = STATUSES[status];
-
-//   return (
-//     <div>
-//       <button className="flex items-center gap-2 bg-brand-violet-light px-3 py-1 rounded-2xl">
-//         <span className="w-2 h-2 rounded-full bg-brand-violet"></span>
-//         <p className="text-brand-violet">{config.label}</p>
-//       </button>
-//     </div>
-//   );
-// }
+  return (
+    <button className="flex items-center gap-2 bg-brand-violet-light px-3 py-1 rounded-2xl">
+      <span className="w-2 h-2 rounded-full bg-brand-violet"></span>
+      <p className="text-brand-violet text-md-regular">{label}</p>
+    </button>
+  );
+}
