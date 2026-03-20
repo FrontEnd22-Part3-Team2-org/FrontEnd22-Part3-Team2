@@ -48,12 +48,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="ko" className={pretendard.variable}>
-      <body>
+      <body className="font-main">
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
