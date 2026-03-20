@@ -43,18 +43,6 @@ export interface ConfirmButtonProps {
    */
   rejectDisabled?: boolean;
 
-  /**
-   * 수락 버튼 레이블
-   * @default '수락'
-   */
-  acceptLabel?: string;
-
-  /**
-   * 거절 버튼 레이블
-   * @default '거절'
-   */
-  rejectLabel?: string;
-
   /** 추가 클래스명 */
   className?: string;
 }
@@ -69,8 +57,6 @@ export default function ConfirmButton({
   onAccept,
   onReject,
   rejectDisabled = false,
-  acceptLabel = '수락',
-  rejectLabel = '거절',
   className,
 }: ConfirmButtonProps) {
   const btnBase =
@@ -92,7 +78,7 @@ export default function ConfirmButton({
           'bg-[#5534DA] text-white hover:bg-[#4a2dc0]',
         )}
       >
-        {acceptLabel}
+        수락
       </button>
 
       {/* 거절 버튼 — secondary */}
@@ -106,7 +92,7 @@ export default function ConfirmButton({
           'border border-[#D9D9D9] bg-white text-[#333236] hover:bg-[#F1EFFD] disabled:text-[#9FA6B2]',
         )}
       >
-        {rejectLabel}
+        거절
       </button>
     </div>
   );
