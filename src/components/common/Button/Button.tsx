@@ -1,7 +1,6 @@
 /**
  * @file Button.tsx
  * @description Taskify의 공통 버튼 컴포넌트입니다.
- * @author 하늘
  *
  * ### variant (시각적 스타일)
  * - primary — 보라색 채움 버튼 (로그인, 모달 확인 등)
@@ -23,6 +22,8 @@
  * | dashboard_card | 대시보드 카드 버튼 (반응형) | desktop 332×70, tablet 247×68, mobile 260×58 |
  * | add_board | 대시보드 추가 버튼 (반응형) | desktop 332×70, tablet 247×68, mobile 260×58 |
  * | delete_dashboard | 대시보드 삭제 버튼 (반응형) | desktop/tablet 320×62, mobile 284×52 |
+ *
+ * @author 하늘
  *
  * @example
  * // 로그인 버튼 (대)
@@ -52,18 +53,17 @@ const buttonVariants = cva(
   {
     variants: {
       /**
-       * 버튼의 시각적 스타일을 결정합니다.
        * - primary: 보라색 채움 (#5534DA), 비활성화 시 회색
        * - secondary: 흰색 배경 + 회색 테두리 (#D9D9D9), 비활성화 시 텍스트 연하게
        */
       variant: {
         primary:
-          'bg-[#5534DA] text-white hover:bg-[#4a2dc0] disabled:bg-[#9FA6B2]',
+          'bg-brand-violet text-white hover:bg-[#4a2dc0] disabled:bg-gray-400',
         secondary:
-          'bg-white text-[#333236] border border-[#D9D9D9] hover:bg-[#F1EFFD] disabled:text-[#9FA6B2]',
+          'bg-white text-gray-700 border border-gray-300 hover:bg-brand-violet-light disabled:text-gray-400',
       },
       /**
-       * 버튼의 크기 및 레이아웃을 결정합니다.
+       * 크기 및 레이아웃을 결정합니다.
        * 반응형 버튼은 mobile-first 기준으로 md(768px), lg(1024px) 분기를 사용합니다.
        */
       size: {

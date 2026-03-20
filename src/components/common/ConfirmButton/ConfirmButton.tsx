@@ -12,6 +12,8 @@
  * | tablet (md, 768px+) | 154×30 | 72×30 |
  * | desktop (lg, 1024px+) | 178×32 | 84×32 |
  *
+ * @author 하늘
+ *
  * @example
  * <ConfirmButton
  *   onAccept={() => handleAccept(invitationId)}
@@ -49,7 +51,7 @@ export interface ConfirmButtonProps {
 
 /**
  * 수락/거절 버튼 쌍 컴포넌트입니다.
- * 두 버튼이 `gap: 10px`으로 묶인 하나의 유닛으로 반응형 크기를 가집니다.
+ * 두 버튼이 `gap: 10px`으로 묶인 하나의 유닛으로 반응형 크기도 적용됐습니다.
  *
  * @param props - {@link ConfirmButtonProps}
  */
@@ -75,7 +77,7 @@ export default function ConfirmButton({
         className={cn(
           btnBase,
           btnSize,
-          'bg-[#5534DA] text-white hover:bg-[#4a2dc0]',
+          'bg-brand-violet text-white hover:bg-[#4a2dc0]',
         )}
       >
         수락
@@ -89,7 +91,7 @@ export default function ConfirmButton({
         className={cn(
           btnBase,
           btnSize,
-          'border border-[#D9D9D9] bg-white text-[#333236] hover:bg-[#F1EFFD] disabled:text-[#9FA6B2]',
+          'border border-gray-300 bg-white text-gray-700 hover:bg-brand-violet-light disabled:text-gray-400',
         )}
       >
         거절
