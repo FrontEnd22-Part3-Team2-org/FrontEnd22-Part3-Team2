@@ -6,8 +6,6 @@
  * @author 수경
  */
 
-// TODO: [수경] 이미지 업로드 컴포넌트에도 같이 쓸 수 있게 수정 필요
-
 interface AddItemChipProps {
   /**
    * true면 <button> 대신 <span>으로 렌더링합니다.
