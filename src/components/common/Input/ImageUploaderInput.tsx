@@ -36,7 +36,7 @@ export default function ImageUploaderInput({ size = 76 }: Props) {
     /** 선택된 파일 중 첫 번째 파일 가져오기 */
     const selected = e.target.files?.[0];
 
-    /** 파일이 선택되지 않은 경우 (취소 버튼 등) */
+    /** 파일이 선택되지 않은 경우 */
     if (!selected) {
       setFile(null); // 파일 상태 초기화
       setImageUrl(''); // 미리보기 이미지 초기화
