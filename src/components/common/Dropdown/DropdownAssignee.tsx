@@ -23,6 +23,7 @@ import UserName from '../User/UserName';
 /**
  * 임시 mock 데이터 및 타입 정의
  */
+// TODO : [수경] API 연동 후 재정의 필요
 interface Assignee {
   id: number;
   nickname: string;
@@ -47,7 +48,7 @@ const MOCK_ASSIGNEE: Assignee[] = [
   {
     id: 4,
     nickname: '이수빈',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=4',
+    profileImageUrl: '',
   },
   {
     id: 5,
@@ -57,17 +58,17 @@ const MOCK_ASSIGNEE: Assignee[] = [
 ];
 
 export default function DropdownAssignee({}) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(''); // 인풋 입력값 관리
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(false);
 
-  // 입력값 기준 필터링
-  // const filtered = data.filter((user) => user.nickname.includes(query));
+  /** Input과 담당자가 선택된 박스의 공통 css */
   const baseStyle =
     'min-w-[217px] h-12 border border-gray-300 rounded-md bg-white px-4 py-2';
 
   return (
     <div className="relative">
+      {/* 선택된 값 */}
       {selected ? (
         <div
           className={`${baseStyle} flex justify-between items-center cursor-pointer`}
@@ -139,24 +140,6 @@ export default function DropdownAssignee({}) {
           })}
         </div>
       )}
-
-      {/* ✅ dropdown 리스트 */}
-      {/* {open && (
-        <ul className="absolute left-0 right-0 mt-1 bg-white border rounded-md shadow z-10 max-h-60 overflow-y-auto">
-          {MOCK_ASSIGNEE.map((user) => (
-            <li
-              key={user.id}
-              onClick={() => {
-                setQuery(user.nickname); // 선택 시 input 값 변경
-                setOpen(false);
-              }}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-            >
-              {user.nickname}
-            </li>
-          ))}
-        </ul>
-      )} */}
     </div>
   );
 }
