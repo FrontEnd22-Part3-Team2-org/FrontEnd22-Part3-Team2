@@ -20,9 +20,7 @@ interface TagChipProps {
 export default function TagChip({ label }: TagChipProps) {
   return (
     <button type="button" className="rounded-md bg-[#F9EEE3]">
-      <p className="p-[6px] text-mediumtext-md-regular text-[#D58D49]">
-        {label}
-      </p>
+      <p className="p-[6px] text-md-regular text-[#D58D49]">{label}</p>
     </button>
   );
 }

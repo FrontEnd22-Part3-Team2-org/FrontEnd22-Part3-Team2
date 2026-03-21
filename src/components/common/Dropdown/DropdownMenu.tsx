@@ -47,7 +47,9 @@ export default function DropdownMenu({ onEdit, onDelete }: DropdownMenuProps) {
   );
 }
 
-// 부모 컴포넌트에 사용할 코드
+/**
+ * @description 부모 컴포넌트에 사용할 코드
+ */
 // export default function ParentComponent() {
 //   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 //   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
