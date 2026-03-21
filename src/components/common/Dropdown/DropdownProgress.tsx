@@ -1,7 +1,7 @@
 /**
  * @file DropdownProgress.tsx
  * @description 진행 상태를 선택할 수 있는 드롭다운 메뉴 컴포넌트입니다.
- * 할 일 카드에서  사용됩니다.
+ * 할 일 카드에서 사용됩니다.
  *
  * @author 수경
  */
