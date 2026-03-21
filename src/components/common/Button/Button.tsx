@@ -98,14 +98,14 @@ const buttonVariants = cva(
          * mobile: 284×66 | tablet(md): 544×70 | desktop(lg): 354×70
          */
         add_column:
-          'w-[284px] h-[66px] rounded-[8px] md:w-[544px] md:h-[70px] lg:w-[354px] lg:h-[70px] text-[14px]',
+          'w-[284px] h-[66px] rounded-[8px] md:w-[544px] md:h-[70px] lg:w-[354px] lg:h-[70px] text-[14px] gap-3',
 
         /**
          * 할 일 추가(+) 버튼 — 반응형
          * mobile: 284×32 | tablet(md): 544×40 | desktop(lg): 314×40
          */
         add_todo:
-          'w-[284px] h-[32px] rounded-[8px] md:w-[544px] md:h-[40px] lg:w-[314px] lg:h-[40px] text-[14px]',
+          'w-[284px] h-[32px] rounded-[8px] md:w-[544px] md:h-[40px] lg:w-[314px] lg:h-[40px] text-[14px] gap-3',
 
         /**
          * 대시보드 카드 버튼 — 반응형
@@ -119,7 +119,7 @@ const buttonVariants = cva(
          * mobile: 260×58 | tablet(md): 247×68 | desktop(lg): 332×70
          */
         add_board:
-          'w-[260px] h-[58px] rounded-[8px] md:w-[247px] md:h-[68px] lg:w-[332px] lg:h-[70px] text-[14px]',
+          'w-[260px] h-[58px] rounded-[8px] md:w-[247px] md:h-[68px] lg:w-[332px] lg:h-[70px] text-[14px] gap-3',
 
         /**
          * 대시보드 삭제 버튼 — 반응형
@@ -158,7 +158,7 @@ export interface ButtonProps
 }
 
 /**
- * Taskify 공통 버튼 컴포넌트입니다.
+ * 공통 버튼 컴포넌트입니다.
  *
  * variant로 시각적 스타일을, size로 크기/레이아웃을 제어합니다.
  * 반응형 버튼(add_column, add_todo, dashboard_card, add_board, delete_dashboard, accept_reject)은
