@@ -62,7 +62,7 @@ export default function ConfirmButton({
   className,
 }: ConfirmButtonProps) {
   const btnBase =
-    'inline-flex items-center justify-center rounded-[4px] text-[14px] font-medium transition-colors disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center rounded-[4px] text-md-medium transition-colors disabled:cursor-not-allowed';
 
   /** 개별 버튼 크기 — mobile: 109×32, tablet: 72×30, desktop: 84×32 */
   const btnSize =
@@ -91,7 +91,7 @@ export default function ConfirmButton({
         className={cn(
           btnBase,
           btnSize,
-          'border border-gray-300 bg-white text-gray-700 hover:bg-brand-violet-light disabled:text-gray-400',
+          'border border-gray-300 bg-white text-brand-violet hover:bg-brand-violet-light disabled:text-gray-400',
         )}
       >
         거절
