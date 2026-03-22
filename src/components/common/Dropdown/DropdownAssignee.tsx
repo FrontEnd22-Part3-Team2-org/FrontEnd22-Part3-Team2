@@ -23,7 +23,7 @@ import UserName from '../User/UserName';
 /**
  * 임시 mock 데이터 및 타입 정의
  */
-// TODO : [수경] API 연동 후 재정의 필요
+// TODO : [수경] API 연동 후 재정의 필요, 인풋 입력값에 따른 리스트 변화 기능 구현
 interface Assignee {
   id: number;
   nickname: string;
@@ -43,7 +43,7 @@ const MOCK_ASSIGNEE: Assignee[] = [
   {
     id: 3,
     nickname: '김현우',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=3',
+    profileImageUrl: '',
   },
   {
     id: 4,

@@ -43,7 +43,7 @@ export default function UserProfileImage({ src, name }: Props) {
         />
       ) : (
         <div className="w-full h-full rounded-full bg-brand-violet flex items-center justify-center">
-          <span className="text-xs-semibold">{initial}</span>
+          <span className="text-white text-xs-semibold">{initial}</span>
         </div>
       )}
     </>

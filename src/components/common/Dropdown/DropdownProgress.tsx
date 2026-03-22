@@ -32,7 +32,7 @@ export default function DropdownProgress({ value, onChange }: Props) {
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="w-full border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white"
+          className="w-full border border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white"
         >
           <StatusChip status={value} />
           <ArrowDropDownIcon className="w-5 h-5" />
