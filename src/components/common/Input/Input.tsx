@@ -46,7 +46,7 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400"
+          className="mb-1 block text-xs font-medium text-gray-600"
         >
           {label}
         </label>
@@ -57,13 +57,13 @@ export default function Input({
           {...props}
           className={clsx(
             'w-full h-[42px] px-4 text-sm rounded-md border outline-none transition',
-            'placeholder:text-gray-400 dark:placeholder:text-gray-600',
-            'bg-white dark:bg-zinc-800',
-            'text-gray-900 dark:text-gray-100',
+            'placeholder:text-gray-400',
+            'bg-white',
+            'text-gray-900',
             rightIcon && 'pr-10',
             hasError
-              ? 'border-red-500 focus:border-red-500'
-              : 'border-gray-300 focus:border-purple-500 dark:border-zinc-600 dark:focus:border-purple-400',
+              ? 'border-red focus:border-red'
+              : 'border-gray-300 focus:border-brand-violet',
             className,
           )}
           aria-invalid={hasError}
@@ -76,7 +76,7 @@ export default function Input({
         )}
       </div>
       {errorMessage && (
-        <p id={`${inputId}-error`} className="mt-1 text-xs text-red-500">
+        <p id={`${inputId}-error`} className="mt-1 text-xs text-red">
           {errorMessage}
         </p>
       )}

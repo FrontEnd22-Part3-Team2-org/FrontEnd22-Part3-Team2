@@ -51,15 +51,14 @@ export default function Checkbox({
       <div
         className={clsx(
           'h-4 w-4 rounded border-2 border-gray-300 bg-white transition',
-          'dark:border-zinc-600 dark:bg-zinc-800',
-          'peer-checked:border-[#5534DA] peer-checked:bg-[#5534DA]',
-          'peer-focus-visible:ring-2 peer-focus-visible:ring-[#5534DA] peer-focus-visible:ring-offset-1',
+          'peer-checked:border-brand-violet peer-checked:bg-brand-violet',
+          'peer-focus-visible:ring-2 peer-focus-visible:ring-brand-violet peer-focus-visible:ring-offset-1',
           'flex items-center justify-center',
           className,
         )}
       >
         <svg
-          className="hidden h-2.5 w-2.5 text-white peer-checked:block"
+          className="h-2.5 w-2.5 text-white"
           viewBox="0 0 10 8"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -73,11 +72,7 @@ export default function Checkbox({
           />
         </svg>
       </div>
-      {label && (
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          {label}
-        </span>
-      )}
+      {label && <span className="text-sm text-gray-700">{label}</span>}
     </label>
   );
 }
