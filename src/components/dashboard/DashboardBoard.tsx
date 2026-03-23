@@ -161,6 +161,15 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
               관리
             </Link>
           )}
+          {dashboard.createdByMe && (
+            <Link
+              href={`/dashboard/${dashboardId}/edit`}
+              className="flex md:hidden w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="대시보드 관리"
+            >
+              <SettingIcon width={16} height={16} />
+            </Link>
+          )}
 
           <button
             type="button"
@@ -169,6 +178,14 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
           >
             <AddBoxIcon width={16} height={16} />
             초대하기
+          </button>
+          <button
+            type="button"
+            onClick={handleInvite}
+            className="flex md:hidden w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="초대하기"
+          >
+            <AddBoxIcon width={16} height={16} />
           </button>
 
           {/* 멤버 아바타 (최대 4명 + 초과 수) */}
@@ -219,7 +236,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
 
       {/* ── 칸반 보드 ── */}
       <div className="flex-1 overflow-hidden bg-gray-100">
-        <div className="flex flex-col md:flex-row h-full overflow-y-auto md:overflow-y-hidden md:overflow-x-auto">
+        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-y-hidden lg:overflow-x-auto">
           {columns.map((column, index) => (
             <Column
               key={column.id}
@@ -235,11 +252,12 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
           ))}
 
           {/* 새로운 컬럼 추가하기 */}
-          <div className="flex items-start pt-[64px] px-4 md:px-5 shrink-0">
+          <div className="flex items-start pt-4 lg:pt-[64px] px-4 md:px-5 pb-8 lg:pb-0 shrink-0">
             <Button
               variant="secondary"
               size="add_column"
               onClick={handleAddColumn}
+              className="w-full md:w-full lg:w-[354px]"
             >
               새로운 컬럼 추가하기
               <span className="w-5 h-5 flex items-center justify-center rounded bg-brand-violet-light text-brand-violet text-lg-bold leading-none">
