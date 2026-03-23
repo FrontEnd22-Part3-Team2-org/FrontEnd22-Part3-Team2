@@ -14,12 +14,14 @@ import { ProfileOwner } from '@/types/user';
 import Image from 'next/image';
 
 interface Props {
-  profile: ProfileOwner;
+  profile: ProfileOwner | null;
   /** @default 26px */
   size?: number;
 }
 
 export default function UserProfileImage({ profile, size = 26 }: Props) {
+  if (!profile) return null; // null이면 렌더링 안함
+
   const { nickname, profileImageUrl } = profile;
 
   /**

@@ -18,10 +18,13 @@ import UserName from '@/components/common/User/UserName';
 import type { Assignee } from '@/types/dashboard';
 
 interface Props {
-  assignee: Assignee;
+  assignee: Assignee | null;
+  dueDate: string | null;
 }
 
-export default function AssigneeItem({ assignee }: Props) {
+export default function AssigneeItem({ assignee, dueDate }: Props) {
+  if (!assignee) return null; // null이면 렌더링 안함
+
   const sectionClass = 'flex flex-col gap-[6px] w-full';
   const titleClass = 'text-xs-semibold';
 
@@ -33,7 +36,7 @@ export default function AssigneeItem({ assignee }: Props) {
       </div>
       <div className={sectionClass}>
         <p className={titleClass}>마감일</p>
-        <p className="text-gray-700 text-md-regular">2026.03.23 19:30</p>
+        <p className="text-gray-700 text-md-regular">{dueDate}</p>
       </div>
     </div>
   );

@@ -7,7 +7,6 @@
  * 1. 카드 상세 조회 API
  * 2. 댓글 API
  *
- *
  * @author 수경
  *
  */
@@ -19,49 +18,59 @@ import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
 import { useState } from 'react';
-import type { Assignee } from '@/types/dashboard';
+import type { Card } from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
 
 // TODO: [수경] API 연동 후 목데이터 삭제
-const MOCK_TAGS: string[] = ['프로젝트', '일반', '백엔드', '상'];
-const MOCK_ASSIGNEE: Assignee = {
-  id: 1,
-  nickname: '공민수',
-  profileImageUrl: 'https://i.pravatar.cc/150?img=1',
+const MOCK_CARD: Card = {
+  id: 120,
+  title: '새로운 일정 관리',
+  description:
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum finibus nibh arcu, quis consequat ante cursus eget. Cras mattis, nulla non laoreet porttitor, diam justo laoreet eros, vel aliquet diam elit at leo.',
+  tags: ['프로젝트', '일반', '백엔드', '상'],
+  dueDate: '2026.03.23 23:58',
+  assignee: {
+    id: 1,
+    nickname: '공민수',
+    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
+  },
+  imageUrl:
+    'https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg',
+  // imageUrl: '',
+  teamId: '541',
+  columnId: 30,
+  dashboardId: 24,
+  createdAt: '2026.03.23 23:58',
+  updatedAt: '2026.03.23 23:58',
 };
 
 export default function Cards() {
+  const { title, description, tags, dueDate, assignee, imageUrl } = MOCK_CARD;
+
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-  /** 수정하기, 삭제하기 드롭다운 메뉴 핸들러 */
-  const handleMenuToggle = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
+  const closeMenu = () => setIsMenuOpen(false);
 
-  /** 수정하기 클릭 */
-  const handleEditClick = () => {
-    console.log('수정하기 클릭');
-    setIsMenuOpen(false); // 메뉴 닫기
-  };
+  const handleEditClick = () => closeMenu();
+  const handleDeleteClick = () => closeMenu();
 
-  /** 삭제하기 클릭 */
-  const handleDeleteClick = () => {
-    console.log('삭제하기 클릭');
-    setIsMenuOpen(false); // 메뉴 닫기
-  };
+  // TODO : [수경] 드롭다운 외부 클릭 시 닫기 구현
+
   return (
     <div className="flex flex-col-reverse md:flex-row gap-[14px] bg-white text-gray-700 rounded-lg px-[30px] py-[18px] ">
-      {/* 카드 컨텐츠 */}
-      <div className="flex flex-col">
+      {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
+      <div className="flex flex-col max-w-[450px]">
         {/* 제목 */}
-        <p className="mb-2 md:mb-6 text-2xl-bold">새로운 일정 관리</p>
+        <header className="mb-2 md:mb-6">
+          <h2 className="text-2xl-bold break-words">{title}</h2>
+        </header>
 
-        {/* 반응형 - 모바일일 때 */}
-        <div className="block md:hidden mb-4">
-          <AssigneeItem assignee={MOCK_ASSIGNEE} />
+        {/* 담당자 컴포넌트 - 모바일용 */}
+        <div className="md:hidden mb-4">
+          <AssigneeItem assignee={assignee} dueDate={dueDate} />
         </div>
 
         {/* 진행 상태 및 태그 */}
@@ -72,7 +81,7 @@ export default function Cards() {
           <div className="w-[1px] h-5 bg-gray-300"></div>
           {/* 태그 */}
           <div className="flex items-center gap-[6px]">
-            {MOCK_TAGS.map((tag) => {
+            {tags.map((tag) => {
               return (
                 <div key={tag}>
                   <TagChip label={tag} />
@@ -83,41 +92,42 @@ export default function Cards() {
         </div>
 
         {/* 설명 */}
-        <div className="p-[10px] mb-8 md:mb-2 text-md-regular">
-          스프린트 12 아젠다 논의
-        </div>
+        <p className="p-[10px] mb-8 md:mb-2 text-md-regular">{description}</p>
 
-        {/* 이미지 - 확인을 위해 임시 작성 */}
-        <div className="relative w-auto h-[160px] md:max-w-[445px] md:min-h-[200px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
-          <Image
-            src="https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg"
-            alt="미팅 이미지"
-            fill
-            className="object-cover"
-            unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
-          />
-        </div>
+        {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
+        {imageUrl && (
+          <div className="relative w-auto h-[160px] md:max-w-[445px] md:min-h-[200px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
+            <Image
+              src={imageUrl}
+              alt="미팅 이미지"
+              fill
+              className="object-cover"
+              unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
+            />
+          </div>
+        )}
 
-        {/* 댓글 */}
-        <div>
+        {/* 댓글 섹션 */}
+        <section className="flex flex-col gap-4">
           <p className="mb-1 text-lg-medium">댓글</p>
           {/* 댓글 인풋 */}
+          {/* TODO : [수경] Server Action 연동을 위한 form */}
           <Textarea placeholder="댓글 작성하기" />
           {/* 댓글 리스트 */}
           <div className="max-h-[100px] mt-4 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-            <ReplyItem user={MOCK_ASSIGNEE} />
-            <ReplyItem user={MOCK_ASSIGNEE} />
-            <ReplyItem user={MOCK_ASSIGNEE} />
-            <ReplyItem user={MOCK_ASSIGNEE} />
+            <ReplyItem user={assignee} />
+            <ReplyItem user={assignee} />
+            <ReplyItem user={assignee} />
+            <ReplyItem user={assignee} />
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* 메뉴 및 모달 닫기 버튼, 담당자 정보 */}
+      {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
       <div className="flex flex-col items-end gap-6">
         <div className="flex gap-6 relative">
           {/* 메뉴 */}
-          <button onClick={handleMenuToggle}>
+          <button onClick={() => setIsMenuOpen((prev) => !prev)}>
             <KebabMenuIcon className="w-7 aspect-square" />
           </button>
 
@@ -137,9 +147,9 @@ export default function Cards() {
           </button>
         </div>
 
-        {/* 담당자 */}
+        {/* 담당자 컴포넌트 - 데스크탑 */}
         <div className="hidden md:block">
-          <AssigneeItem assignee={MOCK_ASSIGNEE} />
+          <AssigneeItem assignee={assignee} dueDate={dueDate} />
         </div>
       </div>
     </div>

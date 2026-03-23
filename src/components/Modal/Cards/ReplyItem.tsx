@@ -12,10 +12,12 @@ import { ProfileOwner } from '@/types/user';
 
 // TODO: [수경] API 연동 후 하드코딩 삭제
 interface Props {
-  user: ProfileOwner;
+  user: ProfileOwner | null;
 }
 
 export default function ReplyItem({ user }: Props) {
+  if (!user) return null; // null이면 렌더링 안함
+
   return (
     <>
       <div className="flex items-start mt-4 gap-[10px]">
