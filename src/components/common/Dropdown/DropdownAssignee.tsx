@@ -19,16 +19,10 @@
 import { useState } from 'react';
 import ArrowDropDownIcon from '../Icon/ArrowDropDownIcon';
 import UserName from '../User/UserName';
+import { Assignee } from '@/types/dashboard';
 
-/**
- * 임시 mock 데이터 및 타입 정의
- */
-// TODO : [수경] API 연동 후 재정의 필요, 인풋 입력값에 따른 리스트 변화 기능 구현
-interface Assignee {
-  id: number;
-  nickname: string;
-  profileImageUrl: string;
-}
+// TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
+/** 임시 mock 데이터 */
 const MOCK_ASSIGNEE: Assignee[] = [
   {
     id: 1,
@@ -79,8 +73,7 @@ export default function DropdownAssignee({}) {
         >
           {/* 임시 코드 */}
           <UserName
-            assignee={{
-              id: 5,
+            profile={{
               nickname: '문지훈',
               profileImageUrl: 'https://i.pravatar.cc/150?img=5',
             }}
@@ -105,7 +98,6 @@ export default function DropdownAssignee({}) {
       {open && (
         <div className="absolute mt-1 w-full border rounded bg-white shadow">
           {Object.values(MOCK_ASSIGNEE).map((user) => {
-            console.log(user);
             return (
               <button
                 key={user.id}
@@ -133,8 +125,8 @@ export default function DropdownAssignee({}) {
                   </svg>
                 </span>
 
-                {/* 임시 태그 */}
-                <UserName assignee={user} />
+                {/* 멤버 리스트 */}
+                <UserName profile={user} />
               </button>
             );
           })}
