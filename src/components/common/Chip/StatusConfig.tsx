@@ -7,19 +7,10 @@
  * @author 수경
  */
 
-export type Status = 'todo' | 'in-progress' | 'done';
+export const STATUS_LIST = {
+  TODO: 'To Do',
+  IN_PROGRESS: 'In Progress',
+  DONE: 'Done',
+} as const;
 
-export const STATUSES: Record<Status, { label: string }> = {
-  todo: {
-    label: 'To Do',
-  },
-  'in-progress': {
-    label: 'in Progress',
-  },
-  done: {
-    label: 'Done',
-  },
-};
-
-// id → 상태 객체 빠른 조회용
-// export const STATUS_MAP = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
+export type Status = (typeof STATUS_LIST)[keyof typeof STATUS_LIST];
