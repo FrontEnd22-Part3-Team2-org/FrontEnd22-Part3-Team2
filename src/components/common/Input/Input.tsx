@@ -1,34 +1,85 @@
-// 이 파일의 모든 내용은 주석 사용 예시를 위함입니다! 편히 수정하셔요
+'use client';
 
 /**
  * @file Input.tsx
  * @description 프로젝트 전반에서 사용되는 공통 텍스트 입력 폼 컴포넌트입니다.
  * 텍스트 입력, 라벨 표시, 에러 상태(빨간 테두리 및 메시지) 처리를 지원합니다.
- * @author 
- * * @example
- * <Input label="이메일" isError={true} errorMessage="이메일 형식으로 작성해 주세요." />
+ * 아이콘이 필요한 상세 입력(Input-2) 형태도 함께 지원합니다.
+ * @author 인영
+ *
+ * @example
+ * <Input label="이메일" errorMessage="이메일 형식으로 작성해 주세요." />
+ *
+ * @example
+ * <Input
+ *   label="마감일"
+ *   placeholder="날짜를 입력해 주세요"
+ *   rightIcon={<CalendarIcon />}
+ * />
  */
 
-
-import { InputHTMLAttributes } from 'react';
+import { InputHTMLAttributes, ReactNode, useId } from 'react';
+import clsx from 'clsx';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  /** Input 상단에 표시될 텍스트 라벨 (생략 시 라벨 없이 렌더링) */
   label?: string;
-
-  /** 에러 상태 여부 (true일 경우 인풋 테두리가 빨간색으로 변경됨) */
   isError?: boolean;
-
-  /** 유효성 검사 실패 시 하단에 표시될 빨간색 에러 메시지 텍스트 */
   errorMessage?: string;
+  rightIcon?: ReactNode;
 }
 
 export default function Input({
   label,
-  isError,
+  isError = false,
   errorMessage,
   className,
+  id,
+  rightIcon,
   ...props
 }: InputProps) {
-  // ... Input 구현 로직
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const hasError = isError || !!errorMessage;
+
+  return (
+    <div className="w-full">
+      {label && (
+        <label
+          htmlFor={inputId}
+          className="mb-1 block text-xs font-medium text-gray-600"
+        >
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        <input
+          id={inputId}
+          {...props}
+          className={clsx(
+            'w-full h-[42px] px-4 text-sm rounded-md border outline-none transition',
+            'placeholder:text-gray-400',
+            'bg-white',
+            'text-gray-900',
+            rightIcon && 'pr-10',
+            hasError
+              ? 'border-red focus:border-red'
+              : 'border-gray-300 focus:border-brand-violet',
+            className,
+          )}
+          aria-invalid={hasError}
+          aria-describedby={errorMessage ? `${inputId}-error` : undefined}
+        />
+        {rightIcon && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            {rightIcon}
+          </div>
+        )}
+      </div>
+      {errorMessage && (
+        <p id={`${inputId}-error`} className="mt-1 text-xs text-red">
+          {errorMessage}
+        </p>
+      )}
+    </div>
+  );
 }
