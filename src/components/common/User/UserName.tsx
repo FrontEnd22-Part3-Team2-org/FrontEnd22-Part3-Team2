@@ -10,30 +10,20 @@
  *
  */
 
+import { Assignee } from '@/types/dashboard';
 import UserProfileImage from './UserProfileImage';
-
-/**
- * 임시로 정의한 타입입니다.
- */
-
-// TODO : [수경] API 연동 후 재정의 필요
-interface Assignee {
-  id: number;
-  nickname: string;
-  profileImageUrl: string;
-}
 
 interface Props {
   assignee: Assignee;
 }
 
 export default function UserName({ assignee }: Props) {
-  const { id, nickname, profileImageUrl } = assignee;
+  const { nickname } = assignee;
 
   return (
     <div className="flex items-center gap-2 py-1 rounded-2xl">
       <div className="w-[26px] aspect-square rounded-full border-white border-2 overflow-hidden">
-        <UserProfileImage src={profileImageUrl} name={nickname} />
+        <UserProfileImage assignee={assignee} />
       </div>
       <p className="text-gray-700 text-lg-regular">{nickname}</p>
     </div>
