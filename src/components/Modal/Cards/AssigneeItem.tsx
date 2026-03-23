@@ -1,7 +1,15 @@
 /**
  * @file AssigneeItem.tsx
  * @description 
- 
+ * ### 반응형 브레이트포인트
+ * | breakpoint | 기기        |
+| ---------- | -------------- |
+| sm (640)   | 큰 모바일 / 작은 태블릿 |
+| md (768)   | 태블릿            |
+| lg (1024)  | 작은 노트북         |
+| xl (1280)  | 데스크탑           |
+| 2xl (1536) | 큰 모니터          |
+
  *
  * @author 수경
  *
@@ -14,11 +22,11 @@ interface Props {
 }
 
 export default function AssigneeItem({ assignee }: Props) {
-  const sectionClass = 'flex flex-col gap-[6px]';
+  const sectionClass = 'flex flex-col gap-[6px] w-full';
   const titleClass = 'text-xs-semibold';
 
   return (
-    <div className="flex flex-col gap-4 w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
+    <div className="flex md:flex-col flex-row items-center md:gap-4 gap-1 md:w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
       <div className={sectionClass}>
         <p className={titleClass}>담당자</p>
         <UserName profile={assignee} />
