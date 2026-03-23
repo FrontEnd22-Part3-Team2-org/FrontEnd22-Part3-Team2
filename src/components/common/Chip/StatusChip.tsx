@@ -17,7 +17,7 @@ export default function StatusChip({ status }: StatusTagProps) {
   const label = status;
 
   return (
-    <div className="flex items-center gap-2 bg-brand-violet-light px-3 py-1 rounded-2xl">
+    <div className="inline-flex items-center gap-2 bg-brand-violet-light px-3 py-1 rounded-2xl">
       <span className="w-2 h-2 rounded-full bg-brand-violet"></span>
       <p className="text-brand-violet text-md-regular">{label}</p>
     </div>

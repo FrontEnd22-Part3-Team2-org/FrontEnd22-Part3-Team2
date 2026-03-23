@@ -11,7 +11,6 @@
  */
 
 // TODO : [수경] 배경, 글씨색 랜덤으로 적용되어야 함. 같은 태그는 같은 색 유지
-
 interface TagChipProps {
   label: string;
   color?: string;
@@ -19,8 +18,8 @@ interface TagChipProps {
 
 export default function TagChip({ label }: TagChipProps) {
   return (
-    <button type="button" className="rounded-md bg-[#F9EEE3]">
-      <p className="p-[6px] text-md-regular text-[#D58D49]">{label}</p>
-    </button>
+    <div className="inline-flex rounded-md bg-[#F9EEE3]">
+      <p className="px-2 py-[5px] text-md-regular text-[#D58D49]">{label}</p>
+    </div>
   );
 }

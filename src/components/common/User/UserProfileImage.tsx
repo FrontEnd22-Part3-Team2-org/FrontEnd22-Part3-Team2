@@ -13,11 +13,15 @@
 import Image from 'next/image';
 
 interface Props {
-  src: string;
   name: string;
+  src?: string;
+  /**
+   * @default 26px
+   */
+  size?: number;
 }
 
-export default function UserProfileImage({ src, name }: Props) {
+export default function UserProfileImage({ src, name, size = 26 }: Props) {
   /**
    * 이미지 존재 여부
    * - src 값이 있으면 true, 없으면 false
@@ -28,7 +32,7 @@ export default function UserProfileImage({ src, name }: Props) {
    * 이니셜 생성 로직
    * - 이름 첫 글자 추출
    */
-  const initial = name[0];
+  const initial = name?.[0] ?? '?';
 
   return (
     <>
@@ -36,13 +40,16 @@ export default function UserProfileImage({ src, name }: Props) {
         <Image
           src={src}
           alt="담당자 프로필"
-          width={26}
-          height={26}
+          width={size}
+          height={size}
           className="object-cover"
           unoptimized // 테스트용 - 도메인 허용 안하고 unoptimized 추가
         />
       ) : (
-        <div className="w-full h-full rounded-full bg-brand-violet flex items-center justify-center">
+        <div
+          style={{ width: size }}
+          className={`aspect-square rounded-full bg-brand-violet flex items-center justify-center`}
+        >
           <span className="text-white text-xs-semibold">{initial}</span>
         </div>
       )}
