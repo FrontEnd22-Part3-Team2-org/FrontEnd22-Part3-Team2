@@ -1,17 +1,12 @@
-// 이 파일의 모든 내용은 주석 사용 예시를 위함입니다! 편히 수정하셔요
-
 /**
  * @file layout.tsx
  * @description 대시보드(Main) 라우트 그룹의 공통 레이아웃 컴포넌트입니다.
  * 좌측 고정 사이드메뉴(SideMenu)와 상단 헤더(Header)를 포함하며, 우측 하단 영역에 자식 페이지를 렌더링합니다.
- * @author
- * * @notes
- * - 전체 화면을 꽉 채우는 구조(h-screen)입니다.
- * - 모바일 환경에서는 사이드메뉴가 숨겨지도록 반응형 처리가 되어 있습니다.
+ *
+ * @author 하늘,
  */
 
 // import Header from '@/components/layout/Header';
-// ...
 import SideMenu from '@/components/layout/SideMenu';
 
 export default function MainLayout({
@@ -20,15 +15,15 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen">
+    // h-screen + overflow-hidden으로 전체 높이를 뷰포트에 고정해야 자식의 h-full이 작동함
+    <div className="flex h-screen overflow-hidden">
       <SideMenu />
 
-      <div className="flex flex-col flex-1">
-        {/* 임시 헤더 틀 */}
-        <header className="h-16 bg-white border-b">임시 헤더</header>
+      <div className="flex flex-col flex-1 min-w-0">
+        {/* NOTE: 헤더는 각 페이지 컴포넌트 내부에서 구현합니다. (담당자: 승미님) */}
 
-        {/* 실제 페이지 내용이 들어갈 자리 */}
-        <main className="p-4">{children}</main>
+        {/* min-h-0이 없으면 flex 자식이 부모를 넘쳐서 스크롤이 깨짐 */}
+        <main className="flex-1 min-h-0 overflow-hidden">{children}</main>
       </div>
     </div>
   );
