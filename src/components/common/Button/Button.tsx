@@ -93,18 +93,18 @@ const buttonVariants = cva(
 
         /**
          * 새 컬럼 추가 버튼 — 반응형
-         * mobile: 284×66 | tablet(md): 544×70 | desktop(lg): 354×70
+         * mobile: 284×66 | tablet(md) ~ desktop(lg): 354×70
          * font: mobile 16px bold → tablet/desktop 18px bold
          */
         add_column:
-          'w-[284px] h-[66px] rounded-[8px] md:w-[544px] md:h-[70px] lg:w-[354px] lg:h-[70px] text-lg-bold md:text-2lg-bold gap-3',
+          'w-[284px] h-[66px] rounded-[8px] md:w-[354px] md:h-[70px] text-lg-bold md:text-2lg-bold gap-3',
 
         /**
          * 할 일 추가(+) 버튼 — 반응형
-         * mobile: 284×32 | tablet(md): 544×40 | desktop(lg): 314×40
+         * mobile: 284×32 | tablet(md)~desktop(lg): 314×40 (column 354 - px-5 20×2)
          */
         add_todo:
-          'w-[284px] h-[32px] rounded-[8px] md:w-[544px] md:h-[40px] lg:w-[314px] lg:h-[40px] text-md-medium gap-3',
+          'w-[284px] h-[32px] rounded-[8px] md:w-[314px] md:h-[40px] text-md-medium gap-3',
 
         /**
          * 대시보드 카드 버튼 — 반응형
