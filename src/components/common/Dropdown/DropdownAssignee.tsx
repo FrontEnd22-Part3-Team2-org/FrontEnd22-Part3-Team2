@@ -1,6 +1,8 @@
 /**
  * @file DropdownAssignee.tsx
- * @description
+ * @description 드롭다운 메뉴 중 담당자를 선택하는 인풋 컴포넌트입니다.
+ * 인풋에 이름을 입력 시 입력한 값과 일치한 인원을 리스트업하고,
+ * 담당자 리스트에는 초대받은 인원만 보여줍니다.
  *
  * ### 할 일 생성 로직
  * 1. GET /members API 호출
@@ -53,17 +55,18 @@ const MOCK_ASSIGNEE: Assignee[] = [
 ];
 
 interface AssigneeProps {
+  /** 담당자 선택 시 선택된 유저를 부모로 전달하는 콜백 함수 */
+  onSelect?: (user: Assignee) => void;
   /** @defalut '이름을 입력해 주세요' */
   placeholder?: string;
 }
 
 export default function DropdownAssignee({
+  onSelect,
   placeholder = '이름을 입력해 주세요',
 }: AssigneeProps) {
   const [query, setQuery] = useState(''); // 인풋 입력값 관리
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(false);
-
   const [selectedUser, setSelectedUser] = useState<Assignee | null>(null); // 선택된 담당자 값 관리
 
   /** Input과 담당자가 선택된 박스의 공통 css */
@@ -73,12 +76,12 @@ export default function DropdownAssignee({
   return (
     <div className="relative min-w-[217px]">
       {/* 선택을 안했을 때는 입력 input 렌더링, 선택 했을 때는 사용자 이름 및 아이콘 렌더링 */}
-      {selected ? (
+      {selectedUser ? (
         <button
           type="button"
           className={`${baseStyle}`}
           onClick={() => {
-            setSelected(false);
+            setSelectedUser(null);
             setOpen(true);
           }}
         >
@@ -116,8 +119,8 @@ export default function DropdownAssignee({
         onSelect={(user) => {
           setQuery(user.nickname);
           setOpen(false);
-          setSelected(true);
           setSelectedUser(user);
+          onSelect?.(user);
         }}
         getKey={(user) => user.id}
         renderItem={(user) => <UserName profile={user} />}
