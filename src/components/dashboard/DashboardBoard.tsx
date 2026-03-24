@@ -202,7 +202,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
                   title={member.nickname}
                 >
                   <UserProfileImage
-                    assignee={{
+                    profile={{
                       id: member.userId,
                       nickname: member.nickname,
                       profileImageUrl: member.profileImageUrl,

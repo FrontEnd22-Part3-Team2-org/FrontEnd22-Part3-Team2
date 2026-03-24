@@ -6,13 +6,20 @@
  * @author 수경
  */
 
-// TODO: [수경] 부모 컴포넌트로부터 prop을 받아서 화면에 보여주도록 수정 필요 👉 부모 컴포넌트 생기면 작업
+interface Props {
+  /**
+   * @default 0
+   */
+  count?: number;
+}
 
-export default function CountCardChip() {
+export default function CountCardChip({ count = 0 }: Props) {
   return (
     <>
-      <div className="w-5 h-5 flex items-center justify-center rounded bg-gray-200">
-        <span className="text-gray-500 text-xs-medium">5</span>
+      <div className="w-fit min-h-5 rounded bg-gray-200 px-1 py-1">
+        <p className="text-gray-500 text-xs-medium leading-3 px-[2px]">
+          {count}
+        </p>
       </div>
     </>
   );

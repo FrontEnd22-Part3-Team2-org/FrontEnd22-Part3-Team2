@@ -75,7 +75,7 @@ export default function Column({
           <span className="text-lg-bold md:text-xl-bold text-gray-700">
             {column.title}
           </span>
-          <CountCardChip />
+          <CountCardChip count={5} />
         </div>
 
         {/* 오른쪽: 톱니바퀴 버튼 */}
