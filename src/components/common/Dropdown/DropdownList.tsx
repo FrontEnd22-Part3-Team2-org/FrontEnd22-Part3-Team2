@@ -1,0 +1,78 @@
+/**
+ * @file DropdownList.tsx
+ * @description 진행 상태, 담당자 선택 드롭다운 메뉴의 리스트 컴포넌트입니다.
+ *
+* @example
+// // Assignee 드롭다운
+// <DropdownList
+//   open={open}
+//   items={Object.values(MOCK_ASSIGNEE)}
+//   onSelect={(user) => {
+//     setQuery(user.nickname);
+//     setOpen(false);
+//     setSelected(true);
+//   }}
+//   getKey={(user) => user.id}
+//   renderItem={(user) => <UserName assignee={user} />}
+// />
+
+// // Status 드롭다운
+// <DropdownList
+//   open={open}
+//   items={Object.values(STATUS_LIST)}
+//   onSelect={handleSelect}
+//   getKey={(status) => status}
+//   renderItem={(status) => <StatusChip status={status} />}
+// />
+ *
+ * @author 수경
+ */
+
+interface DropdownListProps<T> {
+  open: boolean;
+  items: T[];
+  onSelect: (item: T) => void;
+  renderItem: (item: T) => React.ReactNode;
+  getKey: (item: T) => string | number;
+}
+
+export default function DropdownList<T>({
+  open,
+  items,
+  onSelect,
+  renderItem,
+  getKey,
+}: DropdownListProps<T>) {
+  if (!open) return null;
+
+  return (
+    <div className="absolute mt-1 w-full border rounded bg-white shadow">
+      {items.map((item) => (
+        <button
+          key={getKey(item)}
+          type="button"
+          onClick={() => onSelect(item)}
+          className="w-full pl-5 py-2 flex items-center gap-3 group"
+        >
+          {/* 체크 아이콘 - 호버시에만 표시 */}
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg
+              width="14"
+              height="10"
+              viewBox="0 0 14 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4.60892 8.12758L12.5275 0.208998C12.6638 0.0726743 12.8257 0.00303754 13.0132 8.89256e-05C13.2006 -0.00284441 13.3654 0.0667924 13.5076 0.208998C13.6498 0.351188 13.7209 0.514538 13.7209 0.699047C13.7209 0.883542 13.6498 1.04689 13.5076 1.1891L5.18887 9.50783C5.02317 9.67353 4.82985 9.75638 4.60892 9.75638C4.38799 9.75638 4.19467 9.67353 4.02897 9.50783L0.201883 5.68077C0.0655599 5.54444 -0.00172341 5.38256 3.35332e-05 5.19511C0.00180576 5.00767 0.0737871 4.84286 0.215977 4.70066C0.358183 4.55846 0.521533 4.48736 0.706027 4.48736C0.890537 4.48736 1.05389 4.55846 1.19608 4.70066L4.60892 8.12758Z"
+                fill="#787486"
+              />
+            </svg>
+          </span>
+
+          {renderItem(item)}
+        </button>
+      ))}
+    </div>
+  );
+}

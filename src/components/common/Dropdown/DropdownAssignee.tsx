@@ -20,6 +20,7 @@ import { useState } from 'react';
 import ArrowDropDownIcon from '../Icon/ArrowDropDownIcon';
 import UserName from '../User/UserName';
 import { Assignee } from '@/types/dashboard';
+import DropdownList from './DropdownList';
 
 // TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
 /** 임시 mock 데이터 */
@@ -94,7 +95,17 @@ export default function DropdownAssignee({}) {
           className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400 w-full`}
         />
       )}
-
+      <DropdownList
+        open={open}
+        items={Object.values(MOCK_ASSIGNEE)}
+        onSelect={(user) => {
+          setQuery(user.nickname);
+          setOpen(false);
+          setSelected(true);
+        }}
+        getKey={(user) => user.id}
+        renderItem={(user) => <UserName assignee={user} />}
+      />
       {/* 옵션 리스트 */}
       {open && (
         <div className="absolute mt-1 w-full border rounded bg-white shadow">
