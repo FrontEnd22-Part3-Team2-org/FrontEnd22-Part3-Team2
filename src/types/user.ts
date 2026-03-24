@@ -8,4 +8,5 @@ export interface ProfileOwner {
   // prop으로 넘어오는 데이터에 profileImageUrl, nickname을 가지고 있으면 자동으로 통과
   profileImageUrl?: string | null;
   nickname: string;
+  id?: number;
 }
