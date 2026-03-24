@@ -22,6 +22,7 @@ import type { Card } from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
+import ModalBase from '@/components/common/ModalBase';
 
 // TODO: [수경] API 연동 후 목데이터 삭제
 const MOCK_CARD: Card = {
@@ -46,7 +47,11 @@ const MOCK_CARD: Card = {
   updatedAt: '2026.03.23 23:58',
 };
 
-export default function Cards() {
+interface CardsProps {
+  onModalClose: () => void;
+}
+
+export default function Cards({ onModalClose }: CardsProps) {
   const { title, description, tags, dueDate, assignee, imageUrl } = MOCK_CARD;
 
   /** 드롭다운 열림 상태 */
@@ -60,7 +65,7 @@ export default function Cards() {
   // TODO : [수경] 드롭다운 외부 클릭 시 닫기 구현
 
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-[14px] bg-white text-gray-700 rounded-lg px-[30px] py-[18px] ">
+    <ModalBase className="flex flex-col-reverse md:flex-row gap-[14px] text-gray-700 rounded-lg px-[30px] py-[18px] ">
       {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
       <div className="flex flex-col max-w-[450px]">
         {/* 제목 */}
@@ -142,7 +147,7 @@ export default function Cards() {
           )}
 
           {/* 모달 닫기 버튼 */}
-          <button>
+          <button onClick={onModalClose}>
             <XIcon className="w-7 aspect-square" />
           </button>
         </div>
@@ -152,6 +157,6 @@ export default function Cards() {
           <AssigneeItem assignee={assignee} dueDate={dueDate} />
         </div>
       </div>
-    </div>
+    </ModalBase>
   );
 }
