@@ -70,10 +70,7 @@ export default function TaskCard({ card, onClick }: TaskCardProps) {
 
         {assignee && (
           <div className="w-[26px] h-[26px] rounded-full overflow-hidden shrink-0 ring-2 ring-white">
-            <UserProfileImage
-              src={assignee.profileImageUrl ?? ''}
-              name={assignee.nickname}
-            />
+            <UserProfileImage assignee={assignee} />
           </div>
         )}
       </div>

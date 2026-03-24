@@ -202,8 +202,11 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
                   title={member.nickname}
                 >
                   <UserProfileImage
-                    src={member.profileImageUrl ?? ''}
-                    name={member.nickname}
+                    assignee={{
+                      id: member.userId,
+                      nickname: member.nickname,
+                      profileImageUrl: member.profileImageUrl,
+                    }}
                   />
                 </div>
               ))}
