@@ -37,13 +37,6 @@ export const metadata: Metadata = {
     template: '%s | Taskify', // 하위 페이지에서 적용되는 템플릿 (e.g. "로그인 | Taskify ")
   },
   description: '새로운 일정관리, Taskify',
-  icons: {
-    icon: '/favicon.ico',
-  },
-  manifest: '/site.webmanifest',
-  openGraph: {
-    images: '/og-image.png',
-  },
 };
 
 export default function RootLayout({
