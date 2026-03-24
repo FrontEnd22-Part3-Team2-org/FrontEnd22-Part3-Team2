@@ -73,13 +73,13 @@ const SideMenu = () => {
     <aside
       className={cn(
         'flex flex-col shrink-0 bg-white border-r border-gray-200 min-h-screen',
-        'w-[67px] md:w-[160px] xl:w-[300px]',
+        'w-[67px] md:w-[160px] lg:w-[300px]',
       )}
     >
       {/* ── 로고 ── */}
       <Link
         href="/"
-        className="flex items-center shrink-0 pt-5 pl-[22px] md:pt-5 md:pl-[13px] xl:pl-2 mb-[39px] md:mb-[57px] xl:mb-14"
+        className="flex items-center shrink-0 pt-5 pl-[22px] md:pt-5 md:pl-[13px] lg:pl-2 mb-[39px] md:mb-[57px] lg:mb-14"
       >
         <span className="md:hidden">
           <Logo variant="small" />
@@ -90,7 +90,7 @@ const SideMenu = () => {
       </Link>
 
       {/* ── Dash Boards 영역 ── */}
-      <div className="flex items-center justify-between shrink-0 pl-6 pr-[14px] md:pl-[13px] md:pr-[13px] xl:pl-2 xl:pr-3 mb-[18px] md:mb-4">
+      <div className="flex items-center justify-between shrink-0 pl-6 pr-[14px] md:pl-[13px] md:pr-[13px] lg:pl-2 lg:pr-3 mb-[18px] md:mb-4">
         <span className="hidden md:block text-xs-semibold text-gray-500">
           Dash Boards
         </span>
@@ -106,7 +106,7 @@ const SideMenu = () => {
 
       {/* ── 대시보드 목록 ── */}
       <div className="flex-1 overflow-y-auto">
-        <ul className="flex flex-col gap-1.5 md:gap-0.5 xl:gap-2">
+        <ul className="flex flex-col gap-1.5 md:gap-0.5 lg:gap-2">
           {pagedDashboards.map((dashboard) => {
             const isActive =
               pathname === `/dashboard/${dashboard.id}` ||
@@ -132,7 +132,7 @@ const SideMenu = () => {
                   {/* tablet: [dot] gap-4 [text + crown(gap-1.5)] */}
                   <div
                     className={cn(
-                      'hidden md:flex xl:hidden items-center gap-4',
+                      'hidden md:flex lg:hidden items-center gap-4',
                       'h-[43px] mx-2 px-[10px] rounded-[4px] transition-colors',
                       isActive ? 'bg-brand-violet-light' : 'hover:bg-gray-100',
                     )}
@@ -163,7 +163,7 @@ const SideMenu = () => {
                   {/* desktop: [dot] gap-4 [text + crown(gap-1.5)] */}
                   <div
                     className={cn(
-                      'hidden xl:flex items-center gap-4',
+                      'hidden lg:flex items-center gap-4',
                       'h-[50px] mx-3 px-3 rounded-[4px] transition-colors',
                       isActive ? 'bg-brand-violet-light' : 'hover:bg-gray-100',
                     )}
@@ -199,7 +199,7 @@ const SideMenu = () => {
 
       {/* ── 페이지네이션 (tablet/desktop만 표시, 15개 초과 시에만 렌더링) ── */}
       {totalPages > 1 && (
-        <div className="hidden md:flex items-center gap-3 shrink-0 px-5 pt-6 xl:pt-8 pb-4">
+        <div className="hidden md:flex items-center gap-3 shrink-0 px-5 pt-6 lg:pt-8 pb-4">
           <Pagination
             size="sm"
             currentPage={page}

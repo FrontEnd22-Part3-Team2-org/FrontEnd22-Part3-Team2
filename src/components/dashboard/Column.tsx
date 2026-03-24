@@ -59,9 +59,9 @@ export default function Column({
     <div
       className={[
         'flex flex-col shrink-0',
-        'w-[284px] md:w-[544px] lg:w-[354px]',
-        'border-b md:border-b-0 md:border-r border-gray-200',
-        'pb-4 md:pb-0',
+        'w-full lg:w-[354px]',
+        'border-b lg:border-b-0 lg:border-r border-gray-200',
+        'pb-4 lg:pb-0',
       ].join(' ')}
     >
       {/* ── 컬럼 헤더 ── */}
@@ -95,6 +95,7 @@ export default function Column({
           variant="secondary"
           size="add_todo"
           onClick={() => onAddCard(column.id)}
+          className="w-full md:w-full lg:w-[314px]"
           aria-label="할 일 추가"
         >
           <span className="w-4 h-4 flex items-center justify-center rounded bg-brand-violet-light text-brand-violet text-lg-bold leading-none">
