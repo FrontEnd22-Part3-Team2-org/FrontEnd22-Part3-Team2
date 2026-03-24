@@ -3,11 +3,12 @@
  * @description 대시보드(Main) 라우트 그룹의 공통 레이아웃 컴포넌트입니다.
  * 좌측 고정 사이드메뉴(SideMenu)와 상단 헤더(Header)를 포함하며, 우측 하단 영역에 자식 페이지를 렌더링합니다.
  *
- * @author 하늘,
+ * @author 하늘, 승미
  */
 
 // import Header from '@/components/layout/Header';
 import SideMenu from '@/components/layout/SideMenu';
+import Header from '@/components/layout/Header';
 
 export default function MainLayout({
   children,
@@ -20,6 +21,8 @@ export default function MainLayout({
       <SideMenu />
 
       <div className="flex flex-col flex-1 min-w-0">
+        <Header />
+
         {/* NOTE: 헤더는 각 페이지 컴포넌트 내부에서 구현합니다. (담당자: 승미님) */}
 
         {/* min-h-0이 없으면 flex 자식이 부모를 넘쳐서 스크롤이 깨짐 */}
