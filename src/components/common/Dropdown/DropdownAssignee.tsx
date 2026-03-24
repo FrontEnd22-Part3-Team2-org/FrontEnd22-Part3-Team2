@@ -52,7 +52,14 @@ const MOCK_ASSIGNEE: Assignee[] = [
   },
 ];
 
-export default function DropdownAssignee({}) {
+interface AssigneeProps {
+  /** @defalut '이름을 입력해 주세요' */
+  placeholder?: string;
+}
+
+export default function DropdownAssignee({
+  placeholder = '이름을 입력해 주세요',
+}: AssigneeProps) {
   const [query, setQuery] = useState(''); // 인풋 입력값 관리
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(false);
@@ -74,8 +81,7 @@ export default function DropdownAssignee({}) {
         >
           {/* 임시 코드 */}
           <UserName
-            assignee={{
-              id: 5,
+            profile={{
               nickname: '문지훈',
               profileImageUrl: 'https://i.pravatar.cc/150?img=5',
             }}
@@ -91,7 +97,7 @@ export default function DropdownAssignee({}) {
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="담당자 이름 입력"
+          placeholder={placeholder}
           className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400 w-full`}
         />
       )}
@@ -107,6 +113,7 @@ export default function DropdownAssignee({}) {
         renderItem={(user) => <UserName assignee={user} />}
       />
       {/* 옵션 리스트 */}
+      {/*  TODO : [수경] 드롭다운 리스트 컴포넌트 분리 */}
       {open && (
         <div className="absolute mt-1 w-full border rounded bg-white shadow">
           {Object.values(MOCK_ASSIGNEE).map((user) => {
@@ -138,7 +145,7 @@ export default function DropdownAssignee({}) {
                 </span>
 
                 {/* 멤버 리스트 */}
-                <UserName assignee={user} />
+                <UserName profile={user} />
               </button>
             );
           })}

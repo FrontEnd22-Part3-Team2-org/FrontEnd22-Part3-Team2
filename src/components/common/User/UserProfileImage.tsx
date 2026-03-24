@@ -10,18 +10,19 @@
  * @author 수경
  */
 
-import { Assignee } from '@/types/dashboard';
+import { ProfileOwner } from '@/types/user';
 import Image from 'next/image';
 
 interface Props {
-  assignee: Assignee;
-
+  profile: ProfileOwner | null;
   /** @default 26px */
   size?: number;
 }
 
-export default function UserProfileImage({ assignee, size = 26 }: Props) {
-  const { id, nickname, profileImageUrl } = assignee;
+export default function UserProfileImage({ profile, size = 26 }: Props) {
+  if (!profile) return null; // null이면 렌더링 안함
+
+  const { nickname, profileImageUrl } = profile;
 
   /**
    * 이미지 존재 여부
@@ -37,23 +38,23 @@ export default function UserProfileImage({ assignee, size = 26 }: Props) {
 
   return (
     <>
-      {hasImage ? (
-        <Image
-          src={profileImageUrl}
-          alt="담당자 프로필"
-          width={size}
-          height={size}
-          className="object-cover"
-          unoptimized // 테스트용 - 도메인 허용 안하고 unoptimized 추가
-        />
-      ) : (
-        <div
-          style={{ width: size }}
-          className={`aspect-square rounded-full bg-brand-violet flex items-center justify-center`}
-        >
+      <div
+        style={{ width: size, height: size }}
+        className="rounded-full bg-brand-violet border-white border-2 overflow-hidden flex items-center justify-center"
+      >
+        {hasImage ? (
+          <Image
+            src={profileImageUrl}
+            alt="담당자 프로필"
+            width={size}
+            height={size}
+            className="object-cover"
+            unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
+          />
+        ) : (
           <span className="text-white text-xs-semibold">{initial}</span>
-        </div>
-      )}
+        )}
+      </div>
     </>
   );
 }

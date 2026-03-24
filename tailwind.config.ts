@@ -62,6 +62,7 @@ const config: Config = {
       fontSize: {
         '3xl-bold': ['32px', { lineHeight: '42px', fontWeight: '700' }],
         '3xl-semibold': ['32px', { lineHeight: '42px', fontWeight: '600' }],
+        '2xl-bold': ['24px', { lineHeight: '32px', fontWeight: '700' }],
         '2xl-semibold': ['24px', { lineHeight: '32px', fontWeight: '600' }],
         '2xl-medium': ['24px', { lineHeight: '32px', fontWeight: '500' }],
         '2xl-regular': ['24px', { lineHeight: '32px', fontWeight: '400' }],
