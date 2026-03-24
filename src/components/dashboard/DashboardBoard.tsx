@@ -6,24 +6,29 @@
  * React Query로 데이터를 로드하고, 사용자 상호작용을 처리합니다.
  *
  * @notes
- * - 카드 상세/생성/수정/삭제 모달은 각 담당자가 이 컴포넌트에 직접 연결합니다.
- *   모달 오픈 콜백(onCardClick, onAddCard 등)은 이미 Column/TaskCard에 연결되어 있습니다.
+ * - 모달 오픈 콜백(onCardClick, onAddCard 등)은 Column/TaskCard에 연결되어 있습니다.
  * - NOTE: 서버 사이드 인증(쿠키 기반)이 구축되면 page.tsx에서 initialData를 내려줄 수 있습니다.
  *   현재는 localStorage 토큰 방식이라 클라이언트에서 전부 로드합니다.
  */
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Column as ColumnType, Card } from '@/types/dashboard';
 import {
   getDashboard,
   getColumns,
   getMembers,
   getCards,
+  createColumn,
+  updateColumn,
+  deleteColumn,
 } from '@/api/dashboard';
 import Column from './Column';
 import Button from '@/components/common/Button';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import Cards from '@/components/Modal/Cards/Cards';
+import FormModal from '@/components/Modal/FormModal';
+import ConfirmModal from '@/components/Modal/ConfirmModal';
 
 interface DashboardBoardProps {
   dashboardId: number;
@@ -41,6 +46,21 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   const [columnCards, setColumnCards] = useState<
     Record<number, ColumnCardState>
   >({});
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+
+  const [addColumnModal, setAddColumnModal] = useState({
+    isOpen: false,
+    title: '',
+    error: '',
+  });
+  const [editColumnModal, setEditColumnModal] = useState<{
+    column: ColumnType | null;
+    title: string;
+    error: string;
+  }>({ column: null, title: '', error: '' });
+  const [deleteColumnId, setDeleteColumnId] = useState<number | null>(null);
+
+  const queryClient = useQueryClient();
 
   const { data: dashboard, isLoading: isDashboardLoading } = useQuery({
     queryKey: QUERY_KEYS.dashboard(dashboardId),
@@ -94,18 +114,85 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   };
 
   const handleEditColumn = (column: ColumnType) => {
-    // TODO: [담당자] 칼럼 수정 모달 오픈 — column 정보를 모달에 전달
-    console.log('칼럼 수정 요청:', column);
+    setEditColumnModal({ column, title: column.title, error: '' });
   };
 
-  const handleCardClick = (card: Card) => {
-    // TODO: [담당자] 카드 상세 모달 오픈 — card 정보를 모달에 전달
-    console.log('카드 상세 요청:', card);
+  const handleEditColumnConfirm = async () => {
+    const { column, title } = editColumnModal;
+    if (!column) return;
+    const trimmed = title.trim();
+    if (!trimmed) {
+      setEditColumnModal((prev) => ({
+        ...prev,
+        error: '컬럼 이름을 입력해주세요.',
+      }));
+      return;
+    }
+    try {
+      await updateColumn(column.id, trimmed);
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.columns(dashboardId),
+      });
+      setEditColumnModal({ column: null, title: '', error: '' });
+    } catch {
+      setEditColumnModal((prev) => ({
+        ...prev,
+        error: '컬럼 수정에 실패했습니다.',
+      }));
+    }
+  };
+
+  const handleDeleteColumnRequest = () => {
+    if (!editColumnModal.column) return;
+    setDeleteColumnId(editColumnModal.column.id);
+    setEditColumnModal({ column: null, title: '', error: '' });
+  };
+
+  const handleDeleteColumnConfirm = async () => {
+    if (!deleteColumnId) return;
+    try {
+      await deleteColumn(deleteColumnId);
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.columns(dashboardId),
+      });
+    } finally {
+      setDeleteColumnId(null);
+    }
+  };
+
+  const handleCardClick = (_card: Card) => {
+    setIsCardModalOpen(true);
+  };
+
+  const handleCardModalClose = () => {
+    setIsCardModalOpen(false);
   };
 
   const handleAddColumn = () => {
-    // TODO: [담당자] 새 칼럼 추가 모달 오픈
-    console.log('칼럼 추가 요청');
+    setAddColumnModal({ isOpen: true, title: '', error: '' });
+  };
+
+  const handleAddColumnConfirm = async () => {
+    const trimmed = addColumnModal.title.trim();
+    if (!trimmed) {
+      setAddColumnModal((prev) => ({
+        ...prev,
+        error: '컬럼 이름을 입력해주세요.',
+      }));
+      return;
+    }
+    try {
+      await createColumn(trimmed, dashboardId);
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.columns(dashboardId),
+      });
+      setAddColumnModal({ isOpen: false, title: '', error: '' });
+    } catch {
+      setAddColumnModal((prev) => ({
+        ...prev,
+        error: '컬럼 생성에 실패했습니다.',
+      }));
+    }
   };
 
   const handleInvite = () => {
@@ -167,14 +254,110 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
         </div>
       </div>
 
+      {/* 카드 상세 모달 */}
+      {isCardModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={handleCardModalClose}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <Cards onModalClose={handleCardModalClose} />
+          </div>
+        </div>
+      )}
+
+      {/* 칼럼 추가 모달 */}
+      {addColumnModal.isOpen && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
+          onClick={() =>
+            setAddColumnModal({ isOpen: false, title: '', error: '' })
+          }
+        >
+          <div
+            className="flex min-h-full items-center justify-center px-4 py-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FormModal
+              title="새 컬럼 생성"
+              label="이름"
+              value={addColumnModal.title}
+              placeholder="새로운 프로젝트"
+              confirmText="생성"
+              errorText={addColumnModal.error}
+              showCloseButton
+              onChange={(v) =>
+                setAddColumnModal((prev) => ({ ...prev, title: v, error: '' }))
+              }
+              onCancel={() =>
+                setAddColumnModal({ isOpen: false, title: '', error: '' })
+              }
+              onConfirm={handleAddColumnConfirm}
+              onClose={() =>
+                setAddColumnModal({ isOpen: false, title: '', error: '' })
+              }
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 칼럼 수정 모달 */}
+      {editColumnModal.column && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
+          onClick={() =>
+            setEditColumnModal({ column: null, title: '', error: '' })
+          }
+        >
+          <div
+            className="flex min-h-full items-center justify-center px-4 py-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FormModal
+              title="컬럼 수정"
+              label="이름"
+              value={editColumnModal.title}
+              confirmText="변경"
+              cancelText="삭제하기"
+              errorText={editColumnModal.error}
+              showCloseButton
+              onChange={(v) =>
+                setEditColumnModal((prev) => ({ ...prev, title: v, error: '' }))
+              }
+              onCancel={handleDeleteColumnRequest}
+              onConfirm={handleEditColumnConfirm}
+              onClose={() =>
+                setEditColumnModal({ column: null, title: '', error: '' })
+              }
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 칼럼 삭제 확인 모달 */}
+      {deleteColumnId !== null && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/40"
+          onClick={() => setDeleteColumnId(null)}
+        >
+          <div
+            className="flex min-h-full items-center justify-center px-4 py-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ConfirmModal
+              message="칼럼의 모든 카드가 삭제됩니다. 정말 삭제하시겠습니까?"
+              confirmText="삭제"
+              onCancel={() => setDeleteColumnId(null)}
+              onConfirm={handleDeleteColumnConfirm}
+            />
+          </div>
+        </div>
+      )}
+
       {/*
-       * NOTE: 아래 모달들은 각 담당자가 이 위치에 추가합니다.
-       * 모달 오픈 트리거(handleCardClick, handleAddCard 등)는 이미 연결되어 있습니다.
+       * NOTE: 아래 모달들은 컴포넌트 완성 후 이 위치에 추가합니다.
        *
-       * - 카드 상세 모달     → handleCardClick(card)
        * - 할 일 생성 모달   → handleAddCard(columnId)
-       * - 칼럼 수정 모달     → handleEditColumn(column)
-       * - 칼럼 추가 모달     → handleAddColumn()
        * - 초대하기 모달      → handleInvite()
        */}
     </div>
