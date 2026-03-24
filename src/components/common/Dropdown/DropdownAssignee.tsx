@@ -64,15 +64,12 @@ export default function DropdownAssignee({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(false);
 
-  // 부모 컴포넌트
-  const [selectedUser, setSelectedUser] = useState<Assignee | null>(null);
+  const [selectedUser, setSelectedUser] = useState<Assignee | null>(null); // 선택된 담당자 값 관리
 
   /** Input과 담당자가 선택된 박스의 공통 css */
-  // const baseStyle =
-  //   'min-w-[217px] h-12 border border-gray-300 rounded-md bg-white px-4 py-2';
-
   const baseStyle =
     'w-full h-[48px] border border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white';
+
   return (
     <div className="relative min-w-[217px]">
       {/* 선택을 안했을 때는 입력 input 렌더링, 선택 했을 때는 사용자 이름 및 아이콘 렌더링 */}
@@ -108,7 +105,7 @@ export default function DropdownAssignee({
           }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400 p-`}
+          className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400`}
         />
       )}
 
