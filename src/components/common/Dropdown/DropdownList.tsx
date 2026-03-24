@@ -29,10 +29,15 @@
  */
 
 interface DropdownListProps<T> {
+  /** 드롭다운 표시 여부 */
   open: boolean;
+  /** 드롭다운에 렌더링할 아이템 목록 */
   items: T[];
+  /** 아이템 선택 시 실행할 콜백 함수 */
   onSelect: (item: T) => void;
+  /** 아이템을 어떻게 렌더링할지 정의하는 함수 */
   renderItem: (item: T) => React.ReactNode;
+  /** 각 아이템의 고유 key 값을 반환하는 함수 */
   getKey: (item: T) => string | number;
 }
 

@@ -64,30 +64,40 @@ export default function DropdownAssignee({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(false);
 
-  /** Input과 담당자가 선택된 박스의 공통 css */
-  const baseStyle =
-    'min-w-[217px] h-12 border border-gray-300 rounded-md bg-white px-4 py-2';
+  // 부모 컴포넌트
+  const [selectedUser, setSelectedUser] = useState<Assignee | null>(null);
 
+  /** Input과 담당자가 선택된 박스의 공통 css */
+  // const baseStyle =
+  //   'min-w-[217px] h-12 border border-gray-300 rounded-md bg-white px-4 py-2';
+
+  const baseStyle =
+    'w-full h-[48px] border border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white';
   return (
-    <div className="relative">
-      {/* 선택된 값 */}
+    <div className="relative min-w-[217px]">
+      {/* 선택을 안했을 때는 입력 input 렌더링, 선택 했을 때는 사용자 이름 및 아이콘 렌더링 */}
       {selected ? (
-        <div
-          className={`${baseStyle} flex justify-between items-center cursor-pointer`}
+        <button
+          type="button"
+          className={`${baseStyle}`}
           onClick={() => {
             setSelected(false);
             setOpen(true);
           }}
         >
-          {/* 임시 코드 */}
-          <UserName
-            profile={{
-              nickname: '문지훈',
-              profileImageUrl: 'https://i.pravatar.cc/150?img=5',
-            }}
-          />
-          <ArrowDropDownIcon className="w-5 h-5" />
-        </div>
+          {/* selectedUser가 있을 때만 렌더링 */}
+          {selectedUser && (
+            <>
+              <UserName
+                profile={{
+                  nickname: selectedUser.nickname,
+                  profileImageUrl: selectedUser.profileImageUrl,
+                }}
+              />
+              <ArrowDropDownIcon className="w-5 h-5" />
+            </>
+          )}
+        </button>
       ) : (
         <input
           type="text"
@@ -98,9 +108,11 @@ export default function DropdownAssignee({
           }}
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
-          className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400 w-full`}
+          className={`${baseStyle} outline-none text-gray-700 placeholder:text-gray-400 p-`}
         />
       )}
+
+      {/* 담당자 리스트 */}
       <DropdownList
         open={open}
         items={Object.values(MOCK_ASSIGNEE)}
@@ -108,49 +120,11 @@ export default function DropdownAssignee({
           setQuery(user.nickname);
           setOpen(false);
           setSelected(true);
+          setSelectedUser(user);
         }}
         getKey={(user) => user.id}
-        renderItem={(user) => <UserName assignee={user} />}
+        renderItem={(user) => <UserName profile={user} />}
       />
-      {/* 옵션 리스트 */}
-      {/*  TODO : [수경] 드롭다운 리스트 컴포넌트 분리 */}
-      {open && (
-        <div className="absolute mt-1 w-full border rounded bg-white shadow">
-          {Object.values(MOCK_ASSIGNEE).map((user) => {
-            return (
-              <button
-                key={user.id}
-                type="button"
-                onClick={() => {
-                  setQuery(user.nickname); // 선택 시 input 값 변경
-                  setOpen(false);
-                  setSelected(true);
-                }}
-                className="w-full pl-5 py-2 flex items-center gap-3 group"
-              >
-                {/* 체크 아이콘 - 호버시에만 아이콘 표시 */}
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                  <svg
-                    width="14"
-                    height="10"
-                    viewBox="0 0 14 10"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M4.60892 8.12758L12.5275 0.208998C12.6638 0.0726743 12.8257 0.00303754 13.0132 8.89256e-05C13.2006 -0.00284441 13.3654 0.0667924 13.5076 0.208998C13.6498 0.351188 13.7209 0.514538 13.7209 0.699047C13.7209 0.883542 13.6498 1.04689 13.5076 1.1891L5.18887 9.50783C5.02317 9.67353 4.82985 9.75638 4.60892 9.75638C4.38799 9.75638 4.19467 9.67353 4.02897 9.50783L0.201883 5.68077C0.0655599 5.54444 -0.00172341 5.38256 3.35332e-05 5.19511C0.00180576 5.00767 0.0737871 4.84286 0.215977 4.70066C0.358183 4.55846 0.521533 4.48736 0.706027 4.48736C0.890537 4.48736 1.05389 4.55846 1.19608 4.70066L4.60892 8.12758Z"
-                      fill="#787486"
-                    />
-                  </svg>
-                </span>
-
-                {/* 멤버 리스트 */}
-                <UserName profile={user} />
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
