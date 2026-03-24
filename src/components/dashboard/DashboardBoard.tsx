@@ -23,11 +23,6 @@ import {
 } from '@/api/dashboard';
 import Column from './Column';
 import Button from '@/components/common/Button';
-import CrownIcon from '@/components/common/Icon/CrownIcon';
-import SettingIcon from '@/components/common/Icon/SettingIcon';
-import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
-import UserProfileImage from '@/components/common/User/UserProfileImage';
-import Link from 'next/link';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 
 interface DashboardBoardProps {
@@ -138,105 +133,6 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* ── 대시보드 헤더 ── */}
-      <header className="flex items-center justify-between shrink-0 h-[64px] px-6 md:px-8 bg-white border-b border-gray-200">
-        {/* 대시보드 제목 + 왕관 */}
-        <div className="flex items-center gap-2 min-w-0">
-          <h1 className="text-xl-bold text-gray-700 truncate">
-            {dashboard.title}
-          </h1>
-          {dashboard.createdByMe && (
-            <CrownIcon width={20} height={16} className="shrink-0" />
-          )}
-        </div>
-
-        {/* 관리 / 초대하기 / 멤버 아바타 / 프로필 */}
-        <div className="flex items-center gap-4 shrink-0">
-          {dashboard.createdByMe && (
-            <Link
-              href={`/dashboard/${dashboardId}/edit`}
-              className="hidden md:flex items-center gap-1.5 px-4 h-8 rounded-md border border-gray-300 text-md-medium text-gray-600 hover:bg-gray-100 transition-colors"
-            >
-              <SettingIcon width={16} height={16} />
-              관리
-            </Link>
-          )}
-          {dashboard.createdByMe && (
-            <Link
-              href={`/dashboard/${dashboardId}/edit`}
-              className="flex md:hidden w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
-              aria-label="대시보드 관리"
-            >
-              <SettingIcon width={16} height={16} />
-            </Link>
-          )}
-
-          <button
-            type="button"
-            onClick={handleInvite}
-            className="hidden md:flex items-center gap-1.5 px-4 h-8 rounded-md border border-gray-300 text-md-medium text-gray-600 hover:bg-gray-100 transition-colors"
-          >
-            <AddBoxIcon width={16} height={16} />
-            초대하기
-          </button>
-          <button
-            type="button"
-            onClick={handleInvite}
-            className="flex md:hidden w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="초대하기"
-          >
-            <AddBoxIcon width={16} height={16} />
-          </button>
-
-          {/* 멤버 아바타 (최대 4명 + 초과 수) */}
-          {visibleMembers.length > 0 && (
-            <div className="flex items-center">
-              {visibleMembers.map((member, i) => (
-                <div
-                  key={member.id}
-                  className="w-[34px] h-[34px] rounded-full overflow-hidden ring-2 ring-white shrink-0"
-                  style={{
-                    marginLeft: i === 0 ? 0 : '-8px',
-                    zIndex: visibleMembers.length - i,
-                  }}
-                  title={member.nickname}
-                >
-                  <UserProfileImage
-                    profile={{
-                      id: member.userId,
-                      nickname: member.nickname,
-                      profileImageUrl: member.profileImageUrl,
-                    }}
-                  />
-                </div>
-              ))}
-              {extraMemberCount > 0 && (
-                <div
-                  className="w-[34px] h-[34px] -ml-2 rounded-full ring-2 ring-white bg-brand-violet-light flex items-center justify-center shrink-0"
-                  style={{ zIndex: 0 }}
-                >
-                  <span className="text-xs-medium text-brand-violet">
-                    +{extraMemberCount}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="hidden md:block w-px h-8 bg-gray-200" />
-
-          {/* TODO: [담당자] 로그인 유저 정보로 교체 */}
-          <div className="flex items-center gap-2">
-            <div className="w-[34px] h-[34px] rounded-full bg-brand-violet flex items-center justify-center">
-              <span className="text-white text-xs-semibold">나</span>
-            </div>
-            <span className="hidden md:block text-md-medium text-gray-700">
-              프로필
-            </span>
-          </div>
-        </div>
-      </header>
-
       {/* ── 칸반 보드 ── */}
       <div className="flex-1 overflow-hidden bg-gray-100">
         <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-y-hidden lg:overflow-x-auto">
