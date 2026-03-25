@@ -74,6 +74,7 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
   const [formData, setFormData] = useState(false); // 카드 상세 조회 로딩
+  const [hasComments, setHasComments] = useState(false); // 카드 상세 조회 로딩
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -130,7 +131,7 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="relative max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
+        <ModalBase className="relative w-full md:w-[730px] max-h-[calc(100vh-110px)] overflow-y-auto  flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
@@ -186,17 +187,19 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
               {/* TODO : [수경] Server Action 연동을 위한 form */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-              </div>
+              {hasComments && (
+                <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} />
+                </div>
+              )}
             </section>
           </div>
 
           {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
-          <div className="flex flex-col items-end gap-6 min-w-[200px]">
+          <div className="flex flex-col items-end gap-6 min-w-[200px] w-full">
             <div className="flex gap-6 relative">
               {/* 메뉴 */}
               <button onClick={() => setIsMenuOpen((prev) => !prev)}>

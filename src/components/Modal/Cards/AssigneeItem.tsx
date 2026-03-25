@@ -18,12 +18,12 @@ import UserName from '@/components/common/User/UserName';
 import type { Assignee } from '@/types/dashboard';
 
 interface Props {
-  assignee: Assignee | null;
-  dueDate: string | null;
+  assignee?: Assignee | null;
+  dueDate?: string | null;
 }
 
 export default function AssigneeItem({ assignee, dueDate }: Props) {
-  if (!assignee) return null; // null이면 렌더링 안함
+  // if (!assignee) return null; // null이면 렌더링 안함
 
   const sectionClass = 'flex flex-col gap-[6px] w-full';
   const titleClass = 'text-xs-semibold';
@@ -32,11 +32,23 @@ export default function AssigneeItem({ assignee, dueDate }: Props) {
     <div className="flex md:flex-col flex-row items-center md:gap-4 gap-1 md:w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
       <div className={sectionClass}>
         <p className={titleClass}>담당자</p>
-        <UserName profile={assignee} />
+        <div className="md:h-5 h-4">
+          {assignee ? (
+            <UserName profile={assignee} />
+          ) : (
+            <p className={titleClass}>-</p>
+          )}
+        </div>
       </div>
       <div className={sectionClass}>
         <p className={titleClass}>마감일</p>
-        <p className="text-gray-700 text-md-regular">{dueDate}</p>
+        <div className="md:h-5 h-4">
+          {dueDate ? (
+            <p className="text-gray-700 text-md-regular">{dueDate}</p>
+          ) : (
+            <p className={titleClass}>-</p>
+          )}
+        </div>
       </div>
     </div>
   );
