@@ -51,7 +51,7 @@ const SideMenu = () => {
     >
       {/* ── 로고 ── */}
       <Link
-        href="/"
+        href={pathname === '/mydashboard' ? '/' : '/mydashboard'}
         className="flex items-center shrink-0 pt-5 pl-[22px] md:pt-5 md:pl-[13px] lg:pl-2 mb-[39px] md:mb-[57px] lg:mb-14"
       >
         <span className="md:hidden">
