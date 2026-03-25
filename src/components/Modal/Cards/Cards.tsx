@@ -74,7 +74,7 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
   const [formData, setFormData] = useState(false); // 카드 상세 조회 로딩
-  const [hasComments, setHasComments] = useState(false); // 댓글 유무
+  const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
