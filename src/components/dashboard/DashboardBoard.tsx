@@ -11,8 +11,9 @@
  *   현재는 localStorage 토큰 방식이라 클라이언트에서 전부 로드합니다.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useDashboardStore } from '@/store/useDashboardStore';
 import type { Column as ColumnType, Card } from '@/types/dashboard';
 import {
   getDashboard,
@@ -65,6 +66,11 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   const [deleteColumnId, setDeleteColumnId] = useState<number | null>(null);
 
   const queryClient = useQueryClient();
+  const setActiveDashboardId = useDashboardStore((s) => s.setActiveDashboardId);
+
+  useEffect(() => {
+    setActiveDashboardId(dashboardId);
+  }, [dashboardId, setActiveDashboardId]);
 
   const { data: dashboard, isLoading: isDashboardLoading } = useQuery({
     queryKey: QUERY_KEYS.dashboard(dashboardId),
