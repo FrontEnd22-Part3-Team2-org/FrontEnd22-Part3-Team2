@@ -1,18 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import EmptyInvitation from './EmptyInvitation';
 import InvitationTable from './InvitationTable';
-
-export interface Invitation {
-  id: number;
-  dashboard: {
-    title: string;
-  };
-  inviter: {
-    name: string;
-  };
-}
+import { Dashboard } from '@/types/dashboard';
 
 export default function InvitationList() {
-  const invitations: Invitation[] = [];
+  const [invitations, setInvitations] = useState<Dashboard[]>([]);
 
   return (
     <section>
