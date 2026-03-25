@@ -10,16 +10,28 @@
  * @author 수경
  */
 
-// TODO : [수경] 배경, 글씨색 랜덤으로 적용되어야 함. 같은 태그는 같은 색 유지
+const TAG_COLORS = [
+  { bg: 'bg-[#F9EEE3]', text: 'text-[#D58D49]' }, // 오렌지
+  { bg: 'bg-[#E7F7DB]', text: 'text-[#86D549]' }, // 그린
+  { bg: 'bg-[#F7DBF0]', text: 'text-[#D549B6]' }, // 핑크
+  { bg: 'bg-[#DBE6F7]', text: 'text-[#4981D5]' }, // 블루
+  { bg: 'bg-[#EDE3F9]', text: 'text-[#8549D5]' }, // 퍼플
+  { bg: 'bg-[#F9E3E3]', text: 'text-[#D54949]' }, // 레드
+  { bg: 'bg-[#E3F9F5]', text: 'text-[#2FADA8]' }, // 민트
+  { bg: 'bg-[#FDF6D3]', text: 'text-[#C4A823]' }, // 옐로우
+];
+
 interface TagChipProps {
   label: string;
-  color?: string;
 }
 
 export default function TagChip({ label }: TagChipProps) {
+  /** label 기반으로 색상 인덱스 결정 - 같은 label은 항상 같은 색상 */
+  const colorIndex = label.charCodeAt(0) % TAG_COLORS.length;
+  const { bg, text } = TAG_COLORS[colorIndex];
   return (
-    <div className="inline-flex rounded-md bg-[#F9EEE3]">
-      <p className="px-2 py-[5px] text-md-regular text-[#D58D49]">{label}</p>
+    <div className={`inline-flex rounded-md ${bg}`}>
+      <p className={`px-2 py-[5px] text-md-regular ${text}`}>{label}</p>
     </div>
   );
 }

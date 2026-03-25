@@ -51,7 +51,7 @@ export default function DropdownList<T>({
   if (!open) return null;
 
   return (
-    <div className="absolute mt-1 w-full border rounded bg-white shadow">
+    <div className="absolute z-10 mt-1 w-full border rounded bg-white shadow">
       {items.map((item) => (
         <button
           key={getKey(item)}

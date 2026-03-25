@@ -1,29 +1,46 @@
+'use client';
+
 /**
  * @file ColorChip.tsx
  * @description 대시보드에 사용되는 색상 라벨 컴포넌트입니다.
  * 좌측 고정 사이드메뉴(SideMenu)와 대시보드 생성, 수정에서 사용됩니다.
+ *
+ * @author 수경
  */
 
-// TODO: [수경] 버튼 클릭 시 부모 컴포넌트로 색상 값 보내줘야 함
+import { useEffect, useState } from 'react';
 
-'use client';
+interface ChipProps {
+  onSelectedColor: (hex: string) => void;
+}
 
-import { useState } from 'react';
-
-const COLORS = [
-  { name: 'green', className: 'bg-green' }, // #7AC555
-  { name: 'purple', className: 'bg-purple' }, // #760DDE
-  { name: 'orange', className: 'bg-orange' }, // #FFA500
-  { name: 'blue', className: 'bg-blue' }, // #76A5EA
-  { name: 'pink', className: 'bg-pink' }, // #E876EA
+type Color = {
+  name: string;
+  color: string;
+  hex: string;
+};
+const COLORS: Color[] = [
+  { name: 'green', color: 'bg-green', hex: '#7AC555' },
+  { name: 'purple', color: 'bg-purple', hex: '#760DDE' },
+  { name: 'orange', color: 'bg-orange', hex: '#FFA500' },
+  { name: 'blue', color: 'bg-blue', hex: '#76A5EA' },
+  { name: 'pink', color: 'bg-pink', hex: '#E876EA' },
 ];
 
-export default function ColorChip() {
+/**
+ * 버튼 클릭 시 색상 값(string) 값 전달
+ */
+export default function ColorChip({ onSelectedColor }: ChipProps) {
   // 색상 라벨 선택 상태 관리 (기본값: 첫 번째 라벨)
-  const [selected, setSelected] = useState<string>('green');
+  const [selected, setSelected] = useState<string>('bg-green');
 
-  const handleClick = (color: string) => {
-    setSelected(color);
+  /** selected 바뀔 때마다 자동 반영 */
+  useEffect(() => {
+    onSelectedColor(selected);
+  }, [selected, onSelectedColor]);
+
+  const handleSelect = (hex: string) => {
+    setSelected(hex);
   };
 
   return (
@@ -34,12 +51,12 @@ export default function ColorChip() {
             <button
               key={color.name}
               type="button"
-              onClick={() => handleClick(color.name)}
+              onClick={() => handleSelect(color.hex)}
               className={`w-7 h-7 rounded-full flex items-center justify-center
-            ${color.className}`}
+            ${color.color}`}
             >
               {/* 선택됐을 때만 아이콘 표시 */}
-              {selected === color.name && (
+              {selected === color.color && (
                 <svg
                   width="15"
                   height="12"
