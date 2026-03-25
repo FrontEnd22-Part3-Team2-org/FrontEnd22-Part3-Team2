@@ -17,6 +17,7 @@ import type { Column as ColumnType, Card } from '@/types/dashboard';
 import {
   getDashboard,
   getColumns,
+  getMembers,
   getCards,
   createColumn,
   updateColumn,
@@ -38,6 +39,8 @@ interface ColumnCardState {
   totalCount: number;
   cursorId: number | null;
 }
+
+const MAX_VISIBLE_MEMBERS = 4;
 
 export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   const [columnCards, setColumnCards] = useState<
@@ -93,7 +96,15 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
     enabled: !!columnsData?.data?.length,
   });
 
+  const { data: membersData } = useQuery({
+    queryKey: QUERY_KEYS.members(dashboardId),
+    queryFn: () => getMembers(dashboardId),
+  });
+
   const columns = columnsData?.data ?? [];
+  const members = membersData?.members ?? [];
+  const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
+  const extraMemberCount = Math.max(0, members.length - MAX_VISIBLE_MEMBERS);
 
   // ── 이벤트 핸들러 ──
 
