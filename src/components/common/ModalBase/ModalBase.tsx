@@ -9,22 +9,31 @@
  *
  * 사용 방법:
  * - AlertModal, ConfirmModal, FormModal 등에서 감싸서 사용
+ * - 오버레이가 필요한 경우: ModalOverlay로 감싸서 사용
+ * - 중첩 모달의 경우: ModalOverlay 없이 단독으로 사용
  *
  * 주의:
  * - 버튼, 텍스트, input 등 "내용"은 여기서 처리하지 않음
  * - 공통 스타일만 담당
  */
 
-import { ReactNode } from 'react';
+import { forwardRef, ReactNode } from 'react';
 
 interface ModalBaseProps {
   children: ReactNode;
   className?: string;
 }
 
-export default function ModalBase({
-  children,
-  className = '',
-}: ModalBaseProps) {
-  return <div className={`bg-white shadow-lg ${className}`}>{children}</div>;
-}
+const ModalBase = forwardRef<HTMLDivElement, ModalBaseProps>(
+  ({ children, className = '' }, ref) => {
+    return (
+      <div ref={ref} className={`bg-white shadow-lg ${className}`}>
+        {children}
+      </div>
+    );
+  },
+);
+
+ModalBase.displayName = 'ModalBase';
+
+export default ModalBase;

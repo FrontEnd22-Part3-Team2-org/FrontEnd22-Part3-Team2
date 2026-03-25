@@ -25,36 +25,12 @@ import { Assignee } from '@/types/dashboard';
 import DropdownList from './DropdownList';
 
 // TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
-/** 임시 mock 데이터 */
-const MOCK_ASSIGNEE: Assignee[] = [
-  {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    id: 2,
-    nickname: '이지은',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    id: 3,
-    nickname: '김현우',
-    profileImageUrl: '',
-  },
-  {
-    id: 4,
-    nickname: '이수빈',
-    profileImageUrl: '',
-  },
-  {
-    id: 5,
-    nickname: '문지훈',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=5',
-  },
-];
 
 interface AssigneeProps {
+  /** 드롭다운에 보여줄 전체 멤버 목록 */
+  members: Assignee[];
+  /** 이미 선택된 담당자 초기값 */
+  defaultAssignee?: Assignee | null;
   /** 담당자 선택 시 선택된 유저를 부모로 전달하는 콜백 함수 */
   onSelect?: (user: Assignee) => void;
   /** @defalut '이름을 입력해 주세요' */
@@ -62,12 +38,16 @@ interface AssigneeProps {
 }
 
 export default function DropdownAssignee({
+  members,
+  defaultAssignee = null,
   onSelect,
   placeholder = '이름을 입력해 주세요',
 }: AssigneeProps) {
   const [query, setQuery] = useState(''); // 인풋 입력값 관리
   const [open, setOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<Assignee | null>(null); // 선택된 담당자 값 관리
+  const [selectedUser, setSelectedUser] = useState<Assignee | null>(
+    defaultAssignee,
+  ); // 초기값 적용
 
   /** Input과 담당자가 선택된 박스의 공통 css */
   const baseStyle =
@@ -115,7 +95,7 @@ export default function DropdownAssignee({
       {/* 담당자 리스트 */}
       <DropdownList
         open={open}
-        items={Object.values(MOCK_ASSIGNEE)}
+        items={members}
         onSelect={(user) => {
           setQuery(user.nickname);
           setOpen(false);
