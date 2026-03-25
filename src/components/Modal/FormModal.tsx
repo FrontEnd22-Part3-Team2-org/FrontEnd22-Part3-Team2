@@ -31,7 +31,9 @@
  */
 
 import ModalBase from '@/components/common/ModalBase';
-import XIcon from '@/components/common/Icon/XIcon'; // 경로 맞게 수정
+import XIcon from '@/components/common/Icon/XIcon';
+import { Input } from '@/components/common/Input';
+import Button from '@/components/common/Button';
 
 interface FormModalProps {
   title: string;
@@ -67,7 +69,7 @@ export default function FormModal({
   return (
     <ModalBase className="w-[568px] rounded-[8px] p-[24px]">
       <div className="mb-[24px] flex items-start justify-between">
-        <h2 className="text-[24px] font-bold text-[#333333]">{title}</h2>
+        <h2 className="text-2xl-bold text-gray-900">{title}</h2>
 
         {showCloseButton && (
           <button
@@ -81,41 +83,38 @@ export default function FormModal({
       </div>
 
       <div className="mb-[10px]">
-        <label className="mb-[8px] block text-[18px] font-medium text-[#333236]">
+        <label className="mb-[8px] block text-2lg-medium text-gray-700">
           {label}
         </label>
 
-        <input
+        <Input
           value={value}
-          onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`w-full rounded-[8px] border px-[16px] py-[15px] text-[16px] text-[#333236] outline-none bg-white ${
-            errorText ? 'border-[#D6173A]' : 'border-[#D9D9D9]'
-          }`}
+          onChange={(e) => onChange(e.target.value)}
+          isError={!!errorText}
+          errorMessage={errorText}
         />
-
-        {errorText && (
-          <p className="mt-[8px] text-[14px] text-[#D6173A]">{errorText}</p>
-        )}
       </div>
 
-      <div className="mt-[20px] flex gap-[10px]">
-        <button
-          type="button"
+      <div className="mt-[20px] flex gap-[14px]">
+        <Button
+          variant="secondary"
+          size="modal_lg"
           onClick={onCancel}
-          className="flex-1 rounded-[8px] border border-[#D9D9D9] bg-white py-[14px] text-[18px] font-medium text-[#9A9A9A]"
+          className="flex-1"
         >
           {cancelText}
-        </button>
+        </Button>
 
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="modal_lg"
           onClick={onConfirm}
           disabled={confirmDisabled}
-          className="flex-1 rounded-[8px] bg-[#5534DA] py-[16px] text-[18px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex-1"
         >
           {confirmText}
-        </button>
+        </Button>
       </div>
     </ModalBase>
   );

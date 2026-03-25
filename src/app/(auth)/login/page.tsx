@@ -1,24 +1,19 @@
 'use client';
 
-// React 상태 관리
 import { useState } from 'react';
-
-// Next.js 라우팅
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-// 이미지 최적화 컴포넌트
 import Image from 'next/image';
-
-// 아이콘
 import { Eye, EyeOff } from 'lucide-react';
-
-// 공통 컴포넌트
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
+import { setToken } from '@/lib/auth'; // 토큰 저장 함수 import
 
 // 팀 ID (API 요청 시 사용)
 const TEAM_ID = '22-2';
+
+// 백엔드 서버 주소
+const BASE_URL = 'https://sp-taskify-api.vercel.app';
 
 // 이메일 유효성 검사 정규식
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,16 +24,16 @@ export default function LoginPage() {
   // =========================
   // 상태 관리
   // =========================
-  const [email, setEmail] = useState(''); // 이메일 입력값
-  const [password, setPassword] = useState(''); // 비밀번호 입력값
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const [isEmailError, setIsEmailError] = useState(false); // 이메일 에러 여부
-  const [isPasswordError, setIsPasswordError] = useState(false); // 비밀번호 에러 여부
-  const [loginError, setLoginError] = useState(''); // 로그인 실패 메시지
+  const [isEmailError, setIsEmailError] = useState(false);
+  const [isPasswordError, setIsPasswordError] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
-  const [showPassword, setShowPassword] = useState(false); // 비밀번호 보기/숨기기
+  const [showPassword, setShowPassword] = useState(false);
 
-  // 버튼 활성화 조건 (둘 다 입력해야 활성화)
+  // 버튼 활성화 조건
   const isButtonDisabled = !email || !password;
 
   // =========================
@@ -49,7 +44,7 @@ export default function LoginPage() {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
 
-    // 에러 상태 초기화
+    // 입력 시 에러 초기화
     if (isEmailError) setIsEmailError(false);
     if (loginError) setLoginError('');
   };
@@ -58,9 +53,24 @@ export default function LoginPage() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
 
-    // 에러 상태 초기화
     if (isPasswordError) setIsPasswordError(false);
     if (loginError) setLoginError('');
+  };
+
+  // =========================
+  // blur 시 유효성 검사
+  // =========================
+
+  // 이메일 blur 검사
+  const handleEmailBlur = () => {
+    if (!email) return;
+    setIsEmailError(!emailRegex.test(email));
+  };
+
+  // 비밀번호 blur 검사
+  const handlePasswordBlur = () => {
+    if (!password) return;
+    setIsPasswordError(password.length < 8);
   };
 
   // =========================
@@ -71,13 +81,13 @@ export default function LoginPage() {
 
     let hasError = false;
 
-    // 이메일 형식 검사
+    // 이메일 검사
     if (!emailRegex.test(email)) {
       setIsEmailError(true);
       hasError = true;
     }
 
-    // 비밀번호 길이 검사
+    // 비밀번호 검사
     if (password.length < 8) {
       setIsPasswordError(true);
       hasError = true;
@@ -90,26 +100,26 @@ export default function LoginPage() {
 
     try {
       // 로그인 API 요청
-      const res = await fetch(
-        `https://linkshop-api.vercel.app/${TEAM_ID}/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+      const res = await fetch(`${BASE_URL}/${TEAM_ID}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await res.json();
 
-      // 로그인 실패 처리
+      // 로그인 실패
       if (!res.ok) {
         setLoginError('이메일 또는 비밀번호를 확인해 주세요.');
         return;
       }
 
-      // 토큰 및 유저 정보 저장
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // =========================
+      // 토큰 저장 (분리된 로직 사용)
+      // =========================
+      setToken(data.accessToken);
 
       // 로그인 성공 → 페이지 이동
       router.push('/mydashboard');
@@ -120,20 +130,21 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100">
-      <div className="mx-auto flex min-h-screen w-full items-center justify-center">
-        <div className="flex w-[520px] flex-col items-center gap-[30px]">
+    <main className="min-h-screen bg-gray-100 px-4 sm:px-6">
+      <div className="mx-auto flex min-h-screen w-full items-center justify-center py-10">
+        <div className="flex w-full max-w-[520px] flex-col items-center gap-6 sm:gap-[30px]">
           {/* =========================
-              로고 영역 (클릭 시 메인으로 이동)
+              로고 영역
           ========================= */}
           <Link href="/">
-            <div className="flex h-[322px] w-[200px] cursor-pointer flex-col items-center gap-[10px]">
-              <div className="flex h-[280px] w-[200px] flex-col items-center justify-center gap-[30px]">
+            <div className="flex cursor-pointer flex-col items-center gap-[10px]">
+              <div className="flex flex-col items-center justify-center gap-5 sm:gap-[30px]">
                 <Image
                   src="/logo-taskify-icon-main.svg"
                   alt="Taskify icon"
                   width={200}
                   height={190}
+                  className="h-auto w-[120px] sm:w-[200px]"
                   priority
                 />
                 <Image
@@ -141,10 +152,12 @@ export default function LoginPage() {
                   alt="Taskify"
                   width={198}
                   height={55}
+                  className="h-auto w-[140px] sm:w-[198px]"
                   priority
                 />
               </div>
-              <p className="h-[32px] w-[200px] text-center text-xl-medium text-gray-700">
+
+              <p className="text-center text-base text-gray-700 sm:text-xl-medium">
                 오늘도 만나서 반가워요!
               </p>
             </div>
@@ -153,12 +166,12 @@ export default function LoginPage() {
           {/* =========================
               로그인 폼 영역
           ========================= */}
-          <div className="flex w-[520px] flex-col items-center gap-[24px]">
+          <div className="flex w-full flex-col items-center gap-5 sm:gap-[24px]">
             <form
               onSubmit={handleSubmit}
-              className="flex w-[520px] flex-col gap-[24px]"
+              className="flex w-full flex-col gap-5 sm:gap-[24px]"
             >
-              <div className="flex w-[520px] flex-col gap-[16px]">
+              <div className="flex w-full flex-col gap-4">
                 {/* 이메일 입력 */}
                 <Input
                   label="이메일"
@@ -166,6 +179,7 @@ export default function LoginPage() {
                   placeholder="이메일을 입력해 주세요"
                   value={email}
                   onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
                   isError={isEmailError}
                   errorMessage={
                     isEmailError ? '이메일 형식으로 작성해 주세요.' : undefined
@@ -179,12 +193,12 @@ export default function LoginPage() {
                   placeholder="비밀번호를 입력해 주세요"
                   value={password}
                   onChange={handlePasswordChange}
+                  onBlur={handlePasswordBlur}
                   isError={isPasswordError}
                   errorMessage={
                     isPasswordError ? '8자 이상 입력해 주세요.' : undefined
                   }
                   rightIcon={
-                    // 비밀번호 보기/숨기기 버튼
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
@@ -194,9 +208,9 @@ export default function LoginPage() {
                       }
                     >
                       {showPassword ? (
-                        <Eye width={24} height={24} />
-                      ) : (
                         <EyeOff width={24} height={24} />
+                      ) : (
+                        <Eye width={24} height={24} />
                       )}
                     </button>
                   }
@@ -214,14 +228,14 @@ export default function LoginPage() {
                 variant="primary"
                 size="login_sm"
                 disabled={isButtonDisabled}
-                className="h-[50px] w-[520px] rounded-[8px]"
+                className="h-[50px] w-full rounded-[8px]"
               >
                 로그인
               </Button>
             </form>
 
             {/* 회원가입 이동 */}
-            <p className="w-[520px] text-center text-[16px] leading-[19px] text-gray-700">
+            <p className="w-full text-center text-[16px] leading-[19px] text-gray-700">
               회원이 아니신가요?{' '}
               <Link href="/signup" className="text-brand-violet underline">
                 회원가입하기

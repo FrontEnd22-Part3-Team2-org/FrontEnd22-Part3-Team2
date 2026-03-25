@@ -27,14 +27,19 @@ interface Props {
   size?: number;
   /** 이미지 업로드 후 URL을 부모 컴포넌트로 전달하는 콜백 함수 */
   onUpload?: (url: string) => void;
+  defaultUrl?: string | null;
 }
 
 /**
  * 이미지 업로드 및 미리보기 컴포넌트입니다.
  */
-export default function ImageUploaderInput({ size = 76, onUpload }: Props) {
+export default function ImageUploaderInput({
+  size = 76,
+  onUpload,
+  defaultUrl = null,
+}: Props) {
   const [file, setFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>(defaultUrl ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
   /** 파일(input[type="file"]) 변경 시 실행되는 핸들러 */
@@ -101,6 +106,7 @@ export default function ImageUploaderInput({ size = 76, onUpload }: Props) {
               alt="이미지 미리보기"
               fill
               className="object-cover rounded-md"
+              unoptimized
             />
 
             {/* hover 오버레이 */}

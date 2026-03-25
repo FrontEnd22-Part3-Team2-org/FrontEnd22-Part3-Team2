@@ -6,10 +6,17 @@ import CalendarIcon from '../Icon/CalendarIcon';
 
 interface DateProps {
   onDateChange?: (date: Date | null) => void;
+  defaultDate?: string | null;
 }
 
-export default function DateInput({ onDateChange }: DateProps) {
-  const [date, setDate] = useState<Date | null>(null);
+export default function DateInput({
+  onDateChange,
+  defaultDate = null,
+}: DateProps) {
+  /** DatePicker selected용 - Date 타입 */
+  const [date, setDate] = useState<Date | null>(
+    defaultDate ? new Date(defaultDate) : null,
+  );
 
   const handleDate = (date: Date | null) => {
     setDate(date);

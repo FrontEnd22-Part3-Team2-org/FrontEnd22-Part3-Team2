@@ -48,6 +48,7 @@ export default function RootLayout({
     <html lang="ko" className={pretendard.variable}>
       <body className="font-main">
         <QueryProvider>{children}</QueryProvider>
+        <div id="modal-root" /> {/* 모달 */}
       </body>
     </html>
   );
