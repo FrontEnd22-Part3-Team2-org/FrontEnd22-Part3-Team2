@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { Assignee, Card } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
+import { createCard } from '@/api/dashboard';
 
 /** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
 const MOCK_MEMBERS: Assignee[] = [
@@ -52,14 +53,19 @@ const MOCK_MEMBERS: Assignee[] = [
 ];
 
 interface CreateCardProps {
+  dashboardId: number;
+  columnId: number;
   onModalClose: () => void;
 }
 
-export default function CreateCard({ onModalClose }: CreateCardProps) {
+export default function CreateCard({
+  dashboardId,
+  columnId,
+  onModalClose,
+}: CreateCardProps) {
   /**
-   * TODO : [수경] 👇 아래 내용 API 호출 테스트로 확인 필요
-   * id, teamId, columnId, dashboardId, createdAt, updatedAt은
-   * 서버에서 생성되거나 외부에서 주입되는 값이라 폼 상태에 미포함
+   * id, createdAt, updatedAt은 서버에서 생성되어 폼 상태에 미포함
+   * dashboardId, columnId는 props로 받아야 함
    */
   const [formData, setFormData] = useState<
     Pick<
@@ -75,7 +81,31 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
     imageUrl: null,
   });
 
-  console.log('FORMDATA', formData);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    console.log(formData);
+    setIsLoading(true);
+    try {
+      await createCard({
+        dashboardId,
+        columnId,
+        title: formData.title,
+        description: formData.description,
+        ...(formData.assignee && { assigneeUserId: formData.assignee.id }),
+        ...(formData.dueDate && { dueDate: formData.dueDate }),
+        ...(formData.tags?.length && { tags: formData.tags }),
+        ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
+      });
+      // onSuccess?.();
+      onModalClose();
+    } catch (error) {
+      console.error('카드 생성 실패', error);
+      // TODO: 에러 처리
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /** 태그 입력 - Enter 키로 추가 */
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -94,7 +124,7 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
+        <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
           <header>
             <h2 className="text-2xl-bold break-words">할 일 생성</h2>
           </header>
@@ -113,7 +143,8 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
           {/* 제목 */}
           <Input
             label="제목"
-            placeholder="제목을 입력해 주세요"
+            // placeholder="제목을 입력해 주세요"
+            placeholder="(임시) 필수 입력 값입니다."
             value={formData.title}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, title: e.target.value }))
@@ -123,7 +154,8 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
           {/* 설명 */}
           <Textarea
             label="설명"
-            placeholder="설명을 입력해 주세요"
+            // placeholder="설명을 입력해 주세요"
+            placeholder="(임시) 필수 입력 값입니다."
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))
@@ -148,6 +180,7 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
           />
 
           {/* 이미지 */}
+          {/* TODO: [수경] 이미지 업로드 API 연동 */}
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
             <ImageUploaderInput
@@ -166,8 +199,13 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
             >
               취소
             </Button>
-            <Button variant="primary" className="flex-1">
-              생성
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? '생성 중...' : '생성'}
             </Button>
           </div>
         </ModalBase>

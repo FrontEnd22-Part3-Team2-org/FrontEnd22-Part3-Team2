@@ -359,7 +359,11 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
 
       {/* 할 일 생성 모달 */}
       {createCardColumnId !== null && (
-        <CreateCard onModalClose={() => setCreateCardColumnId(null)} />
+        <CreateCard
+          onModalClose={() => setCreateCardColumnId(null)}
+          dashboardId={dashboardId}
+          columnId={59284} // 컬럼 아이디
+        />
       )}
 
       {/*

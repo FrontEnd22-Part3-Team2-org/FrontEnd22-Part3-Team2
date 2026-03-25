@@ -85,6 +85,12 @@ export async function deleteColumn(columnId: number) {
   await api.delete(`/columns/${columnId}`);
 }
 
+/** 할 일 카드 조회 */
+export async function readCard(cardId: number) {
+  const { data } = await api.get(`/cards/${cardId}`);
+  return data;
+}
+
 /** 할 일 카드 생성 */
 export async function createCard(payload: {
   assigneeUserId?: number;
