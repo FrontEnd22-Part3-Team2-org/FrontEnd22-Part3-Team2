@@ -35,6 +35,7 @@ import ReplyItem from './ReplyItem';
 import Image from 'next/image';
 import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
+import EditCard from './EditCard';
 
 // TODO: [수경] API 연동 후 목데이터 삭제
 const MOCK_CARD: Card = {
@@ -96,9 +97,9 @@ export default function Cards({ onModalClose }: CardsProps) {
   }, [isMenuOpen]);
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
-  // if (isEditing) {
-  //   return <EditCard onModalClose={onModalClose} />;
-  // }
+  if (isEditing) {
+    return <EditCard defaultValues={MOCK_CARD} onModalClose={onModalClose} />;
+  }
 
   return (
     // 오버레이 배경
@@ -197,7 +198,7 @@ export default function Cards({ onModalClose }: CardsProps) {
         </div>
       </ModalBase>
 
-      {/* 삭제하기 버튼 클릭시 수정 모달 렌더링 */}
+      {/* 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
       {isDeleting && (
         <div className="absolute z-20 flex items-center justify-center shadow-lg">
           <ConfirmModal
