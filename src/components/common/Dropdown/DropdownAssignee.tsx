@@ -9,7 +9,7 @@
  * 2. 대시보드 멤버 목록 가져오기
  *
  * ### 할 일 수정 로직
- * 1. GET /cards API 호출 , GET /members API 호출
+ * 1. GET /cards/{cardId} API 호출 , GET /members API 호출
  * 2. 담당자 정보(cards.assignee) 값 가져오기
  * 3. 가져온 담당자 정보 렌더링
  * 4. 드롭다운에는 대시보드 멤버 목록 보여주기
