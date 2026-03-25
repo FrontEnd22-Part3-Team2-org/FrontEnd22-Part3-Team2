@@ -18,8 +18,38 @@ import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
 import { useState } from 'react';
-import { Card } from '@/types/dashboard';
+import { Assignee, Card } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
+import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
+
+/** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
+const MOCK_MEMBERS: Assignee[] = [
+  {
+    id: 1,
+    nickname: '공민수',
+    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
+  },
+  {
+    id: 2,
+    nickname: '이지은',
+    profileImageUrl: 'https://i.pravatar.cc/150?img=2',
+  },
+  {
+    id: 3,
+    nickname: '김현우',
+    profileImageUrl: '',
+  },
+  {
+    id: 4,
+    nickname: '이수빈',
+    profileImageUrl: '',
+  },
+  {
+    id: 5,
+    nickname: '문지훈',
+    profileImageUrl: 'https://i.pravatar.cc/150?img=5',
+  },
+];
 
 interface CreateCardProps {
   onModalClose: () => void;
@@ -62,80 +92,86 @@ export default function CreateCard({ onModalClose }: CreateCardProps) {
   const baseFontStyle = 'text-2lg-medium mb-2';
 
   return (
-    // 오버레이 배경
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
-        <header>
-          <h2 className="text-2xl-bold break-words">할 일 생성</h2>
-        </header>
+    <>
+      <ModalOverlay onClose={onModalClose}>
+        <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
+          <header>
+            <h2 className="text-2xl-bold break-words">할 일 생성</h2>
+          </header>
 
-        {/* 담당자 */}
-        <div className="">
-          <p className={`${baseFontStyle}`}>담당자</p>
-          <DropdownAssignee
-            onSelect={(user) => {
-              setFormData((prev) => ({ ...prev, assignee: user }));
-            }}
-          />
-        </div>
+          {/* 담당자 */}
+          <div className="">
+            <p className={`${baseFontStyle}`}>담당자</p>
+            <DropdownAssignee
+              members={MOCK_MEMBERS}
+              onSelect={(user) => {
+                setFormData((prev) => ({ ...prev, assignee: user }));
+              }}
+            />
+          </div>
 
-        {/* 제목 */}
-        <Input
-          label="제목"
-          placeholder="제목을 입력해 주세요"
-          value={formData.title}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, title: e.target.value }))
-          }
-        />
-
-        {/* 설명 */}
-        <Textarea
-          label="설명"
-          placeholder="설명을 입력해 주세요"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, description: e.target.value }))
-          }
-        />
-
-        {/* 마감일 */}
-        <DateInput
-          onDateChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              dueDate: date ? date.toISOString() : null,
-            }))
-          }
-        />
-
-        {/* 태그 */}
-        <Input
-          label="태그"
-          placeholder="입력 후 Enter"
-          onKeyDown={handleTagKeyDown}
-        />
-
-        {/* 이미지 */}
-        <div>
-          <p className={`${baseFontStyle}`}>이미지</p>
-          <ImageUploaderInput
-            onUpload={(url) =>
-              setFormData((prev) => ({ ...prev, imageUrl: url }))
+          {/* 제목 */}
+          <Input
+            label="제목"
+            placeholder="제목을 입력해 주세요"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
             }
           />
-        </div>
 
-        {/* 생성,취소 버튼 */}
-        <div className="relative flex items-stretch gap-2 h-[54px]">
-          <Button variant="secondary" className="flex-1" onClick={onModalClose}>
-            취소
-          </Button>
-          <Button variant="primary" className="flex-1">
-            생성
-          </Button>
-        </div>
-      </ModalBase>
-    </div>
+          {/* 설명 */}
+          <Textarea
+            label="설명"
+            placeholder="설명을 입력해 주세요"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
+          />
+
+          {/* 마감일 */}
+          <DateInput
+            onDateChange={(date) =>
+              setFormData((prev) => ({
+                ...prev,
+                dueDate: date ? date.toISOString() : null,
+              }))
+            }
+          />
+
+          {/* 태그 */}
+          <Input
+            label="태그"
+            placeholder="입력 후 Enter"
+            onKeyDown={handleTagKeyDown}
+          />
+
+          {/* 이미지 */}
+          <div>
+            <p className={`${baseFontStyle}`}>이미지</p>
+            <ImageUploaderInput
+              onUpload={(url) =>
+                setFormData((prev) => ({ ...prev, imageUrl: url }))
+              }
+            />
+          </div>
+
+          {/* 생성,취소 버튼 */}
+          <div className="relative flex items-stretch gap-2 h-[54px]">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={onModalClose}
+            >
+              취소
+            </Button>
+            <Button variant="primary" className="flex-1">
+              생성
+            </Button>
+          </div>
+        </ModalBase>
+      </ModalOverlay>
+    </>
   );
 }

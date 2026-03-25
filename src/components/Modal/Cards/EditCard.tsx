@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { Assignee, Card } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import DropdownProgress from '@/components/common/Dropdown/DropdownProgress';
+import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 
 /** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
 const MOCK_ASSIGNEE: Assignee[] = [
@@ -92,92 +93,97 @@ export default function EditCard({
   const baseFontStyle = 'text-2lg-medium mb-2';
 
   return (
-    // 오버레이 배경
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
-        <header>
-          <h2 className="text-2xl-bold break-words">할 일 수정</h2>
-        </header>
+    <>
+      <ModalOverlay onClose={onModalClose}>
+        <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
+          <header>
+            <h2 className="text-2xl-bold break-words">할 일 수정</h2>
+          </header>
 
-        <div className="flex gap-8">
-          {/* 진행 상태 */}
-          <div>
-            <p className={`${baseFontStyle}`}>상태</p>
-            <DropdownProgress value="To Do" onChange={handleProgress} />
+          <div className="flex flex-col sm:flex-row gap-8">
+            {/* 진행 상태 */}
+            <div>
+              <p className={`${baseFontStyle}`}>상태</p>
+              <DropdownProgress value="To Do" onChange={handleProgress} />
+            </div>
+            {/* 담당자 */}
+            <div>
+              <p className={`${baseFontStyle}`}>담당자</p>
+              <DropdownAssignee
+                members={MOCK_ASSIGNEE}
+                defaultAssignee={formData.assignee}
+                onSelect={(user) => {
+                  setFormData((prev) => ({ ...prev, assignee: user }));
+                }}
+              />
+            </div>
           </div>
-          {/* 담당자 */}
-          <div>
-            <p className={`${baseFontStyle}`}>담당자</p>
-            <DropdownAssignee
-              members={MOCK_ASSIGNEE}
-              defaultAssignee={formData.assignee}
-              onSelect={(user) => {
-                setFormData((prev) => ({ ...prev, assignee: user }));
-              }}
-            />
-          </div>
-        </div>
 
-        {/* 제목 */}
-        <Input
-          label="제목"
-          placeholder="제목을 입력해 주세요"
-          value={formData.title}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, title: e.target.value }))
-          }
-        />
-
-        {/* 설명 */}
-        <Textarea
-          label="설명"
-          placeholder="설명을 입력해 주세요"
-          value={formData.description}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, description: e.target.value }))
-          }
-        />
-
-        {/* 마감일 */}
-        <DateInput
-          defaultDate={formData.dueDate}
-          onDateChange={(date) =>
-            setFormData((prev) => ({
-              ...prev,
-              dueDate: date ? date.toISOString() : null,
-            }))
-          }
-        />
-
-        {/* 태그 */}
-        <Input
-          label="태그"
-          placeholder="입력 후 Enter"
-          onKeyDown={handleTagKeyDown}
-          defaultValue={formData.tags}
-        />
-
-        {/* 이미지 */}
-        <div>
-          <p className={`${baseFontStyle}`}>이미지</p>
-          <ImageUploaderInput
-            defaultUrl={formData.imageUrl}
-            onUpload={(url) =>
-              setFormData((prev) => ({ ...prev, imageUrl: url }))
+          {/* 제목 */}
+          <Input
+            label="제목"
+            placeholder="제목을 입력해 주세요"
+            value={formData.title}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, title: e.target.value }))
             }
           />
-        </div>
 
-        {/* 생성,취소 버튼 */}
-        <div className="relative flex items-stretch gap-2 h-[54px]">
-          <Button variant="secondary" className="flex-1" onClick={onModalClose}>
-            취소
-          </Button>
-          <Button variant="primary" className="flex-1">
-            생성
-          </Button>
-        </div>
-      </ModalBase>
-    </div>
+          {/* 설명 */}
+          <Textarea
+            label="설명"
+            placeholder="설명을 입력해 주세요"
+            value={formData.description}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, description: e.target.value }))
+            }
+          />
+
+          {/* 마감일 */}
+          <DateInput
+            defaultDate={formData.dueDate}
+            onDateChange={(date) =>
+              setFormData((prev) => ({
+                ...prev,
+                dueDate: date ? date.toISOString() : null,
+              }))
+            }
+          />
+
+          {/* 태그 */}
+          <Input
+            label="태그"
+            placeholder="입력 후 Enter"
+            onKeyDown={handleTagKeyDown}
+            defaultValue={formData.tags}
+          />
+
+          {/* 이미지 */}
+          <div>
+            <p className={`${baseFontStyle}`}>이미지</p>
+            <ImageUploaderInput
+              defaultUrl={formData.imageUrl}
+              onUpload={(url) =>
+                setFormData((prev) => ({ ...prev, imageUrl: url }))
+              }
+            />
+          </div>
+
+          {/* 생성,취소 버튼 */}
+          <div className="relative flex items-stretch gap-2 h-[54px]">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={onModalClose}
+            >
+              취소
+            </Button>
+            <Button variant="primary" className="flex-1">
+              수정
+            </Button>
+          </div>
+        </ModalBase>
+      </ModalOverlay>
+    </>
   );
 }
