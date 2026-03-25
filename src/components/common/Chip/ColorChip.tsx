@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 
 interface ChipProps {
   onSelectedColor: (hex: string) => void;
+  defaultColor?: string;
 }
 
 type Color = {
@@ -30,17 +31,21 @@ const COLORS: Color[] = [
 /**
  * 버튼 클릭 시 색상 값(string) 값 전달
  */
-export default function ColorChip({ onSelectedColor }: ChipProps) {
+export default function ColorChip({
+  onSelectedColor,
+  defaultColor = '#7AC555',
+}: ChipProps) {
   // 색상 라벨 선택 상태 관리 (기본값: 첫 번째 라벨)
-  const [selected, setSelected] = useState<string>('bg-green');
+  const [selected, setSelected] = useState<string>(defaultColor);
 
-  /** selected 바뀔 때마다 자동 반영 */
+  /** 마운트 시 기본값 전달 */
   useEffect(() => {
-    onSelectedColor(selected);
-  }, [selected, onSelectedColor]);
+    onSelectedColor(defaultColor);
+  }, []);
 
   const handleSelect = (hex: string) => {
     setSelected(hex);
+    onSelectedColor(hex);
   };
 
   return (
@@ -56,7 +61,7 @@ export default function ColorChip({ onSelectedColor }: ChipProps) {
             ${color.color}`}
             >
               {/* 선택됐을 때만 아이콘 표시 */}
-              {selected === color.color && (
+              {selected === color.hex && (
                 <svg
                   width="15"
                   height="12"
