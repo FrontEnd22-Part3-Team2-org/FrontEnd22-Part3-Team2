@@ -7,10 +7,22 @@
 import api from './axios';
 import type {
   Dashboard,
+  DashboardsResponse,
   ColumnsResponse,
   CardsResponse,
   MembersResponse,
 } from '@/types/dashboard';
+
+/** 대시보드 목록 조회 (사이드 네비게이션용, 페이지 기반) */
+export async function getDashboards(
+  page = 1,
+  size = 15,
+): Promise<DashboardsResponse> {
+  const { data } = await api.get<DashboardsResponse>('/dashboards', {
+    params: { navigationMethod: 'pagination', page, size },
+  });
+  return data;
+}
 
 /** 대시보드 단건 조회 */
 export async function getDashboard(dashboardId: number): Promise<Dashboard> {
