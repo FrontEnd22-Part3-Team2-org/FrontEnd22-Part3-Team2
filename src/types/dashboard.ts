@@ -79,3 +79,10 @@ export interface MembersResponse {
   members: Member[];
   totalCount: number;
 }
+
+/** GET /dashboards 응답 */
+export interface DashboardsResponse {
+  cursorId: number | null;
+  totalCount: number;
+  dashboards: Dashboard[];
+}

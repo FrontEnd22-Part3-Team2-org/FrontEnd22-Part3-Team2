@@ -14,56 +14,29 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
 import CrownIcon from '@/components/common/Icon/CrownIcon';
 import Pagination from '@/components/common/Pagination/Pagination';
 import Logo from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
-
-interface Dashboard {
-  id: number;
-  /** 대시보드 이름 */
-  title: string;
-  /** 컬러칩과 매핑된 hex 코드 색상값 */
-  color: string;
-  /** 내가 만든 대시보드 여부 (true면 왕관 아이콘 표시) */
-  createdByMe: boolean;
-}
-
-// TODO: [하늘] API 연동 후 props 혹은 커스텀 훅으로 변경
-const MOCK_DASHBOARDS: Dashboard[] = [
-  { id: 1, title: '비브리지', color: '#7AC555', createdByMe: true },
-  { id: 2, title: '코드잇', color: '#760DDE', createdByMe: true },
-  { id: 3, title: '3분기 계획', color: '#FFA500', createdByMe: false },
-  { id: 4, title: '회의록', color: '#76A5EA', createdByMe: false },
-  { id: 5, title: '중요 문서함', color: '#E876EA', createdByMe: false },
-  { id: 6, title: '비브리지', color: '#7AC555', createdByMe: true },
-  { id: 7, title: '코드잇', color: '#760DDE', createdByMe: true },
-  { id: 8, title: '3분기 계획', color: '#FFA500', createdByMe: false },
-  { id: 9, title: '회의록', color: '#76A5EA', createdByMe: false },
-  { id: 10, title: '중요 문서함', color: '#E876EA', createdByMe: false },
-  { id: 11, title: '회의록', color: '#76A5EA', createdByMe: false },
-  { id: 12, title: '비브리지', color: '#7AC555', createdByMe: true },
-  { id: 13, title: '코드잇', color: '#760DDE', createdByMe: true },
-  { id: 14, title: '3분기 계획', color: '#FFA500', createdByMe: false },
-  { id: 15, title: '회의록', color: '#76A5EA', createdByMe: false },
-  { id: 16, title: '중요 문서함', color: '#E876EA', createdByMe: false },
-];
+import { getDashboards } from '@/api/dashboard';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 const PAGE_SIZE = 15;
-
-// 메인 컴포넌트
 
 const SideMenu = () => {
   const pathname = usePathname();
   const [page, setPage] = useState(1);
 
-  const totalCount = MOCK_DASHBOARDS.length;
+  const { data } = useQuery({
+    queryKey: [...QUERY_KEYS.dashboards(), page],
+    queryFn: () => getDashboards(page, PAGE_SIZE),
+  });
+
+  const dashboards = data?.dashboards ?? [];
+  const totalCount = data?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const pagedDashboards = MOCK_DASHBOARDS.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE,
-  );
 
   const handlePrevPage = () => setPage((prev) => Math.max(1, prev - 1));
   const handleNextPage = () =>
@@ -107,7 +80,7 @@ const SideMenu = () => {
       {/* ── 대시보드 목록 ── */}
       <div className="flex-1 overflow-y-auto">
         <ul className="flex flex-col gap-1.5 md:gap-0.5 lg:gap-2">
-          {pagedDashboards.map((dashboard) => {
+          {dashboards.map((dashboard) => {
             const isActive =
               pathname === `/dashboard/${dashboard.id}` ||
               pathname.startsWith(`/dashboard/${dashboard.id}/`);
