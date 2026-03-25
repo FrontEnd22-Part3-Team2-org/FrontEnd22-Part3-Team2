@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @file ImageUploaderInput.tsx
  * @description 이미지 업로드 및 미리보기 컴포넌트입니다.
@@ -6,10 +8,12 @@
  *
  * @example
  * <ImageUploaderInput />
- * <ImageUploaderInput size={178} />
+ * <ImageUploaderInput
+ *  size={178}
+ *  onUpload={(url) =>
+ *    setFormData((prev) => ({ ...prev, imageUrl: url }))
+ *  />
  */
-
-'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import ImageUploaderChip from '../Chip/ImageUploaderChip';
@@ -21,12 +25,14 @@ interface Props {
    * @default 76
    */
   size?: number;
+  /** 이미지 업로드 후 URL을 부모 컴포넌트로 전달하는 콜백 함수 */
+  onUpload?: (url: string) => void;
 }
 
 /**
  * 이미지 업로드 및 미리보기 컴포넌트입니다.
  */
-export default function ImageUploaderInput({ size = 76 }: Props) {
+export default function ImageUploaderInput({ size = 76, onUpload }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,24 +44,28 @@ export default function ImageUploaderInput({ size = 76 }: Props) {
 
     /** 파일이 선택되지 않은 경우 */
     if (!selected) {
-      setFile(null); // 파일 상태 초기화
-      setImageUrl(''); // 미리보기 이미지 초기화
+      setFile(null);
+      setImageUrl('');
+      onUpload?.('');
       return;
     }
+
     /** 이미지 파일이 아닌 경우 필터링 */
     if (!selected.type.startsWith('image/')) {
       alert('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
-    /** 선택된 파일을 브라우저에서 미리보기 가능한 blob URL로 변환 */
+
+    /** 브라우저 미리보기용 blob URL로 변환 */
     const blobUrl = URL.createObjectURL(selected);
     setFile(selected); // 실제 파일 저장 (서버 업로드용)
     setImageUrl(blobUrl); // 미리보기용 URL 저장
+    onUpload?.(blobUrl); // prop으로 전달
   };
 
   /** 업로드 버튼 클릭 시 숨겨진 input[type="file"]을 트리거하는 함수 */
   const handleUploadClick = () => {
-    inputRef.current?.click(); // 파일 선택 창 열기
+    inputRef.current?.click();
   };
 
   useEffect(() => {
@@ -78,6 +88,7 @@ export default function ImageUploaderInput({ size = 76 }: Props) {
 
       {/* 버튼, 이미지 UI */}
       <button
+        type="button"
         onClick={handleUploadClick}
         className="relative group"
         style={{ width: size, height: size }}
