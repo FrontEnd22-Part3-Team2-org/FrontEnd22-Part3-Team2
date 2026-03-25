@@ -1,8 +1,7 @@
 import { Dashboard } from '@/types/dashboard';
 import Button from '../common/Button';
-import Image from 'next/image';
 import ArrowRightIcon from '../common/Icon/ArrowRightIcon';
-import CrownIcon from '../common/Icon/ic-crown.svg';
+import CrownIcon from '../common/Icon/CrownIcon';
 
 interface DashboardCardProps {
   board: Dashboard;
@@ -21,13 +20,7 @@ export default function DashboardCard({ board }: DashboardCardProps) {
           style={{ backgroundColor: board.color }}
         ></span>
         <span>{board.title}</span>
-        {board.createdByMe && (
-          <Image
-            className="ml-[4px] md:ml-[6px] lg:ml-[8px]"
-            src={CrownIcon}
-            alt="왕관"
-          />
-        )}
+        {board.createdByMe && <CrownIcon />}
       </div>
       <ArrowRightIcon width={18} height={18} />
     </Button>
