@@ -368,7 +368,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
         <CreateCard
           onModalClose={() => setCreateCardColumnId(null)}
           dashboardId={dashboardId}
-          columnId={59284} // 컬럼 아이디
+          columnId={59284} // 컬럼 아이디, 에러 방지용으로 넣어놨습니다.
         />
       )}
 

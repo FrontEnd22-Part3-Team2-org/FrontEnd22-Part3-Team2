@@ -97,7 +97,6 @@ export default function CreateCard({
         ...(formData.tags?.length && { tags: formData.tags }),
         ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
       });
-      // onSuccess?.();
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
