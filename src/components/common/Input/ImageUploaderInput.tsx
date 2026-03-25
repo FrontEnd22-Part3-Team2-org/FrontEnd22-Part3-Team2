@@ -88,6 +88,7 @@ export default function ImageUploaderInput({ size = 76, onUpload }: Props) {
 
       {/* 버튼, 이미지 UI */}
       <button
+        type="button"
         onClick={handleUploadClick}
         className="relative group"
         style={{ width: size, height: size }}

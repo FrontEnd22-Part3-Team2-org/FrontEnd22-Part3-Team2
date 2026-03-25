@@ -70,10 +70,10 @@ export default function Cards({ onModalClose }: CardsProps) {
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
-  const hanldeCloseMenu = () => setIsMenuOpen(false);
+  const handleCloseMenu = () => setIsMenuOpen(false);
   const handleEditClick = () => {
     setIsEditing(true);
-    hanldeCloseMenu();
+    handleCloseMenu();
   };
   const handleDeleteClick = () => {
     setIsDeleting(true);
@@ -87,7 +87,7 @@ export default function Cards({ onModalClose }: CardsProps) {
 
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        hanldeCloseMenu();
+        handleCloseMenu();
       }
     };
 
