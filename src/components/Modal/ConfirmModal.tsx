@@ -22,6 +22,7 @@
  */
 
 import ModalBase from '@/components/common/ModalBase';
+import Button from '../common/Button';
 
 interface ConfirmModalProps {
   message: string;
@@ -40,24 +41,28 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <ModalBase className="w-[568px] rounded-[16px] p-[24px]">
-      <p className="mb-[24px] text-center text-[20px] font-medium text-[#333236]">
+      <p className="mb-[24px] text-center text-xl-medium text-gray-700">
         {message}
       </p>
 
       <div className="flex gap-[14px]">
-        <button
+        <Button
+          variant="secondary"
+          size="modal_lg"
           onClick={onCancel}
-          className="flex-1 rounded-[8px] border border-[#D9D9D9] bg-white py-[14px] text-[16px] font-medium text-[#787486]"
+          className="flex-1"
         >
           {cancelText}
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="primary"
+          size="modal_lg"
           onClick={onConfirm}
-          className="flex-1 rounded-[8px] bg-[#5534DA] py-[14px] text-[16px] font-semibold text-white hover:bg-[#4C32D1]"
+          className="flex-1"
         >
           {confirmText}
-        </button>
+        </Button>
       </div>
     </ModalBase>
   );

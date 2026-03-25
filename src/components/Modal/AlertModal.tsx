@@ -19,6 +19,7 @@
  */
 
 import ModalBase from '@/components/common/ModalBase';
+import Button from '../common/Button';
 
 interface AlertModalProps {
   message: string;
@@ -33,16 +34,18 @@ export default function AlertModal({
 }: AlertModalProps) {
   return (
     <ModalBase className="w-[368px] rounded-[16px] px-[64px] py-[40px]">
-      <p className="mb-[14px] text-center text-[18px] font-medium text-[#333236]">
+      <p className="mb-[14px] text-center text-2lg-medium text-gray-700">
         {message}
       </p>
 
-      <button
+      <Button
+        variant="primary"
+        size="modal_lg"
         onClick={onConfirm}
-        className="w-[240px] h-[48px] rounded-[8px] bg-[#5534DA] px-[46px] py-[14px] text-[16px] font-semibold text-white hover:bg-[#4C32D1]"
+        className="mx-auto w-[240px]"
       >
         {buttonText}
-      </button>
+      </Button>
     </ModalBase>
   );
 }
