@@ -7,9 +7,9 @@ import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
-import { setToken } from '@/lib/auth'; // 토큰 저장 함수 import
+import { setToken } from '@/lib/auth';
 
-// 팀 ID (API 요청 시 사용)
+// 팀 ID
 const TEAM_ID = '22-2';
 
 // 백엔드 서버 주소
@@ -21,30 +21,25 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function LoginPage() {
   const router = useRouter();
 
-  // =========================
-  // 상태 관리
-  // =========================
+  // 입력값 상태
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // 에러 상태
   const [isEmailError, setIsEmailError] = useState(false);
   const [isPasswordError, setIsPasswordError] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // 비밀번호 보기/숨기기 상태
   const [showPassword, setShowPassword] = useState(false);
 
   // 버튼 활성화 조건
   const isButtonDisabled = !email || !password;
 
-  // =========================
-  // 입력 핸들러
-  // =========================
-
   // 이메일 입력 변경
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
 
-    // 입력 시 에러 초기화
     if (isEmailError) setIsEmailError(false);
     if (loginError) setLoginError('');
   };
@@ -57,49 +52,39 @@ export default function LoginPage() {
     if (loginError) setLoginError('');
   };
 
-  // =========================
-  // blur 시 유효성 검사
-  // =========================
-
-  // 이메일 blur 검사
+  // 이메일 blur 시 유효성 검사
   const handleEmailBlur = () => {
     if (!email) return;
     setIsEmailError(!emailRegex.test(email));
   };
 
-  // 비밀번호 blur 검사
+  // 비밀번호 blur 시 유효성 검사
   const handlePasswordBlur = () => {
     if (!password) return;
     setIsPasswordError(password.length < 8);
   };
 
-  // =========================
   // 로그인 요청
-  // =========================
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     let hasError = false;
 
-    // 이메일 검사
     if (!emailRegex.test(email)) {
       setIsEmailError(true);
       hasError = true;
     }
 
-    // 비밀번호 검사
     if (password.length < 8) {
       setIsPasswordError(true);
       hasError = true;
     }
 
-    // 에러 있으면 요청 중단
     if (hasError) return;
 
     setLoginError('');
 
     try {
-      // 로그인 API 요청
       const res = await fetch(`${BASE_URL}/${TEAM_ID}/auth/login`, {
         method: 'POST',
         headers: {
@@ -110,21 +95,17 @@ export default function LoginPage() {
 
       const data = await res.json();
 
-      // 로그인 실패
       if (!res.ok) {
         setLoginError('이메일 또는 비밀번호를 확인해 주세요.');
         return;
       }
 
-      // =========================
-      // 토큰 저장 (분리된 로직 사용)
-      // =========================
+      // 토큰 저장
       setToken(data.accessToken);
 
-      // 로그인 성공 → 페이지 이동
+      // 로그인 성공 시 이동
       router.push('/mydashboard');
     } catch {
-      // 서버 에러 처리
       setLoginError('서버 오류가 발생했습니다.');
     }
   };
@@ -133,9 +114,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-gray-100 px-4 sm:px-6">
       <div className="mx-auto flex min-h-screen w-full items-center justify-center py-10">
         <div className="flex w-full max-w-[520px] flex-col items-center gap-6 sm:gap-[30px]">
-          {/* =========================
-              로고 영역
-          ========================= */}
+          {/* 로고 영역 */}
           <Link href="/">
             <div className="flex cursor-pointer flex-col items-center gap-[10px]">
               <div className="flex flex-col items-center justify-center gap-5 sm:gap-[30px]">
@@ -163,12 +142,11 @@ export default function LoginPage() {
             </div>
           </Link>
 
-          {/* =========================
-              로그인 폼 영역
-          ========================= */}
+          {/* 로그인 폼 영역 */}
           <div className="flex w-full flex-col items-center gap-5 sm:gap-[24px]">
             <form
               onSubmit={handleSubmit}
+              noValidate
               className="flex w-full flex-col gap-5 sm:gap-[24px]"
             >
               <div className="flex w-full flex-col gap-4">
