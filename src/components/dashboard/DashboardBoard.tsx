@@ -27,6 +27,7 @@ import Column from './Column';
 import Button from '@/components/common/Button';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import Cards from '@/components/Modal/Cards/Cards';
+import CreateCard from '@/components/Modal/Cards/CreateCard';
 import FormModal from '@/components/Modal/FormModal';
 import ConfirmModal from '@/components/Modal/ConfirmModal';
 
@@ -47,6 +48,9 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
     Record<number, ColumnCardState>
   >({});
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [createCardColumnId, setCreateCardColumnId] = useState<number | null>(
+    null,
+  );
 
   const [addColumnModal, setAddColumnModal] = useState({
     isOpen: false,
@@ -109,8 +113,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   // ── 이벤트 핸들러 ──
 
   const handleAddCard = (columnId: number) => {
-    // TODO: [담당자] 할 일 생성 모달 오픈 — columnId를 모달에 전달
-    console.log('할 일 추가 요청, columnId:', columnId);
+    setCreateCardColumnId(columnId);
   };
 
   const handleEditColumn = (column: ColumnType) => {
@@ -354,10 +357,14 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
         </div>
       )}
 
+      {/* 할 일 생성 모달 */}
+      {createCardColumnId !== null && (
+        <CreateCard onModalClose={() => setCreateCardColumnId(null)} />
+      )}
+
       {/*
        * NOTE: 아래 모달들은 컴포넌트 완성 후 이 위치에 추가합니다.
        *
-       * - 할 일 생성 모달   → handleAddCard(columnId)
        * - 초대하기 모달      → handleInvite()
        */}
     </div>
