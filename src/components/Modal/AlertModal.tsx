@@ -19,7 +19,7 @@
  */
 
 import ModalBase from '@/components/common/ModalBase';
-import Button from '../common/Button';
+import Button from '@/components/common/Button';
 
 interface AlertModalProps {
   message: string;

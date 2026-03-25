@@ -33,7 +33,7 @@
 import ModalBase from '@/components/common/ModalBase';
 import XIcon from '@/components/common/Icon/XIcon';
 import { Input } from '@/components/common/Input';
-import Button from '../common/Button';
+import Button from '@/components/common/Button';
 
 interface FormModalProps {
   title: string;
