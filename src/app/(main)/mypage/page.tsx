@@ -4,14 +4,20 @@
  * @note 프로필 이미지 업로드 API 연동과, 현재 비밀번호 검증 로직이 포함됩니다.
  */
 
+'use client';
+
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
+import { useRouter } from 'next/navigation';
 
 export default function MyPage() {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col p-6">
       <button
         type="button"
+        onClick={() => router.back()}
         className="mb-6 flex items-center gap-2 text-md-medium text-gray-700"
       >
         ← 돌아가기
