@@ -179,9 +179,10 @@ export default function CreateCard({
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
             <ImageUploaderInput
-              onUpload={(url) =>
-                setFormData((prev) => ({ ...prev, imageUrl: url }))
-              }
+              onUpload={(url) => {
+                setFormData((prev) => ({ ...prev, imageUrl: url }));
+                console.log(url);
+              }}
             />
           </div>
 

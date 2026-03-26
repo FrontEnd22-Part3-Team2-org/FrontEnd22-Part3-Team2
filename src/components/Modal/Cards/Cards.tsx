@@ -44,6 +44,7 @@ import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
+import CardsSkeleton from './CardsSkeleton';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -177,11 +178,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   }, [card?.columnId, columns]);
 
   if (isLoading) {
-    return (
-      <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">불러오는 중</p>
-      </ModalOverlay>
-    );
+    return <CardsSkeleton onModalClose={onModalClose} />;
   }
   if (error || !card) {
     return (
