@@ -45,9 +45,6 @@ interface ColumnCardState {
 const MAX_VISIBLE_MEMBERS = 4;
 
 export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
-  const [columnCards, setColumnCards] = useState<
-    Record<number, ColumnCardState>
-  >({});
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [createCardColumnId, setCreateCardColumnId] = useState<number | null>(
     null,
@@ -86,7 +83,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   });
 
   // 칼럼 목록이 로드되면 각 칼럼의 카드를 가져옴
-  useQuery({
+  const { data: columnCardsData } = useQuery({
     queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
     queryFn: async () => {
       const cols = columnsData?.data ?? [];
@@ -101,7 +98,6 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
           cursorId: results[i].cursorId,
         };
       });
-      setColumnCards(map);
       return map;
     },
     enabled: !!columnsData?.data?.length,
@@ -239,9 +235,9 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
             <Column
               key={column.id}
               column={column}
-              cards={columnCards[column.id]?.cards ?? []}
-              totalCount={columnCards[column.id]?.totalCount ?? 0}
-              cursorId={columnCards[column.id]?.cursorId}
+              cards={columnCardsData?.[column.id]?.cards ?? []}
+              totalCount={columnCardsData?.[column.id]?.totalCount ?? 0}
+              cursorId={columnCardsData?.[column.id]?.cursorId}
               colorIndex={index}
               onAddCard={handleAddCard}
               onEditColumn={handleEditColumn}
