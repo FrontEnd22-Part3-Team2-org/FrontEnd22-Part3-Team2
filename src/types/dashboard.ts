@@ -86,3 +86,23 @@ export interface DashboardsResponse {
   totalCount: number;
   dashboards: Dashboard[];
 }
+
+/** 댓글 */
+export interface Comments {
+  curdorId: number;
+  comments: CommentsResponse[];
+}
+
+/** GET /comments 응답 */
+export interface CommentsResponse {
+  id: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  cardId: number;
+  author: {
+    profileImageUrl: string;
+    nickname: string;
+    id: number;
+  };
+}

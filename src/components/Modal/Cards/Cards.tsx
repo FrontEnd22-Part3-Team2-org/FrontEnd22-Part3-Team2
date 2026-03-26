@@ -29,7 +29,12 @@ import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
 import { useEffect, useRef, useState } from 'react';
-import type { Card } from '@/types/dashboard';
+import type {
+  Card,
+  Column,
+  Comments,
+  CommentsResponse,
+} from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
@@ -37,7 +42,7 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { readCard } from '@/api/dashboard';
+import { getColumns, getComments, readCard } from '@/api/dashboard';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -46,11 +51,19 @@ interface CardsProps {
 
 export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [card, setCard] = useState<Card | null>(null);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [columnTitle, setColumnTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
   const [error, setError] = useState<string | null>(null);
+
+  /** 댓글 관련 상태 관리 */
   const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
+  const [comments, setComments] = useState<CommentsResponse[]>([]);
+  const [commentInput, setCommentInput] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -80,26 +93,67 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
+  /** 1️⃣ 카드 조회 */
   useEffect(() => {
     const fetchCard = async () => {
       setIsLoading(true);
       try {
         const data = await readCard(cardId);
-        setCard(data); // 받아온 데이터를 상태에 저장
-        console.log(data);
+        setCard(data);
+        console.log('카드 데이터', data);
       } catch (error) {
         console.error('카드 조회 실패', error);
         setError('카드를 불러오는 데 실패했습니다.');
-        // TODO: 에러 처리
       } finally {
         setIsLoading(false);
       }
     };
 
-    /** TODO : 댓글 목록 조회 API 호출  */
-
     fetchCard();
   }, [cardId]);
+
+  /** 2️⃣ 댓글 목록 조회  */
+  useEffect(() => {
+    if (!cardId) return;
+
+    const fetchComments = async () => {
+      try {
+        const res = await getComments(cardId);
+        setComments(res.comments);
+        setHasComments(res.comments.length > 0);
+      } catch (error) {
+        console.error('댓글 조회 실패', error);
+      }
+    };
+
+    fetchComments();
+  }, [cardId]);
+
+  /** 2️⃣ 컬럼 조회  */
+  useEffect(() => {
+    if (!card?.dashboardId) return;
+
+    const fetchColumns = async () => {
+      try {
+        const res = await getColumns(card.dashboardId);
+        setColumns(res.data);
+      } catch (error) {
+        console.error('컬럼 조회 실패', error);
+      }
+    };
+
+    fetchColumns();
+  }, [card?.dashboardId]);
+
+  /** 3️⃣ columnTitle 찾기 */
+  useEffect(() => {
+    if (!card?.columnId || columns.length === 0) return;
+
+    const foundColumn = columns.find((col) => col.id === card.columnId);
+
+    setColumnTitle(foundColumn?.title ?? '');
+    console.log('컬럼 타이틀', foundColumn?.title ?? '');
+  }, [card?.columnId, columns]);
 
   if (isLoading) {
     return (
@@ -142,7 +196,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             {/* 진행 상태 및 태그 */}
             <div className="flex items-center gap-5 mb-4 md:mb-[17px]">
               {/* 진행 상태 */}
-              <StatusChip status="To Do" />
+              <StatusChip status={columnTitle} />
               {/* 구분선 */}
               <div className="w-[1px] h-5 bg-gray-300"></div>
               {/* 태그 */}
@@ -182,13 +236,15 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               {/* TODO : [수경] Server Action 연동을 위한 form */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              {hasComments && (
+              {hasComments ? (
                 <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                   {/* <ReplyItem user={assignee} />
                   <ReplyItem user={assignee} />
                   <ReplyItem user={assignee} />
                   <ReplyItem user={assignee} /> */}
                 </div>
+              ) : (
+                <div className="">댓글이 없습니다.</div>
               )}
             </section>
           </div>
