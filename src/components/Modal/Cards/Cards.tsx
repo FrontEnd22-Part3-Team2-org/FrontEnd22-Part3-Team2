@@ -40,40 +40,38 @@ import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { readCard } from '@/api/dashboard';
 
 // TODO: [수경] API 연동 후 목데이터 삭제
-const MOCK_CARD: Card = {
-  id: 120,
-  title: '새로운 일정 관리',
-  description:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum finibus nibh arcu, quis consequat ante cursus eget. Cras mattis, nulla non laoreet porttitor, diam justo laoreet eros, vel aliquet diam elit at leo.',
-  tags: ['프로젝트', '일반', '백엔드', '상'],
-  dueDate: '2026.03.23 23:58',
-  assignee: {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  imageUrl:
-    'https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg',
-  teamId: '541',
-  columnId: 30,
-  dashboardId: 24,
-  createdAt: '2026.03.23 23:58',
-  updatedAt: '2026.03.23 23:58',
-};
+// const MOCK_CARD: Card = {
+//   id: 120,
+//   title: '새로운 일정 관리',
+//   description:
+//     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum finibus nibh arcu, quis consequat ante cursus eget. Cras mattis, nulla non laoreet porttitor, diam justo laoreet eros, vel aliquet diam elit at leo.',
+//   tags: ['프로젝트', '일반', '백엔드', '상'],
+//   dueDate: '2026.03.23 23:58',
+//   assignee: {
+//     id: 1,
+//     nickname: '공민수',
+//     profileImageUrl: 'https://i.pravatar.cc/150?img=1',
+//   },
+//   imageUrl:
+//     'https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg',
+//   teamId: '541',
+//   columnId: 30,
+//   dashboardId: 24,
+//   createdAt: '2026.03.23 23:58',
+//   updatedAt: '2026.03.23 23:58',
+// };
 
 interface CardsProps {
   onModalClose: () => void;
-  cardId?: number;
+  cardId: number;
 }
 
-export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
+export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [card, setCard] = useState<Card | null>(null);
-  const { title, description, tags, dueDate, assignee, imageUrl } =
-    card ?? MOCK_CARD; // API 연동 완료 후 MOCK_CARD 제거
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
-  const [formData, setFormData] = useState(false); // 카드 상세 조회 로딩
+  const [error, setError] = useState<string | null>(null);
   const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
 
   /** 드롭다운 열림 상태 */
@@ -104,7 +102,6 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
-  /** TODO : [수경] 카드 상세 조회(/cards/{cardId}) 호출 */
   useEffect(() => {
     const fetchCard = async () => {
       setIsLoading(true);
@@ -114,18 +111,38 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
         console.log(data);
       } catch (error) {
         console.error('카드 조회 실패', error);
+        setError('카드를 불러오는 데 실패했습니다.');
         // TODO: 에러 처리
       } finally {
         setIsLoading(false);
       }
     };
 
+    /** TODO : 댓글 목록 조회 API 호출  */
+
     fetchCard();
-  }, []);
+  }, [cardId]);
+
+  if (isLoading) {
+    return (
+      <ModalOverlay onClose={onModalClose}>
+        <p className="text-gray-400">불러오는 중</p>
+      </ModalOverlay>
+    );
+  }
+  if (error || !card) {
+    return (
+      <ModalOverlay onClose={onModalClose}>
+        <p className="text-gray-400">{error ?? '카드를 찾을 수 없습니다.'}</p>
+      </ModalOverlay>
+    );
+  }
+
+  const { title, description, tags, dueDate, assignee, imageUrl } = card ?? {};
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
   if (isEditing) {
-    return <EditCard defaultValues={MOCK_CARD} onModalClose={onModalClose} />;
+    return <EditCard defaultValues={card} onModalClose={onModalClose} />;
   }
 
   return (
@@ -189,10 +206,10 @@ export default function Cards({ onModalClose, cardId = 14996 }: CardsProps) {
               {/* 댓글 리스트 */}
               {hasComments && (
                 <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  {/* <ReplyItem user={assignee} />
                   <ReplyItem user={assignee} />
                   <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} /> */}
                 </div>
               )}
             </section>

@@ -64,6 +64,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
     error: string;
   }>({ column: null, title: '', error: '' });
   const [deleteColumnId, setDeleteColumnId] = useState<number | null>(null);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
   const queryClient = useQueryClient();
   const setActiveDashboardId = useDashboardStore((s) => s.setActiveDashboardId);
@@ -169,12 +170,14 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
     }
   };
 
-  const handleCardClick = (_card: Card) => {
+  const handleCardClick = (card: Card) => {
+    setSelectedCardId(card.id);
     setIsCardModalOpen(true);
   };
 
   const handleCardModalClose = () => {
     setIsCardModalOpen(false);
+    setSelectedCardId(null);
   };
 
   const handleAddColumn = () => {
@@ -270,7 +273,10 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
           onClick={handleCardModalClose}
         >
           <div onClick={(e) => e.stopPropagation()}>
-            <Cards onModalClose={handleCardModalClose} />
+            <Cards
+              onModalClose={handleCardModalClose}
+              cardId={selectedCardId!}
+            />
           </div>
         </div>
       )}
@@ -368,7 +374,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
         <CreateCard
           onModalClose={() => setCreateCardColumnId(null)}
           dashboardId={dashboardId}
-          columnId={59284} // 컬럼 아이디, 에러 방지용으로 넣어놨습니다.
+          columnId={createCardColumnId}
         />
       )}
 
