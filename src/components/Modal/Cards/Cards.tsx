@@ -29,7 +29,6 @@ import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import type { Card } from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
@@ -38,37 +37,20 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-
-// TODO: [수경] API 연동 후 목데이터 삭제
-const MOCK_CARD: Card = {
-  id: 120,
-  title: '새로운 일정 관리',
-  description:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum finibus nibh arcu, quis consequat ante cursus eget. Cras mattis, nulla non laoreet porttitor, diam justo laoreet eros, vel aliquet diam elit at leo.',
-  tags: ['프로젝트', '일반', '백엔드', '상'],
-  dueDate: '2026.03.23 23:58',
-  assignee: {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  imageUrl:
-    'https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg',
-  teamId: '541',
-  columnId: 30,
-  dashboardId: 24,
-  createdAt: '2026.03.23 23:58',
-  updatedAt: '2026.03.23 23:58',
-};
+import { readCard } from '@/api/dashboard';
 
 interface CardsProps {
   onModalClose: () => void;
+  cardId: number;
 }
 
-export default function Cards({ onModalClose }: CardsProps) {
-  const { title, description, tags, dueDate, assignee, imageUrl } = MOCK_CARD;
+export default function Cards({ onModalClose, cardId }: CardsProps) {
+  const [card, setCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
+  const [error, setError] = useState<string | null>(null);
+  const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -98,17 +80,55 @@ export default function Cards({ onModalClose }: CardsProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    const fetchCard = async () => {
+      setIsLoading(true);
+      try {
+        const data = await readCard(cardId);
+        setCard(data); // 받아온 데이터를 상태에 저장
+        console.log(data);
+      } catch (error) {
+        console.error('카드 조회 실패', error);
+        setError('카드를 불러오는 데 실패했습니다.');
+        // TODO: 에러 처리
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    /** TODO : 댓글 목록 조회 API 호출  */
+
+    fetchCard();
+  }, [cardId]);
+
+  if (isLoading) {
+    return (
+      <ModalOverlay onClose={onModalClose}>
+        <p className="text-gray-400">불러오는 중</p>
+      </ModalOverlay>
+    );
+  }
+  if (error || !card) {
+    return (
+      <ModalOverlay onClose={onModalClose}>
+        <p className="text-gray-400">{error ?? '카드를 찾을 수 없습니다.'}</p>
+      </ModalOverlay>
+    );
+  }
+
+  const { title, description, tags, dueDate, assignee, imageUrl } = card ?? {};
+
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
   if (isEditing) {
-    return <EditCard defaultValues={MOCK_CARD} onModalClose={onModalClose} />;
+    return <EditCard defaultValues={card} onModalClose={onModalClose} />;
   }
 
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="relative max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row gap-[14px] text-gray-700 rounded-lg px-[30px] py-[18px]">
+        <ModalBase className="relative w-full md:w-[730px] max-h-[calc(100vh-110px)] overflow-y-auto  flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
-          <div className="flex flex-col max-w-[450px]">
+          <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
             <header className="mb-2 md:mb-6">
               <h2 className="text-2xl-bold break-words">{title}</h2>
@@ -162,17 +182,19 @@ export default function Cards({ onModalClose }: CardsProps) {
               {/* TODO : [수경] Server Action 연동을 위한 form */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              <div className="max-h-[100px] mt-4 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-                <ReplyItem user={assignee} />
-              </div>
+              {hasComments && (
+                <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+                  {/* <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} />
+                  <ReplyItem user={assignee} /> */}
+                </div>
+              )}
             </section>
           </div>
 
           {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
-          <div className="flex flex-col items-end gap-6">
+          <div className="flex flex-col items-end gap-6 min-w-[200px] w-full">
             <div className="flex gap-6 relative">
               {/* 메뉴 */}
               <button onClick={() => setIsMenuOpen((prev) => !prev)}>
