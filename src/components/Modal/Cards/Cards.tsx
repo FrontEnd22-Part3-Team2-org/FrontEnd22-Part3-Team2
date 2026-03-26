@@ -3,8 +3,9 @@
  * @file Cards.tsx
  * @description 할 일 카드 모달 컴포넌트입니다.
  *
- * ### 호출 필요한 API
+ * ### 호출되는 API
  * 1. 카드 상세 조회 API
+ * 2. 컬럼 목록 조회 API → 컬럼명 가져오기 위해서
  * 2. 댓글 API
  *
  * ### 컴포넌트 흐름
@@ -60,10 +61,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 댓글 관련 상태 관리 */
   const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
-  const [comments, setComments] = useState<CommentsResponse[]>([]);
-  const [commentInput, setCommentInput] = useState('');
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editingContent, setEditingContent] = useState('');
+  const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
+    null,
+  );
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -79,7 +79,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
   const menuRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -119,12 +118,25 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     const fetchComments = async () => {
       try {
         const res = await getComments(cardId);
-        setComments(res.comments);
+        console.log(res);
+        setCommentsList(res);
         setHasComments(res.comments.length > 0);
       } catch (error) {
         console.error('댓글 조회 실패', error);
       }
     };
+    // {
+    //   "id": 13212,
+    //   "content": "오늘까지 가능할까요?",
+    //   "createdAt": "2026-03-26T17:19:43.910Z",
+    //   "updatedAt": "2026-03-26T17:19:43.910Z",
+    //   "cardId": 14998,
+    //   "author": {
+    //     "id": 6616,
+    //     "nickname": "여수경",
+    //     "profileImageUrl": null
+    //   }
+    // }
 
     fetchComments();
   }, [cardId]);
@@ -152,7 +164,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     const foundColumn = columns.find((col) => col.id === card.columnId);
 
     setColumnTitle(foundColumn?.title ?? '');
-    console.log('컬럼 타이틀', foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
   if (isLoading) {
@@ -212,7 +223,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 설명 */}
-            <p className="p-[10px] mb-8 md:mb-2 text-md-regular">
+            <p className="min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
               {description}
             </p>
 
@@ -230,22 +241,23 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             )}
 
             {/* 댓글 섹션 */}
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col">
               <p className="mb-1 text-lg-medium">댓글</p>
               {/* 댓글 인풋 */}
-              {/* TODO : [수경] Server Action 연동을 위한 form */}
+              {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              {hasComments ? (
-                <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                  {/* <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} /> */}
-                </div>
-              ) : (
-                <div className="">댓글이 없습니다.</div>
-              )}
+              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+                {hasComments ? (
+                  <>
+                    {commentsList?.comments.map((comment) => {
+                      return <ReplyItem key={comment.id} comment={comment} />;
+                    })}
+                  </>
+                ) : (
+                  <div className="">댓글이 없습니다.</div>
+                )}
+              </div>
             </section>
           </div>
 

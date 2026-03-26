@@ -89,12 +89,6 @@ export interface DashboardsResponse {
 
 /** 댓글 */
 export interface Comments {
-  curdorId: number;
-  comments: CommentsResponse[];
-}
-
-/** GET /comments 응답 */
-export interface CommentsResponse {
   id: number;
   content: string;
   createdAt: string;
@@ -105,4 +99,10 @@ export interface CommentsResponse {
     nickname: string;
     id: number;
   };
+}
+
+/** GET /comments 응답 */
+export interface CommentsResponse {
+  curdorId: number | null;
+  comments: Comments[];
 }
