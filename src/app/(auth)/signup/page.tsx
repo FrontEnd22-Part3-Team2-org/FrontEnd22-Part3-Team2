@@ -17,15 +17,18 @@ import Button from '@/components/common/Button';
 import Checkbox from '@/components/common/Checkbox';
 
 export default function SignupPage() {
+  // 입력값 상태
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [agree, setAgree] = useState(false);
 
+  // 비밀번호 보기/숨기기 상태
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
+  // 에러 상태
   const [errors, setErrors] = useState({
     email: '',
     nickname: '',
@@ -34,8 +37,81 @@ export default function SignupPage() {
     agree: '',
   });
 
+  // 이메일 정규식
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // 이메일 입력 시 실시간 검사
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      email: !value
+        ? ''
+        : !emailRegex.test(value)
+          ? '이메일 형식으로 작성해 주세요.'
+          : '',
+    }));
+  };
+
+  // 닉네임 입력 시 실시간 검사
+  const handleNicknameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNickname(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      nickname: !value
+        ? ''
+        : value.length > 10
+          ? '열 자 이하로 작성해주세요.'
+          : '',
+    }));
+  };
+
+  // 비밀번호 입력 시 실시간 검사
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      password: !value ? '' : value.length < 8 ? '8자 이상 입력해 주세요.' : '',
+      passwordConfirm:
+        passwordConfirm && value !== passwordConfirm
+          ? '비밀번호가 일치하지 않습니다.'
+          : '',
+    }));
+  };
+
+  // 비밀번호 확인 입력 시 실시간 검사
+  const handlePasswordConfirmChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPasswordConfirm(value);
+
+    setErrors((prev) => ({
+      ...prev,
+      passwordConfirm: !value
+        ? ''
+        : value !== password
+          ? '비밀번호가 일치하지 않습니다.'
+          : '',
+    }));
+  };
+
+  // 체크박스 변경
+  const handleAgreeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setAgree(checked);
+
+    setErrors((prev) => ({
+      ...prev,
+      agree: checked ? '' : prev.agree,
+    }));
+  };
+
+  // 전체 유효성 검사
   const validate = () => {
     const nextErrors = {
       email: '',
@@ -53,6 +129,8 @@ export default function SignupPage() {
 
     if (!nickname.trim()) {
       nextErrors.nickname = '닉네임을 입력해 주세요.';
+    } else if (nickname.length > 10) {
+      nextErrors.nickname = '열 자 이하로 작성해주세요.';
     }
 
     if (!password) {
@@ -75,6 +153,16 @@ export default function SignupPage() {
     return !Object.values(nextErrors).some(Boolean);
   };
 
+  // 버튼 활성화 조건
+  const isButtonDisabled =
+    !email.trim() ||
+    !nickname.trim() ||
+    !password.trim() ||
+    !passwordConfirm.trim() ||
+    !agree ||
+    Object.values(errors).some((error) => error !== '');
+
+  // 폼 제출
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -132,9 +220,7 @@ export default function SignupPage() {
                   type="text"
                   placeholder="이메일을 입력해 주세요"
                   value={email}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setEmail(e.target.value)
-                  }
+                  onChange={handleEmailChange}
                   isError={!!errors.email}
                   errorMessage={errors.email || undefined}
                   className="h-[50px]"
@@ -145,9 +231,7 @@ export default function SignupPage() {
                   type="text"
                   placeholder="닉네임을 입력해 주세요"
                   value={nickname}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setNickname(e.target.value)
-                  }
+                  onChange={handleNicknameChange}
                   isError={!!errors.nickname}
                   errorMessage={errors.nickname || undefined}
                   className="h-[50px]"
@@ -156,11 +240,9 @@ export default function SignupPage() {
                 <Input
                   label="비밀번호"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="8자 이상 입력해주세요"
+                  placeholder="비밀번호를 입력해 주세요"
                   value={password}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setPassword(e.target.value)
-                  }
+                  onChange={handlePasswordChange}
                   isError={!!errors.password}
                   errorMessage={errors.password || undefined}
                   className="h-[50px]"
@@ -173,11 +255,7 @@ export default function SignupPage() {
                         showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
                       }
                     >
-                      {showPassword ? (
-                        <EyeOff width={24} height={24} />
-                      ) : (
-                        <Eye width={24} height={24} />
-                      )}
+                      {showPassword ? <EyeOff /> : <Eye />}
                     </button>
                   }
                 />
@@ -187,9 +265,7 @@ export default function SignupPage() {
                   type={showPasswordConfirm ? 'text' : 'password'}
                   placeholder="비밀번호를 입력해 주세요"
                   value={passwordConfirm}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setPasswordConfirm(e.target.value)
-                  }
+                  onChange={handlePasswordConfirmChange}
                   isError={!!errors.passwordConfirm}
                   errorMessage={errors.passwordConfirm || undefined}
                   className="h-[50px]"
@@ -204,11 +280,7 @@ export default function SignupPage() {
                           : '비밀번호 확인 보기'
                       }
                     >
-                      {showPasswordConfirm ? (
-                        <EyeOff width={24} height={24} />
-                      ) : (
-                        <Eye width={24} height={24} />
-                      )}
+                      {showPasswordConfirm ? <EyeOff /> : <Eye />}
                     </button>
                   }
                 />
@@ -218,9 +290,7 @@ export default function SignupPage() {
                 <Checkbox
                   label="이용약관에 동의합니다."
                   checked={agree}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setAgree(e.target.checked)
-                  }
+                  onChange={handleAgreeChange}
                 />
                 {errors.agree && (
                   <p className="mt-1 text-xs text-red">{errors.agree}</p>
@@ -231,6 +301,7 @@ export default function SignupPage() {
                 type="submit"
                 variant="primary"
                 size="login_sm"
+                disabled={isButtonDisabled}
                 className="h-[50px] w-full rounded-[8px]"
               >
                 가입하기
