@@ -25,16 +25,6 @@ import UserProfileImage from '@/components/common/User/UserProfileImage';
 
 const MAX_VISIBLE_MEMBERS = 4;
 
-/** 프로필 이미지 없을 때 순서에 따라 순환하는 배경색 */
-const CHIP_COLORS = [
-  '#FFC85A',
-  '#FDD446',
-  '#9DD7ED',
-  '#C4B1A2',
-  '#A3C4A2',
-  '#C4A3BD',
-];
-
 export default function Header() {
   const params = useParams();
   const router = useRouter();
