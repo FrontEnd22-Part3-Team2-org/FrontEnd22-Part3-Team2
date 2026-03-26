@@ -18,15 +18,14 @@ export default async function DashboardEditPage({
 }) {
   const { id } = params;
 
-  // API 호출 대신, 화면 확인을 위한 더미 데이터
+  // TODO: API 연동 시 삭제 예정
   const dummyMembers = [
     {
       id: 1,
       userId: 101,
       email: 'jongin@example.com',
       nickname: '종인',
-      profileImageUrl:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop',
+      profileImageUrl: null,
       createdAt: new Date('2026-01-01T00:00:00.000Z').toISOString(),
       updatedAt: new Date('2026-01-10T00:00:00.000Z').toISOString(),
       isOwner: true,
@@ -54,7 +53,7 @@ export default async function DashboardEditPage({
     {
       id: 4,
       userId: 104,
-      email: 'haneul@example.com',
+      email: 'new_member@example.com',
       nickname: '인영',
       profileImageUrl: null,
       createdAt: new Date('2026-01-03T00:00:00.000Z').toISOString(),
@@ -64,8 +63,18 @@ export default async function DashboardEditPage({
     {
       id: 5,
       userId: 105,
-      email: 'haneul@example.com',
+      email: 'code_master@example.com',
       nickname: '승미',
+      profileImageUrl: null,
+      createdAt: new Date('2026-01-03T00:00:00.000Z').toISOString(),
+      updatedAt: new Date('2026-01-12T00:00:00.000Z').toISOString(),
+      isOwner: false,
+    },
+    {
+      id: 6,
+      userId: 106,
+      email: 'codeitit@example.com',
+      nickname: '코드잇잇',
       profileImageUrl: null,
       createdAt: new Date('2026-01-03T00:00:00.000Z').toISOString(),
       updatedAt: new Date('2026-01-12T00:00:00.000Z').toISOString(),
@@ -73,7 +82,7 @@ export default async function DashboardEditPage({
     },
   ];
 
-  // API 호출 대신, 화면 확인을 위한 더미 데이터
+  // TODO: API 연동 시 삭제 예정
   const dashboardData = {
     title: '코드잇',
     color: '#760DDE',
@@ -101,8 +110,8 @@ export default async function DashboardEditPage({
         <div className="mt-[16px] h-[337px] bg-white rounded-[8px] md:h-[404px]">
           <ManageMembers data={dummyMembers} dashboardId={id} />
         </div>
-        <div className="mt-[16px] bg-white rounded-[8px]">
-          <ManageInvitations />
+        <div className="mt-[16px] h-[407px] bg-white rounded-[8px] md:h-[477px]">
+          <ManageInvitations data={dummyMembers} dashboardId={id} />
         </div>
 
         <div className="mt-[24px] mb-[57px]">

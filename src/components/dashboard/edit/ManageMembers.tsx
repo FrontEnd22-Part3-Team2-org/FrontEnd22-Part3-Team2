@@ -70,7 +70,8 @@ export default function ManageMembers({ data }: MembersTableProps) {
                       <Image
                         src={item.profileImageUrl}
                         alt={item.nickname}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-green text-white">
@@ -81,7 +82,12 @@ export default function ManageMembers({ data }: MembersTableProps) {
                   {item.nickname}
                 </td>
                 <td className="pr-[16px] text-right md:pr-[28px]">
-                  <Button variant="secondary" size="delete_lg">
+                  <Button
+                    variant="secondary"
+                    size="delete_lg"
+                    className="px-[14px] py-[7px] w-[52px] h-[32px] text-xs-medium
+                    md:px-[20px] md:py-[4px] md:w-[84px] md:h-[32px] md:text-md-medium"
+                  >
                     삭제
                   </Button>
                 </td>
