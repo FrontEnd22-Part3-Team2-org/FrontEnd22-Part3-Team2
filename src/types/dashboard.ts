@@ -95,7 +95,7 @@ export interface Comments {
   updatedAt: string;
   cardId: number;
   author: {
-    profileImageUrl: string;
+    profileImageUrl: string | null;
     nickname: string;
     id: number;
   };
@@ -103,6 +103,6 @@ export interface Comments {
 
 /** GET /comments 응답 */
 export interface CommentsResponse {
-  curdorId: number | null;
+  cursorId: number | null;
   comments: Comments[];
 }
