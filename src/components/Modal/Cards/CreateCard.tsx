@@ -21,7 +21,7 @@ import { useEffect, useState } from 'react';
 import { Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { createCard, getMembers } from '@/api/dashboard';
+import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 
 interface CreateCardForm {
@@ -55,15 +55,15 @@ export default function CreateCard({
   const [error, setError] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
-  /** 1️⃣ 멤버 목록 조회 */
+  /** 멤버 목록 조회 */
   useEffect(() => {
     const fetchMembers = async () => {
       setIsLoading(true);
       try {
         const data = await getMembers(dashboardId);
         setMembers(data.members);
-        console.log('멤버 데이터', data);
       } catch (error) {
         console.error('멤버 조회 실패', error);
         setError('카드를 불러오는 데 실패했습니다.');
@@ -81,6 +81,12 @@ export default function CreateCard({
     setIsLoading(true);
 
     try {
+      // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
+      const imageUrl = imageFile
+        ? (await uploadCardImage(columnId, imageFile)).imageUrl
+        : undefined;
+
+      // 2️⃣ 카드 생성
       await createCard({
         dashboardId,
         columnId,
@@ -90,9 +96,8 @@ export default function CreateCard({
         ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
         ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
-        ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
+        ...(imageUrl && { imageUrl }),
       });
-      console.log('폼 데이터', formData);
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
@@ -178,12 +183,7 @@ export default function CreateCard({
           {/* TODO: [수경] 이미지 업로드 API 연동 */}
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
-            <ImageUploaderInput
-              onUpload={(url) => {
-                setFormData((prev) => ({ ...prev, imageUrl: url }));
-                console.log(url);
-              }}
-            />
+            <ImageUploaderInput onUpload={(file) => setImageFile(file)} />
           </div>
 
           {/* 생성,취소 버튼 */}

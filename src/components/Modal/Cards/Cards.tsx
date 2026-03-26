@@ -135,18 +135,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
         console.error('댓글 조회 실패', error);
       }
     };
-    // {
-    //   "id": 13212,
-    //   "content": "오늘까지 가능할까요?",
-    //   "createdAt": "2026-03-26T17:19:43.910Z",
-    //   "updatedAt": "2026-03-26T17:19:43.910Z",
-    //   "cardId": 14998,
-    //   "author": {
-    //     "id": 6616,
-    //     "nickname": "여수경",
-    //     "profileImageUrl": null
-    //   }
-    // }
 
     fetchComments();
   }, [cardId]);
@@ -197,7 +185,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="relative w-full md:w-[730px] max-h-[calc(100vh-110px)] overflow-y-auto  flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
+        <ModalBase className="relative w-full md:w-fit max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
