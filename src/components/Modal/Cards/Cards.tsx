@@ -43,7 +43,7 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { getColumns, getComments, readCard } from '@/api/dashboard';
+import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -75,6 +75,16 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   };
   const handleDeleteClick = () => {
     setIsDeleting(true);
+  };
+
+  const handleDeleteCard = async () => {
+    try {
+      await deleteCard(cardId);
+      console.log(cardId, '삭제 완료');
+    } catch (error) {
+      console.error('카드 삭제 실패', error);
+    } finally {
+    }
   };
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
@@ -247,7 +257,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (
                   <>
                     {commentsList?.comments.map((comment) => {
@@ -255,7 +265,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
                     })}
                   </>
                 ) : (
-                  <div className="">댓글이 없습니다.</div>
+                  <div className="text-md-medium">댓글이 없습니다.</div>
                 )}
               </div>
             </section>
@@ -300,6 +310,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               onConfirm={() => {
                 // TODO: 카드 삭제 API 호출
                 onModalClose();
+                handleDeleteCard();
               }}
             />
           </div>

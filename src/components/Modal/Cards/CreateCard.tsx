@@ -17,40 +17,36 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useState } from 'react';
-import { Assignee, Card } from '@/types/dashboard';
+import { useEffect, useState } from 'react';
+import { Assignee, Card, Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { createCard } from '@/api/dashboard';
+import { createCard, getMembers } from '@/api/dashboard';
+import { formatDateTime } from '@/utils/formatDate';
 
-/** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
-const MOCK_MEMBERS: Assignee[] = [
-  {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    id: 2,
-    nickname: '이지은',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    id: 3,
-    nickname: '김현우',
-    profileImageUrl: '',
-  },
-  {
-    id: 4,
-    nickname: '이수빈',
-    profileImageUrl: '',
-  },
-  {
-    id: 5,
-    nickname: '문지훈',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=5',
-  },
-];
+// {
+//   "assigneeUserId": 6616,
+//   "dashboardId": 17585,
+//   "columnId": 59281,
+//   "title": "striㅇㅁㅇㅁng",
+//   "description": "stㅁㄴㅇㅁㅇring",
+//   "dueDate": "2026-03-19 22:30",
+// }
+
+interface CreateCardForm {
+  title: string;
+  description: string;
+  tags: string[];
+  dueDate: string | null;
+  imageUrl?: string;
+}
+
+const INITIAL_FORM: CreateCardForm = {
+  title: '',
+  description: '',
+  tags: [],
+  dueDate: null,
+};
 
 interface CreateCardProps {
   dashboardId: number;
@@ -63,38 +59,49 @@ export default function CreateCard({
   columnId,
   onModalClose,
 }: CreateCardProps) {
-  /**
-   * id, createdAt, updatedAt은 서버에서 생성되어 폼 상태에 미포함
-   * dashboardId, columnId는 props로 받아야 함
-   */
-  const [formData, setFormData] = useState<
-    Pick<
-      Card,
-      'title' | 'description' | 'tags' | 'dueDate' | 'assignee' | 'imageUrl'
-    >
-  >({
-    title: '',
-    description: '',
-    tags: [],
-    dueDate: null,
-    assignee: null,
-    imageUrl: null,
-  });
-
+  const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+
+  /** 1️⃣ 멤버 목록 조회 */
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getMembers(dashboardId);
+        setMembers(data.members);
+        console.log('멤버 데이터', data);
+      } catch (error) {
+        console.error('멤버 조회 실패', error);
+        setError('카드를 불러오는 데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [dashboardId]);
 
   const handleSubmit = async () => {
-    console.log(formData);
+    if (!formData.title || !formData.description) return;
+
+    console.log('폼 데이터', formData);
+    console.log('dashboardId', dashboardId, 'columnId', columnId);
     setIsLoading(true);
+
     try {
       await createCard({
         dashboardId,
         columnId,
         title: formData.title,
         description: formData.description,
-        ...(formData.assignee && { assigneeUserId: formData.assignee.id }),
+        // 선택 필드들은 값이 있을 때만 객체에 포함
+        // TODO : [수경] 담당자 선택 시 폼 제출안되는 이슈, 데이터는 정상적으로 들어감
+        ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
+        ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
-        ...(formData.tags?.length && { tags: formData.tags }),
         ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
       });
       onModalClose();
@@ -132,9 +139,9 @@ export default function CreateCard({
           <div className="">
             <p className={`${baseFontStyle}`}>담당자</p>
             <DropdownAssignee
-              members={MOCK_MEMBERS}
-              onSelect={(user) => {
-                setFormData((prev) => ({ ...prev, assignee: user }));
+              members={members}
+              onSelect={(id) => {
+                setSelectedMemberId(id);
               }}
             />
           </div>
@@ -163,12 +170,12 @@ export default function CreateCard({
 
           {/* 마감일 */}
           <DateInput
-            onDateChange={(date) =>
+            onDateChange={(date) => {
               setFormData((prev) => ({
                 ...prev,
-                dueDate: date ? date.toISOString() : null,
-              }))
-            }
+                dueDate: date ? formatDateTime(date.toISOString()) : null,
+              }));
+            }}
           />
 
           {/* 태그 */}
