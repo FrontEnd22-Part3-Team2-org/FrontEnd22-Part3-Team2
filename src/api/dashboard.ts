@@ -11,6 +11,8 @@ import type {
   ColumnsResponse,
   CardsResponse,
   MembersResponse,
+  Comments,
+  CommentsResponse,
 } from '@/types/dashboard';
 
 /** 대시보드 목록 조회 (사이드 네비게이션용, 페이지 기반) */
@@ -134,4 +136,42 @@ export async function inviteMember(dashboardId: number, email: string) {
     email,
   });
   return data;
+}
+
+/** 댓글 목록 조회 */
+export async function getComments(
+  cardId: number,
+  size = 10,
+  cursorId?: number,
+): Promise<CommentsResponse> {
+  const { data } = await api.get<CommentsResponse>('/comments', {
+    params: {
+      cardId,
+      size,
+      ...(cursorId !== undefined ? { cursorId } : {}),
+    },
+  });
+  return data;
+}
+
+/** 댓글 생성 조회 */
+export async function createComments(payload: {
+  content: string;
+  cardId: number;
+  columnId: number;
+  dashboardId: number;
+}) {
+  const { data } = await api.post('/comments', payload);
+  return data;
+}
+
+/** 댓글 수정 조회 */
+export async function updateComments(commentId: number, content: string) {
+  const { data } = await api.put(`/comments/${commentId}`, { content });
+  return data;
+}
+
+/** 댓글 삭제 조회 */
+export async function deleteComments(commentId: number) {
+  await api.delete(`/comments/${commentId}`);
 }

@@ -3,8 +3,9 @@
  * @file Cards.tsx
  * @description 할 일 카드 모달 컴포넌트입니다.
  *
- * ### 호출 필요한 API
+ * ### 호출되는 API
  * 1. 카드 상세 조회 API
+ * 2. 컬럼 목록 조회 API → 컬럼명 가져오기 위해서
  * 2. 댓글 API
  *
  * ### 컴포넌트 흐름
@@ -29,7 +30,12 @@ import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
 import { useEffect, useRef, useState } from 'react';
-import type { Card } from '@/types/dashboard';
+import type {
+  Card,
+  Column,
+  Comments,
+  CommentsResponse,
+} from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
@@ -37,7 +43,7 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { readCard } from '@/api/dashboard';
+import { getColumns, getComments, readCard } from '@/api/dashboard';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -46,11 +52,18 @@ interface CardsProps {
 
 export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [card, setCard] = useState<Card | null>(null);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const [columnTitle, setColumnTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
   const [error, setError] = useState<string | null>(null);
+
+  /** 댓글 관련 상태 관리 */
   const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
+  const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
+    null,
+  );
 
   /** 드롭다운 열림 상태 */
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -66,7 +79,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
   const menuRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -80,26 +92,79 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
+  /** 1️⃣ 카드 조회 */
   useEffect(() => {
     const fetchCard = async () => {
       setIsLoading(true);
       try {
         const data = await readCard(cardId);
-        setCard(data); // 받아온 데이터를 상태에 저장
-        console.log(data);
+        setCard(data);
+        console.log('카드 데이터', data);
       } catch (error) {
         console.error('카드 조회 실패', error);
         setError('카드를 불러오는 데 실패했습니다.');
-        // TODO: 에러 처리
       } finally {
         setIsLoading(false);
       }
     };
 
-    /** TODO : 댓글 목록 조회 API 호출  */
-
     fetchCard();
   }, [cardId]);
+
+  /** 2️⃣ 댓글 목록 조회  */
+  useEffect(() => {
+    if (!cardId) return;
+
+    const fetchComments = async () => {
+      try {
+        const res = await getComments(cardId);
+        console.log(res);
+        setCommentsList(res);
+        setHasComments(res.comments.length > 0);
+      } catch (error) {
+        console.error('댓글 조회 실패', error);
+      }
+    };
+    // {
+    //   "id": 13212,
+    //   "content": "오늘까지 가능할까요?",
+    //   "createdAt": "2026-03-26T17:19:43.910Z",
+    //   "updatedAt": "2026-03-26T17:19:43.910Z",
+    //   "cardId": 14998,
+    //   "author": {
+    //     "id": 6616,
+    //     "nickname": "여수경",
+    //     "profileImageUrl": null
+    //   }
+    // }
+
+    fetchComments();
+  }, [cardId]);
+
+  /** 2️⃣ 컬럼 조회  */
+  useEffect(() => {
+    if (!card?.dashboardId) return;
+
+    const fetchColumns = async () => {
+      try {
+        const res = await getColumns(card.dashboardId);
+        setColumns(res.data);
+      } catch (error) {
+        console.error('컬럼 조회 실패', error);
+      }
+    };
+
+    fetchColumns();
+  }, [card?.dashboardId]);
+
+  /** 3️⃣ columnTitle 찾기 */
+  useEffect(() => {
+    if (!card?.columnId || columns.length === 0) return;
+
+    const foundColumn = columns.find((col) => col.id === card.columnId);
+
+    setColumnTitle(foundColumn?.title ?? '');
+  }, [card?.columnId, columns]);
 
   if (isLoading) {
     return (
@@ -140,9 +205,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 진행 상태 및 태그 */}
-            <div className="flex items-center gap-5 mb-4 md:mb-[17px]">
+            <div className="flex items-center gap-5 mb-4 md:mb-[17px] min-h-8">
               {/* 진행 상태 */}
-              <StatusChip status="To Do" />
+              <StatusChip status={columnTitle} />
               {/* 구분선 */}
               <div className="w-[1px] h-5 bg-gray-300"></div>
               {/* 태그 */}
@@ -158,7 +223,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 설명 */}
-            <p className="p-[10px] mb-8 md:mb-2 text-md-regular">
+            <p className="min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
               {description}
             </p>
 
@@ -176,20 +241,23 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             )}
 
             {/* 댓글 섹션 */}
-            <section className="flex flex-col gap-4">
+            <section className="flex flex-col">
               <p className="mb-1 text-lg-medium">댓글</p>
               {/* 댓글 인풋 */}
-              {/* TODO : [수경] Server Action 연동을 위한 form */}
+              {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              {hasComments && (
-                <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                  {/* <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} />
-                  <ReplyItem user={assignee} /> */}
-                </div>
-              )}
+              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+                {hasComments ? (
+                  <>
+                    {commentsList?.comments.map((comment) => {
+                      return <ReplyItem key={comment.id} comment={comment} />;
+                    })}
+                  </>
+                ) : (
+                  <div className="">댓글이 없습니다.</div>
+                )}
+              </div>
             </section>
           </div>
 

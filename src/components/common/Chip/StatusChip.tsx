@@ -9,10 +9,7 @@
 interface StatusTagProps {
   status: string;
 }
-/**
- * prop으로 태그 라벨 내려받기
- * 색상이 랜덤으로 지정되는 기능 구현 필요
- */
+
 export default function StatusChip({ status }: StatusTagProps) {
   const label = status;
 

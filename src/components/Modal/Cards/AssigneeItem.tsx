@@ -16,6 +16,7 @@
  */
 import UserName from '@/components/common/User/UserName';
 import type { Assignee } from '@/types/dashboard';
+import { formatDateTime } from '@/utils/formatDate';
 
 interface Props {
   assignee?: Assignee | null;
@@ -23,8 +24,6 @@ interface Props {
 }
 
 export default function AssigneeItem({ assignee, dueDate }: Props) {
-  // if (!assignee) return null; // null이면 렌더링 안함
-
   const sectionClass = 'flex flex-col gap-[6px] w-full';
   const titleClass = 'text-xs-semibold';
 
@@ -33,21 +32,15 @@ export default function AssigneeItem({ assignee, dueDate }: Props) {
       <div className={sectionClass}>
         <p className={titleClass}>담당자</p>
         <div className="md:h-5 h-4">
-          {assignee ? (
-            <UserName profile={assignee} />
-          ) : (
-            <p className={titleClass}>-</p>
-          )}
+          {assignee ? <UserName profile={assignee} /> : '-'}
         </div>
       </div>
       <div className={sectionClass}>
         <p className={titleClass}>마감일</p>
         <div className="md:h-5 h-4">
-          {dueDate ? (
-            <p className="text-gray-700 text-md-regular">{dueDate}</p>
-          ) : (
-            <p className={titleClass}>-</p>
-          )}
+          <p className="text-gray-700 text-md-regular">
+            {dueDate ? formatDateTime(dueDate) : '-'}
+          </p>
         </div>
       </div>
     </div>
