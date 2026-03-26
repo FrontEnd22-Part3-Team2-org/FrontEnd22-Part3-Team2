@@ -18,20 +18,11 @@ import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
 import { useEffect, useState } from 'react';
-import { Assignee, Card, Member } from '@/types/dashboard';
+import { Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { createCard, getMembers } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
-
-// {
-//   "assigneeUserId": 6616,
-//   "dashboardId": 17585,
-//   "columnId": 59281,
-//   "title": "striㅇㅁㅇㅁng",
-//   "description": "stㅁㄴㅇㅁㅇring",
-//   "dueDate": "2026-03-19 22:30",
-// }
 
 interface CreateCardForm {
   title: string;
@@ -87,8 +78,6 @@ export default function CreateCard({
   const handleSubmit = async () => {
     if (!formData.title || !formData.description) return;
 
-    console.log('폼 데이터', formData);
-    console.log('dashboardId', dashboardId, 'columnId', columnId);
     setIsLoading(true);
 
     try {
@@ -98,12 +87,12 @@ export default function CreateCard({
         title: formData.title,
         description: formData.description,
         // 선택 필드들은 값이 있을 때만 객체에 포함
-        // TODO : [수경] 담당자 선택 시 폼 제출안되는 이슈, 데이터는 정상적으로 들어감
         ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
         ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
         ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
       });
+      console.log('폼 데이터', formData);
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
