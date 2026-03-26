@@ -39,28 +39,6 @@ import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { readCard } from '@/api/dashboard';
 
-// TODO: [수경] API 연동 후 목데이터 삭제
-// const MOCK_CARD: Card = {
-//   id: 120,
-//   title: '새로운 일정 관리',
-//   description:
-//     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum finibus nibh arcu, quis consequat ante cursus eget. Cras mattis, nulla non laoreet porttitor, diam justo laoreet eros, vel aliquet diam elit at leo.',
-//   tags: ['프로젝트', '일반', '백엔드', '상'],
-//   dueDate: '2026.03.23 23:58',
-//   assignee: {
-//     id: 1,
-//     nickname: '공민수',
-//     profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-//   },
-//   imageUrl:
-//     'https://blog.slido.com/wp-content/uploads/2023/10/slido-blog-cover-1600x1066px-1.jpg',
-//   teamId: '541',
-//   columnId: 30,
-//   dashboardId: 24,
-//   createdAt: '2026.03.23 23:58',
-//   updatedAt: '2026.03.23 23:58',
-// };
-
 interface CardsProps {
   onModalClose: () => void;
   cardId: number;
