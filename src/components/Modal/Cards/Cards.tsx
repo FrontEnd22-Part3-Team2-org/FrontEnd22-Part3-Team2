@@ -44,7 +44,6 @@ import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
-import CardsSkeleton from './CardsSkeleton';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -177,9 +176,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  if (isLoading) {
-    return <CardsSkeleton onModalClose={onModalClose} />;
-  }
+  // if (isLoading) {
+  //   return <CardsSkeleton onModalClose={onModalClose} />;
+  // }
   if (error || !card) {
     return (
       <ModalOverlay onClose={onModalClose}>

@@ -1,7 +1,7 @@
 import ModalBase from '@/components/common/ModalBase';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 
-export default function Skeleton({
+export default function CardsSkeleton({
   onModalClose,
 }: {
   onModalClose: () => void;
