@@ -13,13 +13,29 @@
 import { ProfileOwner } from '@/types/user';
 import Image from 'next/image';
 
+/** 프로필 이미지 없을 때 순서에 따라 순환하는 배경색 */
+const CHIP_COLORS = [
+  '#FFC85A',
+  '#FDD446',
+  '#9DD7ED',
+  '#C4B1A2',
+  '#A3C4A2',
+  '#C4A3BD',
+];
+
 interface Props {
   profile: ProfileOwner | null;
   /** @default 26px */
   size?: number;
+  /** 색상 순환 및 위치 계산에 사용되는 인덱스 */
+  index?: number;
 }
 
-export default function UserProfileImage({ profile, size = 26 }: Props) {
+export default function UserProfileImage({
+  profile,
+  size = 26,
+  index = 0,
+}: Props) {
   if (!profile) return null; // null이면 렌더링 안함
 
   const { nickname, profileImageUrl } = profile;
@@ -39,8 +55,12 @@ export default function UserProfileImage({ profile, size = 26 }: Props) {
   return (
     <>
       <div
-        style={{ width: size, height: size }}
-        className="rounded-full bg-brand-violet border-white border-2 overflow-hidden flex items-center justify-center"
+        style={{
+          width: size,
+          height: size,
+          backgroundColor: CHIP_COLORS[index % CHIP_COLORS.length],
+        }}
+        className="rounded-full border-white border-2 overflow-hidden flex items-center justify-center"
       >
         {hasImage ? (
           <Image
@@ -49,7 +69,7 @@ export default function UserProfileImage({ profile, size = 26 }: Props) {
             width={size}
             height={size}
             className="object-cover"
-            unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
+            unoptimized
           />
         ) : (
           <span className="text-white text-xs-semibold">{initial}</span>

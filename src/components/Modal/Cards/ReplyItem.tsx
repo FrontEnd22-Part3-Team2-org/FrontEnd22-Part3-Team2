@@ -9,6 +9,7 @@
 
 import UserProfileImage from '@/components/common/User/UserProfileImage';
 import { Comments } from '@/types/dashboard';
+import { formatDateTime } from '@/utils/formatDate';
 
 interface Props {
   comment: Comments;
@@ -18,6 +19,8 @@ export default function ReplyItem({ comment }: Props) {
   if (!comment) return null; // null이면 렌더링 안함
 
   const { content, author, createdAt } = comment;
+
+  const formatted = formatDateTime(createdAt);
 
   return (
     <>
@@ -29,7 +32,7 @@ export default function ReplyItem({ comment }: Props) {
             <span className="text-md-semibold leading-4">
               {author.nickname}
             </span>
-            <p className="text-gray-400 text-xs-regular">{createdAt}</p>
+            <p className="text-gray-400 text-xs-regular">{formatted}</p>
           </div>
 
           {/* 댓글 내용 */}

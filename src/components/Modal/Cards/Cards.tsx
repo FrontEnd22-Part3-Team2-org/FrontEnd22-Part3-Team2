@@ -205,7 +205,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 진행 상태 및 태그 */}
-            <div className="flex items-center gap-5 mb-4 md:mb-[17px]">
+            <div className="flex items-center gap-5 mb-4 md:mb-[17px] min-h-8">
               {/* 진행 상태 */}
               <StatusChip status={columnTitle} />
               {/* 구분선 */}

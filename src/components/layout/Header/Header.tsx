@@ -21,6 +21,7 @@ import SettingIcon from '@/components/common/Icon/SettingIcon';
 import { getDashboard, getMembers } from '@/api/dashboard';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { useDashboardStore } from '@/store/useDashboardStore';
+import UserProfileImage from '@/components/common/User/UserProfileImage';
 
 const MAX_VISIBLE_MEMBERS = 4;
 
@@ -110,27 +111,13 @@ export default function Header() {
               {visibleMembers.map((member, index) => (
                 <div
                   key={member.id}
-                  className="relative flex h-[38px] w-[38px] items-center justify-center rounded-full border-2 border-white text-md-semibold text-white overflow-hidden"
+                  title={member.nickname}
                   style={{
-                    backgroundColor: member.profileImageUrl
-                      ? undefined
-                      : CHIP_COLORS[index % CHIP_COLORS.length],
                     marginLeft: index !== 0 ? '-8px' : undefined,
                     zIndex: index + 1,
                   }}
-                  title={member.nickname}
                 >
-                  {member.profileImageUrl ? (
-                    <Image
-                      src={member.profileImageUrl}
-                      alt={member.nickname}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    member.nickname[0].toUpperCase()
-                  )}
+                  <UserProfileImage profile={member} index={index} size={38} />
                 </div>
               ))}
 
