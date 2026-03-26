@@ -11,12 +11,12 @@ import ManageInvitations from '@/components/dashboard/edit/ManageInvitations';
 import ManageMembers from '@/components/dashboard/edit/ManageMembers';
 import Link from 'next/link';
 
-export default async function DashboardEditPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function DashboardEditPage({ params }: PageProps) {
+  const { id } = await params;
 
   // TODO: API 연동 시 삭제 예정
   const dummyMembers = [
@@ -92,7 +92,7 @@ export default async function DashboardEditPage({
     <div className="w-full bg-gray-100 h-[calc(100dvh-64px)] overflow-y-auto">
       <div className="w-full max-w-[620px] px-[12px] md:px-[20px]">
         <Link
-          href="/dashboard/{dashboardId}"
+          href={`/dashboard/${id}`}
           className="pt-[16px] flex items-center gap-[6px] md:gap-[8px]"
         >
           <ArrowRightIcon className="w-[18px] rotate-180 md:w-[20px]" />

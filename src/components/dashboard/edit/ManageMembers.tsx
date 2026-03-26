@@ -65,7 +65,7 @@ export default function ManageMembers({ data }: MembersTableProps) {
                   font-normal text-left text-md-regular text-gray-700 
                   md:pl-[28px] md:py-[16px] md:gap-[12px] md:text-lg-regular"
                 >
-                  <div className="w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full overflow-hidden">
+                  <div className="relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full overflow-hidden">
                     {item.profileImageUrl ? (
                       <Image
                         src={item.profileImageUrl}
