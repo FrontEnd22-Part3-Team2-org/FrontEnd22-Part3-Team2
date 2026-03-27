@@ -6,6 +6,7 @@ import DashboardCard from './DashboardCard';
 import { Dashboard } from '@/types/dashboard';
 import { useState } from 'react';
 import Pagination from '../common/Pagination';
+import DashboardCreateModal from '../Modal/DashboardCreateModal';
 
 const DASHBOARD_LIMIT_PER_PAGE = 6;
 const ADD_BUTTON_SLOT = 1;
@@ -14,6 +15,10 @@ const FIRST_PAGE_DATA_LIMIT = DASHBOARD_LIMIT_PER_PAGE - ADD_BUTTON_SLOT;
 export default function DashboardList() {
   const dashboards: Dashboard[] = [];
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   const isFirstPage = currentPage === 1;
 
@@ -36,10 +41,18 @@ export default function DashboardList() {
           ${dashboards.length > 0 ? 'min-h-[160px] md:min-h-[235px] lg:min-h-[160px]' : 'min-h-0'}`}
       >
         {isFirstPage && (
-          <Button variant="secondary" size="add_board" className="!w-full">
-            새로운 대시보드
-            <AddItemChip asIcon={true} />
-          </Button>
+          <>
+            <Button
+              variant="secondary"
+              size="add_board"
+              className="!w-full"
+              onClick={openModal}
+            >
+              새로운 대시보드
+              <AddItemChip asIcon={true} />
+            </Button>
+            <DashboardCreateModal isOpen={isModalOpen} onClose={closeModal} />
+          </>
         )}
 
         {currentDashboards.map((board) => (
