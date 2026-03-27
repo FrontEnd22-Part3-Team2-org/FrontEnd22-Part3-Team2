@@ -56,6 +56,33 @@ interface ColumnCardState {
   cursorId: number | null;
 }
 
+/** 컬럼의 카드 순서를 localStorage에 저장 */
+function saveColumnOrder(columnId: number, cardIds: number[]) {
+  try {
+    localStorage.setItem(`card-order-col-${columnId}`, JSON.stringify(cardIds));
+  } catch {
+    // 시크릿 모드 등 localStorage 비활성 환경에서는 무시
+  }
+}
+
+/** localStorage에 저장된 순서대로 카드 배열을 정렬 */
+function applySavedOrder(columnId: number, cards: Card[]): Card[] {
+  try {
+    const saved = localStorage.getItem(`card-order-col-${columnId}`);
+    if (!saved) return cards;
+    const savedIds: number[] = JSON.parse(saved);
+    return [...cards].sort((a, b) => {
+      const ai = savedIds.indexOf(a.id);
+      const bi = savedIds.indexOf(b.id);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  } catch {
+    return cards;
+  }
+}
+
 export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   const [columnCards, setColumnCards] = useState<
     Record<number, ColumnCardState>
@@ -91,36 +118,6 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
       if (state.cards.some((c) => c.id === cardId)) return Number(colId);
     }
     return null;
-  };
-
-  /** 컬럼의 카드 순서를 localStorage에 저장 */
-  const saveColumnOrder = (columnId: number, cardIds: number[]) => {
-    try {
-      localStorage.setItem(
-        `card-order-col-${columnId}`,
-        JSON.stringify(cardIds),
-      );
-    } catch {
-      // 시크릿 모드 등 localStorage 비활성 환경에서는 무시
-    }
-  };
-
-  /** localStorage에 저장된 순서대로 카드 배열을 정렬 */
-  const applySavedOrder = (columnId: number, cards: Card[]): Card[] => {
-    try {
-      const saved = localStorage.getItem(`card-order-col-${columnId}`);
-      if (!saved) return cards;
-      const savedIds: number[] = JSON.parse(saved);
-      return [...cards].sort((a, b) => {
-        const ai = savedIds.indexOf(a.id);
-        const bi = savedIds.indexOf(b.id);
-        if (ai === -1) return 1; // 저장 목록에 없는 신규 카드는 맨 뒤로
-        if (bi === -1) return -1;
-        return ai - bi;
-      });
-    } catch {
-      return cards;
-    }
   };
 
   const sensors = useSensors(
@@ -568,19 +565,9 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
         </DndContext>
       </div>
 
-      {/* 카드 상세 모달 */}
+      {/* 카드 상세 모달 (오버레이는 Cards.tsx 내부에서 처리) */}
       {isCardModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
-          onClick={handleCardModalClose}
-        >
-          <div onClick={(e) => e.stopPropagation()}>
-            <Cards
-              onModalClose={handleCardModalClose}
-              cardId={selectedCardId!}
-            />
-          </div>
-        </div>
+        <Cards onModalClose={handleCardModalClose} cardId={selectedCardId!} />
       )}
 
       {/* 칼럼 추가 모달 */}
