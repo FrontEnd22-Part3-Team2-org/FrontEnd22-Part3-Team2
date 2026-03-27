@@ -20,7 +20,7 @@ export default function CommentsForm({
         }
       >
         <input type="hidden" name="cardId" value={cardId} />
-        <Textarea label="댓글" placeholder="댓글 작성하기" />
+        <Textarea label="댓글" placeholder="댓글 작성하기" buttonText="입력" />
       </form>
     </>
   );

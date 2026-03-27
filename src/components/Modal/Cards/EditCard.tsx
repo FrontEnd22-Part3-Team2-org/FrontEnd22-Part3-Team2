@@ -1,4 +1,15 @@
 'use client';
+/**
+ * @file EditCard.tsx
+ * @description 할 일 카드를 수정하는 모달 컴포넌트입니다.
+ *
+ * ### 할 일 수정 로직
+ * 1. 부모로부터 카드 데이터 가져오기
+ *    👉 GET /members API 호출 해서 멤버 리스트 가져오기
+ *
+ * @author 수경
+ *
+ */
 
 import ModalBase from '@/components/common/ModalBase';
 import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
@@ -104,7 +115,6 @@ export default function EditCard({
     if (!isDirty) return;
 
     setIsLoading(true);
-    console.log(isImageRemoved);
     try {
       // 1️⃣ 이미지 변경된 경우에만 업로드
       let imageUrl: string | null;
@@ -135,8 +145,6 @@ export default function EditCard({
             : (cardData.dueDate ?? undefined),
         imageUrl,
       });
-
-      console.log('변경된 필드:', changedFields);
       onSuccess?.();
     } catch (error) {
       console.error('카드 수정 실패', error);
