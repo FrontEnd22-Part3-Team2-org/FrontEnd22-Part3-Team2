@@ -45,6 +45,7 @@ interface FormModalProps {
   errorText?: string;
   showCloseButton?: boolean;
   disabled?: boolean;
+  children?: React.ReactNode;
   onChange: (value: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
@@ -59,6 +60,7 @@ export default function FormModal({
   cancelText = '취소',
   confirmText = '확인',
   errorText,
+  children,
   showCloseButton = false,
   disabled: confirmDisabled = false,
   onChange,
@@ -94,6 +96,7 @@ export default function FormModal({
           isError={!!errorText}
           errorMessage={errorText}
         />
+        {children && <div className="mt-[16px]">{children}</div>}
       </div>
 
       <div className="mt-[20px] flex gap-[14px]">

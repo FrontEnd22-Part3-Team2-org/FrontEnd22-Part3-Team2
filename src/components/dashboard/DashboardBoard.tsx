@@ -11,7 +11,7 @@
  *   현재는 localStorage 토큰 방식이라 클라이언트에서 전부 로드합니다.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDashboardStore } from '@/store/useDashboardStore';
 import type { Column as ColumnType, Card } from '@/types/dashboard';
@@ -45,6 +45,13 @@ interface ColumnCardState {
 const MAX_VISIBLE_MEMBERS = 4;
 
 export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
+  const [columnCards, setColumnCards] = useState<
+    Record<number, ColumnCardState>
+  >({});
+  const [loadingColumnIds, setLoadingColumnIds] = useState<Set<number>>(
+    new Set(),
+  );
+
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [createCardColumnId, setCreateCardColumnId] = useState<number | null>(
     null,
@@ -108,12 +115,42 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
     queryFn: () => getMembers(dashboardId),
   });
 
+  useEffect(() => {
+    if (columnCardsData) {
+      setColumnCards(columnCardsData);
+    }
+  }, [columnCardsData]);
+
   const columns = columnsData?.data ?? [];
   const members = membersData?.members ?? [];
   const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
   const extraMemberCount = Math.max(0, members.length - MAX_VISIBLE_MEMBERS);
 
   // ── 이벤트 핸들러 ──
+
+  const handleLoadMore = useCallback(
+    async (columnId: number, cursorId: number) => {
+      setLoadingColumnIds((prev) => new Set(prev).add(columnId));
+      try {
+        const result = await getCards(columnId, 10, cursorId);
+        setColumnCards((prev) => ({
+          ...prev,
+          [columnId]: {
+            cards: [...(prev[columnId]?.cards ?? []), ...result.cards],
+            totalCount: result.totalCount,
+            cursorId: result.cursorId,
+          },
+        }));
+      } finally {
+        setLoadingColumnIds((prev) => {
+          const next = new Set(prev);
+          next.delete(columnId);
+          return next;
+        });
+      }
+    },
+    [],
+  );
 
   const handleAddCard = (columnId: number) => {
     setCreateCardColumnId(columnId);
@@ -204,7 +241,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   };
 
   const handleInvite = () => {
-    // TODO: [담당자] 초대하기 모달 오픈
+    // 초대하기 모달 오픈
     console.log('초대하기 요청');
   };
 
@@ -235,13 +272,15 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
             <Column
               key={column.id}
               column={column}
-              cards={columnCardsData?.[column.id]?.cards ?? []}
-              totalCount={columnCardsData?.[column.id]?.totalCount ?? 0}
-              cursorId={columnCardsData?.[column.id]?.cursorId}
+              cards={columnCards[column.id]?.cards ?? []}
+              totalCount={columnCards[column.id]?.totalCount ?? 0}
+              cursorId={columnCards[column.id]?.cursorId}
               colorIndex={index}
               onAddCard={handleAddCard}
               onEditColumn={handleEditColumn}
               onCardClick={handleCardClick}
+              onLoadMore={handleLoadMore}
+              isLoadingMore={loadingColumnIds.has(column.id)}
             />
           ))}
 

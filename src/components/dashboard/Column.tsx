@@ -13,6 +13,7 @@
  * - 반응형: mobile 284px / tablet(md) 544px / desktop(lg) 354px
  */
 
+import { useRef, useEffect } from 'react';
 import type { Card, Column as ColumnType } from '@/types/dashboard';
 import Button from '@/components/common/Button';
 import SettingIcon from '@/components/common/Icon/SettingIcon';
@@ -42,6 +43,8 @@ interface ColumnProps {
   /** 추가 카드 로드 (무한 스크롤) */
   onLoadMore?: (columnId: number, cursorId: number) => void;
   cursorId?: number | null;
+  /** 추가 카드 로딩 중 여부 */
+  isLoadingMore?: boolean;
 }
 
 export default function Column({
@@ -52,8 +55,30 @@ export default function Column({
   onAddCard,
   onEditColumn,
   onCardClick,
+  onLoadMore,
+  cursorId,
+  isLoadingMore = false,
 }: ColumnProps) {
   const dotColor = COLUMN_COLORS[colorIndex % COLUMN_COLORS.length];
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const hasMore = totalCount > cards.length;
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore || !cursorId || !onLoadMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore) {
+          onLoadMore(column.id, cursorId);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, cursorId, onLoadMore, column.id, isLoadingMore]);
 
   return (
     <div
@@ -105,15 +130,18 @@ export default function Column({
       </div>
 
       {/* ── 카드 목록 (세로 스크롤) ── */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-5 flex flex-col gap-2">
+      <div className="flex-1 overflow-y-auto px-4 md:px-5 flex flex-col gap-2 pb-4">
         {cards.map((card) => (
           <TaskCard key={card.id} card={card} onClick={onCardClick} />
         ))}
 
-        {/* 더 불러올 카드가 있을 때 표시 (무한 스크롤 트리거 자리) */}
-        {totalCount > cards.length && (
+        {/* 무한 스크롤 sentinel */}
+        {hasMore && <div ref={sentinelRef} className="h-1 shrink-0" />}
+
+        {/* 로딩 스피너 */}
+        {isLoadingMore && (
           <p className="text-center text-xs-regular text-gray-400 py-2">
-            스크롤하여 더 보기
+            불러오는 중...
           </p>
         )}
       </div>

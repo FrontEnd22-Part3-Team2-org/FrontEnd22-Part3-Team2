@@ -40,34 +40,37 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   // 버튼 활성화 조건
-  const isButtonDisabled = !email || !password;
+  const isButtonDisabled =
+    !email.trim() || !password.trim() || isEmailError || isPasswordError;
 
-  // 이메일 입력 변경
+  // 이메일 입력 변경 + 실시간 유효성 검사
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
+    const value = e.target.value;
+    setEmail(value);
 
-    if (isEmailError) setIsEmailError(false);
     if (loginError) setLoginError('');
+
+    if (!value) {
+      setIsEmailError(false);
+      return;
+    }
+
+    setIsEmailError(!emailRegex.test(value));
   };
 
-  // 비밀번호 입력 변경
+  // 비밀번호 입력 변경 + 실시간 유효성 검사
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
+    const value = e.target.value;
+    setPassword(value);
 
-    if (isPasswordError) setIsPasswordError(false);
     if (loginError) setLoginError('');
-  };
 
-  // 이메일 blur 시 유효성 검사
-  const handleEmailBlur = () => {
-    if (!email) return;
-    setIsEmailError(!emailRegex.test(email));
-  };
+    if (!value) {
+      setIsPasswordError(false);
+      return;
+    }
 
-  // 비밀번호 blur 시 유효성 검사
-  const handlePasswordBlur = () => {
-    if (!password) return;
-    setIsPasswordError(password.length < 8);
+    setIsPasswordError(value.length < 8);
   };
 
   // 로그인 요청
@@ -159,11 +162,10 @@ export default function LoginPage() {
                 {/* 이메일 입력 */}
                 <Input
                   label="이메일"
-                  type="email"
+                  type="text"
                   placeholder="이메일을 입력해 주세요"
                   value={email}
                   onChange={handleEmailChange}
-                  onBlur={handleEmailBlur}
                   isError={isEmailError}
                   errorMessage={
                     isEmailError ? '이메일 형식으로 작성해 주세요.' : undefined
@@ -177,7 +179,6 @@ export default function LoginPage() {
                   placeholder="비밀번호를 입력해 주세요"
                   value={password}
                   onChange={handlePasswordChange}
-                  onBlur={handlePasswordBlur}
                   isError={isPasswordError}
                   errorMessage={
                     isPasswordError ? '8자 이상 입력해 주세요.' : undefined
