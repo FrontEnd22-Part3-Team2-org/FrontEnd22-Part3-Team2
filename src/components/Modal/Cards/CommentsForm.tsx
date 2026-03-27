@@ -21,11 +21,6 @@ export default function CommentsForm({
       >
         <input type="hidden" name="cardId" value={cardId} />
         <Textarea label="댓글" placeholder="댓글 작성하기" />
-
-        {/* <input type="hidden" name="columnId" value={columnId} />
-        <input type="hidden" name="dashboardId" value={dashboardId} /> */}
-        {/* <textarea name="content" id=""></textarea>
-        <button type="submit">작성</button> */}
       </form>
     </>
   );
