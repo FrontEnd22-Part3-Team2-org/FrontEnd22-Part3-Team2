@@ -29,7 +29,7 @@ import { Textarea } from '../../common/Input';
 import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   Card,
   Column,
@@ -44,6 +44,7 @@ import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
+import { useQuery } from '@tanstack/react-query';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -103,23 +104,22 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   }, [isMenuOpen]);
 
   /** 1️⃣ 카드 조회 */
-  useEffect(() => {
-    const fetchCard = async () => {
-      setIsLoading(true);
-      try {
-        const data = await readCard(cardId);
-        setCard(data);
-        console.log('카드 데이터', data);
-      } catch (error) {
-        console.error('카드 조회 실패', error);
-        setError('카드를 불러오는 데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCard();
+  const fetchCardData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await readCard(cardId);
+      setCard(data);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [cardId]);
+
+  useEffect(() => {
+    fetchCardData();
+  }, [fetchCardData]);
 
   /** 2️⃣ 댓글 목록 조회  */
   useEffect(() => {
@@ -164,9 +164,21 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  // if (isLoading) {
-  //   return <CardsSkeleton onModalClose={onModalClose} />;
-  // }
+  /** 수정 완료 핸들러 */
+  const handleEditSuccess = () => {
+    console.log('수정 완료!');
+
+    setIsEditing(false); // 모달 닫기
+    fetchCardData();
+  };
+
+  if (isLoading) {
+    return (
+      <ModalOverlay onClose={onModalClose}>
+        <p className="text-gray-400">{isLoading ?? '불러오는 중'}</p>
+      </ModalOverlay>
+    );
+  }
   if (error || !card) {
     return (
       <ModalOverlay onClose={onModalClose}>
@@ -179,7 +191,15 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
   if (isEditing) {
-    return <EditCard defaultValues={card} onModalClose={onModalClose} />;
+    return (
+      <EditCard
+        cardData={card}
+        columns={columns}
+        columnTitle={columnTitle}
+        onModalClose={onModalClose}
+        onSuccess={handleEditSuccess}
+      />
+    );
   }
 
   return (
@@ -217,19 +237,19 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 설명 */}
-            <p className="min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
+            <p className="box-content min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
               {description}
             </p>
 
             {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
             {imageUrl && (
-              <div className="relative w-auto h-[160px] md:max-w-[445px] md:min-h-[200px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
+              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:min-h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
                 <Image
                   src={imageUrl}
-                  alt="미팅 이미지"
+                  alt="할 일 카드 이미지"
                   fill
                   className="object-cover"
-                  unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
+                  unoptimized
                 />
               </div>
             )}

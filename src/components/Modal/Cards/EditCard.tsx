@@ -6,7 +6,6 @@
  * ### 할 일 수정 로직
  * 1. 부모로부터 카드 데이터 가져오기
  *    👉 GET /members API 호출 해서 멤버 리스트 가져오기
- *    👉 GET /columns API 호출해서 컬럼 목록 가져오기
  *
  * @author 수경
  *
@@ -17,62 +16,85 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useState } from 'react';
-import { Assignee, Card } from '@/types/dashboard';
+import { useEffect, useState } from 'react';
+import { Assignee, Card, Column, Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import DropdownProgress from '@/components/common/Dropdown/DropdownProgress';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-
-/** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
-const MOCK_ASSIGNEE: Assignee[] = [
-  {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    id: 2,
-    nickname: '이지은',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    id: 3,
-    nickname: '김현우',
-    profileImageUrl: '',
-  },
-  {
-    id: 4,
-    nickname: '이수빈',
-    profileImageUrl: '',
-  },
-  {
-    id: 5,
-    nickname: '문지훈',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=5',
-  },
-];
+import { getMembers, updateCard, uploadCardImage } from '@/api/dashboard';
+import { formatDateTime } from '@/utils/formatDate';
 
 interface EditCardProps {
+  cardData: Card;
+  columns: Column[];
+  columnTitle: string;
   onModalClose: () => void;
-  /** TODO : [수경] 카드의 기존 값 타입 정의 - API 연동 후 ? 지워야함 */
-  defaultValues: Pick<
-    Card,
-    'title' | 'description' | 'tags' | 'dueDate' | 'assignee' | 'imageUrl'
-  >;
+  onSuccess?: () => void;
 }
 
 export default function EditCard({
+  cardData,
+  columns,
+  columnTitle,
   onModalClose,
-  defaultValues,
+  onSuccess,
 }: EditCardProps) {
-  /**
-   * TODO : [수경] 👇 아래 내용 API 호출 테스트로 확인 필요
-   * id, teamId, columnId, dashboardId, createdAt, updatedAt은
-   * 서버에서 생성되거나 외부에서 주입되는 값이라 폼 상태에 미포함
-   */
-  const [formData, setFormData] = useState(defaultValues);
+  const [formData, setFormData] = useState<Card>(cardData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
-  console.log('FORMDATA', formData);
+  /** 멤버 목록 조회 */
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getMembers(formData.dashboardId);
+        setMembers(data.members);
+      } catch (error) {
+        console.error('멤버 조회 실패', error);
+        setError('카드를 불러오는 데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [formData.dashboardId]);
+
+  const handleSubmit = async () => {
+    console.log('수정');
+    console.log(columns);
+
+    setIsLoading(true);
+    try {
+      // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
+      const imageUrl = imageFile
+        ? (await uploadCardImage(formData.columnId, imageFile)).imageUrl
+        : undefined;
+
+      // 2️⃣ 카드 수정
+      await updateCard(formData.id, {
+        columnId: formData.columnId,
+        title: formData.title,
+        description: formData.description,
+        // 선택 필드들은 값이 있을 때만 객체에 포함
+        ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
+        ...(formData.tags.length > 0 && { tags: formData.tags }),
+        ...(formData.dueDate && { dueDate: formData.dueDate }),
+        ...(imageUrl && { imageUrl }),
+      });
+      console.log('카드 수정 완료');
+      onSuccess?.(); // ✅ 부모에게 "수정 완료" 알림
+    } catch (error) {
+      console.error('카드 생성 실패', error);
+      // TODO: 에러 처리
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   /** 태그 입력 - Enter 키로 추가 */
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,10 +105,6 @@ export default function EditCard({
       setFormData((prev) => ({ ...prev, tags: [...prev.tags, value] }));
       e.currentTarget.value = '';
     }
-  };
-
-  const handleProgress = () => {
-    console.log('');
   };
 
   /** 타이틀 공통 CSS */
@@ -104,16 +122,22 @@ export default function EditCard({
             {/* 진행 상태 */}
             <div>
               <p className={`${baseFontStyle}`}>상태</p>
-              <DropdownProgress value="To Do" onChange={handleProgress} />
+              <DropdownProgress
+                columns={columns}
+                columnTitle={columnTitle}
+                onChange={(status) =>
+                  setFormData((prev) => ({ ...prev, columnId: status.id }))
+                }
+              />
             </div>
             {/* 담당자 */}
             <div>
               <p className={`${baseFontStyle}`}>담당자</p>
               <DropdownAssignee
-                members={MOCK_ASSIGNEE}
+                members={members}
                 defaultAssignee={formData.assignee}
-                onSelect={(user) => {
-                  setFormData((prev) => ({ ...prev, assignee: user }));
+                onSelect={(id) => {
+                  setSelectedMemberId(id);
                 }}
               />
             </div>
@@ -142,12 +166,12 @@ export default function EditCard({
           {/* 마감일 */}
           <DateInput
             defaultDate={formData.dueDate}
-            onDateChange={(date) =>
+            onDateChange={(date) => {
               setFormData((prev) => ({
                 ...prev,
-                dueDate: date ? date.toISOString() : null,
-              }))
-            }
+                dueDate: date ? formatDateTime(date.toISOString()) : null,
+              }));
+            }}
           />
 
           {/* 태그 */}
@@ -162,10 +186,8 @@ export default function EditCard({
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
             <ImageUploaderInput
-              defaultUrl={formData.imageUrl}
-              onUpload={(url) =>
-                setFormData((prev) => ({ ...prev, imageUrl: url }))
-              }
+              onUpload={(file) => setImageFile(file)}
+              defaultUrl={cardData.imageUrl}
             />
           </div>
 
@@ -178,8 +200,13 @@ export default function EditCard({
             >
               취소
             </Button>
-            <Button variant="primary" className="flex-1">
-              수정
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? '수정 중...' : '수정'}
             </Button>
           </div>
         </ModalBase>

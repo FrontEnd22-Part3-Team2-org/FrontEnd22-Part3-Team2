@@ -180,7 +180,6 @@ export default function CreateCard({
           />
 
           {/* 이미지 */}
-          {/* TODO: [수경] 이미지 업로드 API 연동 */}
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
             <ImageUploaderInput onUpload={(file) => setImageFile(file)} />
