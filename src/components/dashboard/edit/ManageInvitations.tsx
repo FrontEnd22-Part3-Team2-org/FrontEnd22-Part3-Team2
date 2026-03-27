@@ -82,6 +82,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
           </Button>
         </div>
       </div>
+
       <table className="mt-[18px] w-full text-lg-regular text-gray-500 md:mt-[27px]">
         <thead className="text-lg-regular text-gray-400">
           <tr>

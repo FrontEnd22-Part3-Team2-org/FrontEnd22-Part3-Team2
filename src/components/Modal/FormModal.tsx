@@ -101,6 +101,7 @@ export default function FormModal({
 
       <div className="mt-[20px] flex gap-[14px]">
         <Button
+          type="button"
           variant="secondary"
           size="modal_lg"
           onClick={onCancel}
@@ -110,9 +111,13 @@ export default function FormModal({
         </Button>
 
         <Button
+          type="button"
           variant="primary"
           size="modal_lg"
-          onClick={onConfirm}
+          onClick={() => {
+            if (confirmDisabled) return;
+            onConfirm();
+          }}
           disabled={confirmDisabled}
           className="flex-1"
         >
