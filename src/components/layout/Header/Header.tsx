@@ -19,6 +19,7 @@ import CrownIcon from '@/components/common/Icon/CrownIcon';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
 import SettingIcon from '@/components/common/Icon/SettingIcon';
 import { getDashboard, getMembers } from '@/api/dashboard';
+import { getMe } from '@/api/auth';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { useDashboardStore } from '@/store/useDashboardStore';
 import UserProfileImage from '@/components/common/User/UserProfileImage';
@@ -54,6 +55,11 @@ export default function Header() {
     enabled: !!effectiveDashboardId,
   });
 
+  const { data: me } = useQuery({
+    queryKey: QUERY_KEYS.me(),
+    queryFn: getMe,
+  });
+
   const members = membersData?.members ?? [];
   const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
   const extraCount = Math.max(0, members.length - MAX_VISIBLE_MEMBERS);
@@ -76,7 +82,7 @@ export default function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-4">
-        {dashboard?.createdByMe && (
+        {dashboardId && dashboard?.createdByMe && (
           <button
             type="button"
             onClick={handleManageClick}
@@ -127,10 +133,23 @@ export default function Header() {
             onClick={() => router.push('/mypage')}
             className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6 hover:opacity-80 transition-opacity"
           >
-            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#A3C4A2] text-lg-medium text-white">
-              B
+            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden bg-[#A3C4A2] text-lg-medium text-white shrink-0">
+              {me?.profileImageUrl ? (
+                <Image
+                  src={me.profileImageUrl}
+                  alt={me.nickname}
+                  width={38}
+                  height={38}
+                  className="object-cover w-full h-full"
+                  unoptimized
+                />
+              ) : (
+                (me?.nickname?.[0]?.toUpperCase() ?? 'U')
+              )}
             </div>
-            <span className="text-lg-medium text-gray-700">배유철</span>
+            <span className="text-lg-medium text-gray-700">
+              {me?.nickname ?? ''}
+            </span>
           </button>
         </div>
       </div>
