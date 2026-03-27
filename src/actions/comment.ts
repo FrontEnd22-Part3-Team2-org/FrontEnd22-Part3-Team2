@@ -22,7 +22,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-// import { createComment, updateComment, deleteComment } from '@/api/dashboard';
+import {
+  updateComments,
+  deleteComments,
+  createComments,
+} from '@/api/dashboard';
 
 /**
  * @function createCommentAction
@@ -32,16 +36,21 @@ import { revalidatePath } from 'next/cache';
  * - content: 댓글 내용
  * - cardId: 카드 ID
  */
-// export async function createCommentAction(formData: FormData) {
-//   const content = formData.get('content') as string;
-//   const cardId = Number(formData.get('cardId'));
 
-//   try {
-//     await createComment({ content, cardId });
-//   } catch (error) {
-//     console.error('댓글 생성 실패', error);
-//     throw error;
-//   }
+export async function createCommentAction(
+  formData: FormData,
+  columnId: number,
+  dashboardId: number,
+) {
+  const content = formData.get('content') as string;
+  const cardId = Number(formData.get('cardId'));
 
-//   revalidatePath('/dashboard');
-// }
+  await createComments({
+    content,
+    cardId,
+    columnId,
+    dashboardId,
+  });
+
+  revalidatePath(`/dashboard/${dashboardId}`);
+}

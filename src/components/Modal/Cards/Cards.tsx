@@ -46,6 +46,7 @@ import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
 import { useQuery } from '@tanstack/react-query';
 import { useDropdownClose } from '@/hooks/useToggle';
+import CommentsForm from './CommentsForm';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -245,11 +246,16 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
             {/* 댓글 섹션 */}
             <section className="flex flex-col">
-              <p className="mb-1 text-lg-medium">댓글</p>
+              {/* <p className="mb-1 text-lg-medium">댓글</p> */}
               {/* 댓글 인풋 */}
               {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
-              <Textarea placeholder="댓글 작성하기" />
+              {/* <Textarea label="댓글" placeholder="댓글 작성하기" /> */}
               {/* 댓글 리스트 */}
+              <CommentsForm
+                cardId={cardId}
+                columnId={card.columnId}
+                dashboardId={card.dashboardId}
+              />
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (
                   <>
