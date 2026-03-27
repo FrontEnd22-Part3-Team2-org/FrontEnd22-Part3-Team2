@@ -3,6 +3,7 @@
 import Button from '@/components/common/Button';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
 import Pagination from '@/components/common/Pagination';
+import { ConfirmModal } from '@/components/Modal';
 import { Member } from '@/types/dashboard';
 import { useState } from 'react';
 
@@ -15,11 +16,22 @@ interface EmailTableProps {
 
 export default function ManageInvitations({ data }: EmailTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data.length / EMAIL_PER_PAGE);
+  const [selectedInviterEmail, setSelectedInviterEmail] = useState<
+    number | null
+  >(null);
 
+  const totalPages = Math.ceil(data.length / EMAIL_PER_PAGE);
   const indexOfLastItem = currentPage * EMAIL_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - EMAIL_PER_PAGE;
   const currentEmail = data.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handleDeleteConfirm = () => {
+    if (selectedInviterEmail) {
+      console.log(`${selectedInviterEmail}번 멤버 삭제 API 호출 예정`);
+      // 여기서 API 호출 후 데이터를 갱신하는 로직을 추가하세요.
+      setSelectedInviterEmail(null);
+    }
+  };
 
   return (
     <div className="relative pt-[22px] md:pt-[26px]">
@@ -82,6 +94,7 @@ export default function ManageInvitations({ data }: EmailTableProps) {
                     size="delete_lg"
                     className="px-[14px] py-[7px] w-[52px] h-[32px] text-xs-medium
                     md:px-[20px] md:py-[4px] md:w-[84px] md:h-[32px] md:text-md-medium"
+                    onClick={() => setSelectedInviterEmail(item.id)}
                   >
                     취소
                   </Button>
@@ -91,6 +104,16 @@ export default function ManageInvitations({ data }: EmailTableProps) {
           })}
         </tbody>
       </table>
+
+      {selectedInviterEmail !== null && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center px-[30px] bg-gray-900/70">
+          <ConfirmModal
+            message="초대 취소하시겠습니까?"
+            onConfirm={handleDeleteConfirm}
+            onCancel={() => setSelectedInviterEmail(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }

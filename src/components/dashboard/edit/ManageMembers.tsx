@@ -2,6 +2,7 @@
 
 import Button from '@/components/common/Button';
 import Pagination from '@/components/common/Pagination';
+import { ConfirmModal } from '@/components/Modal';
 import { Member } from '@/types/dashboard';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -15,11 +16,20 @@ interface MembersTableProps {
 
 export default function ManageMembers({ data }: MembersTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data.length / ITEM_PER_PAGE);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
 
+  const totalPages = Math.ceil(data.length / ITEM_PER_PAGE);
   const indexOfLastItem = currentPage * ITEM_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEM_PER_PAGE;
   const currentMembers = data.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handleDeleteConfirm = () => {
+    if (selectedMemberId) {
+      console.log(`${selectedMemberId}번 멤버 삭제 API 호출 예정`);
+      // 여기서 API 호출 후 데이터를 갱신하는 로직을 추가하세요.
+      setSelectedMemberId(null);
+    }
+  };
 
   return (
     <div className="pt-[22px] md:pt-[26px]">
@@ -87,6 +97,7 @@ export default function ManageMembers({ data }: MembersTableProps) {
                     size="delete_lg"
                     className="px-[14px] py-[7px] w-[52px] h-[32px] text-xs-medium
                     md:px-[20px] md:py-[4px] md:w-[84px] md:h-[32px] md:text-md-medium"
+                    onClick={() => setSelectedMemberId(item.id)}
                   >
                     삭제
                   </Button>
@@ -96,6 +107,16 @@ export default function ManageMembers({ data }: MembersTableProps) {
           })}
         </tbody>
       </table>
+
+      {selectedMemberId !== null && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center px-[30px] bg-gray-900/70">
+          <ConfirmModal
+            message="삭제하시겠습니까?"
+            onConfirm={handleDeleteConfirm}
+            onCancel={() => setSelectedMemberId(null)}
+          />
+        </div>
+      )}
     </div>
   );
 }
