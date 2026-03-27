@@ -26,7 +26,7 @@ interface Props {
    */
   size?: number;
   /** 이미지 업로드 후 URL을 부모 컴포넌트로 전달하는 콜백 함수 */
-  onUpload?: (url: string) => void;
+  onUpload: (file: File | null) => void;
   defaultUrl?: string | null;
 }
 
@@ -51,7 +51,7 @@ export default function ImageUploaderInput({
     if (!selected) {
       setFile(null);
       setImageUrl('');
-      onUpload?.('');
+      onUpload(null);
       return;
     }
 
@@ -65,7 +65,7 @@ export default function ImageUploaderInput({
     const blobUrl = URL.createObjectURL(selected);
     setFile(selected); // 실제 파일 저장 (서버 업로드용)
     setImageUrl(blobUrl); // 미리보기용 URL 저장
-    onUpload?.(blobUrl); // prop으로 전달
+    onUpload(selected);
   };
 
   /** 업로드 버튼 클릭 시 숨겨진 input[type="file"]을 트리거하는 함수 */

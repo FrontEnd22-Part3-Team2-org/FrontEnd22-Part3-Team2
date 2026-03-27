@@ -29,7 +29,7 @@ import { Textarea } from '../../common/Input';
 import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   Card,
   Column,
@@ -43,7 +43,8 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { getColumns, getComments, readCard } from '@/api/dashboard';
+import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
+import { useQuery } from '@tanstack/react-query';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -77,6 +78,16 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setIsDeleting(true);
   };
 
+  const handleDeleteCard = async () => {
+    try {
+      await deleteCard(cardId);
+      console.log(cardId, '삭제 완료');
+    } catch (error) {
+      console.error('카드 삭제 실패', error);
+    } finally {
+    }
+  };
+
   /** 드롭다운 외부 클릭 시 닫기 구현 */
   const menuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -93,23 +104,22 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   }, [isMenuOpen]);
 
   /** 1️⃣ 카드 조회 */
-  useEffect(() => {
-    const fetchCard = async () => {
-      setIsLoading(true);
-      try {
-        const data = await readCard(cardId);
-        setCard(data);
-        console.log('카드 데이터', data);
-      } catch (error) {
-        console.error('카드 조회 실패', error);
-        setError('카드를 불러오는 데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCard();
+  const fetchCardData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await readCard(cardId);
+      setCard(data);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [cardId]);
+
+  useEffect(() => {
+    fetchCardData();
+  }, [fetchCardData]);
 
   /** 2️⃣ 댓글 목록 조회  */
   useEffect(() => {
@@ -125,18 +135,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
         console.error('댓글 조회 실패', error);
       }
     };
-    // {
-    //   "id": 13212,
-    //   "content": "오늘까지 가능할까요?",
-    //   "createdAt": "2026-03-26T17:19:43.910Z",
-    //   "updatedAt": "2026-03-26T17:19:43.910Z",
-    //   "cardId": 14998,
-    //   "author": {
-    //     "id": 6616,
-    //     "nickname": "여수경",
-    //     "profileImageUrl": null
-    //   }
-    // }
 
     fetchComments();
   }, [cardId]);
@@ -166,10 +164,18 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
+  /** 수정 완료 핸들러 */
+  const handleEditSuccess = () => {
+    console.log('수정 완료!');
+
+    setIsEditing(false); // 모달 닫기
+    fetchCardData();
+  };
+
   if (isLoading) {
     return (
       <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">불러오는 중</p>
+        <p className="text-gray-400">{isLoading ?? '불러오는 중'}</p>
       </ModalOverlay>
     );
   }
@@ -185,13 +191,21 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
   if (isEditing) {
-    return <EditCard defaultValues={card} onModalClose={onModalClose} />;
+    return (
+      <EditCard
+        cardData={card}
+        columns={columns}
+        columnTitle={columnTitle}
+        onModalClose={onModalClose}
+        onSuccess={handleEditSuccess}
+      />
+    );
   }
 
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="relative w-full md:w-[730px] max-h-[calc(100vh-110px)] overflow-y-auto  flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
+        <ModalBase className="relative w-full md:w-fit max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
@@ -223,19 +237,19 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
 
             {/* 설명 */}
-            <p className="min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
+            <p className="box-content min-h-[100px] p-[10px] mb-8 md:mb-2 text-md-regular">
               {description}
             </p>
 
             {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
             {imageUrl && (
-              <div className="relative w-auto h-[160px] md:max-w-[445px] md:min-h-[200px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
+              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:min-h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
                 <Image
                   src={imageUrl}
-                  alt="미팅 이미지"
+                  alt="할 일 카드 이미지"
                   fill
                   className="object-cover"
-                  unoptimized // TODO [수경] 임시 - 도메인 허용 안하고 unoptimized 추가
+                  unoptimized
                 />
               </div>
             )}
@@ -247,7 +261,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
               <Textarea placeholder="댓글 작성하기" />
               {/* 댓글 리스트 */}
-              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-scroll [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (
                   <>
                     {commentsList?.comments.map((comment) => {
@@ -255,7 +269,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
                     })}
                   </>
                 ) : (
-                  <div className="">댓글이 없습니다.</div>
+                  <div className="text-md-medium">댓글이 없습니다.</div>
                 )}
               </div>
             </section>
@@ -300,6 +314,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               onConfirm={() => {
                 // TODO: 카드 삭제 API 호출
                 onModalClose();
+                handleDeleteCard();
               }}
             />
           </div>

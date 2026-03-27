@@ -13,19 +13,27 @@ import StatusChip from '../Chip/StatusChip';
 import { Status, STATUS_LIST } from '../Chip/StatusConfig';
 import ArrowDropDownIcon from '../Icon/ArrowDropDownIcon';
 import DropdownList from './DropdownList';
+import { Column } from '@/types/dashboard';
 
 interface Props {
-  value: Status;
-  onChange: (status: Status) => void;
+  columns: Column[];
+  columnTitle: string;
+  onChange: (status: Column) => void;
 }
 
-export default function DropdownProgress({ value, onChange }: Props) {
+export default function DropdownProgress({
+  columns,
+  columnTitle,
+  onChange,
+}: Props) {
   const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(columnTitle);
 
-  function handleSelect(status: Status) {
+  const handleSelect = (status: Column) => {
     onChange(status);
+    setTitle(status.title);
     setOpen(false);
-  }
+  };
   return (
     <>
       <div className="relative min-w-[217px]">
@@ -35,17 +43,17 @@ export default function DropdownProgress({ value, onChange }: Props) {
           onClick={() => setOpen(!open)}
           className="w-full h-[48px] border border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white"
         >
-          <StatusChip status={value} />
+          <StatusChip status={title} />
           <ArrowDropDownIcon className="w-5 h-5" />
         </button>
 
         {/* 진행 상태 리스트 */}
         <DropdownList
           open={open}
-          items={Object.values(STATUS_LIST)}
+          items={columns}
           onSelect={handleSelect}
-          getKey={(status) => status}
-          renderItem={(status) => <StatusChip status={status} />}
+          getKey={(status) => status.id}
+          renderItem={(status) => <StatusChip status={status.title} />}
         />
       </div>
     </>

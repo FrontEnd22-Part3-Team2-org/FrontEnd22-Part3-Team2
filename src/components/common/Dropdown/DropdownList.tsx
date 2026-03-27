@@ -2,29 +2,6 @@
  * @file DropdownList.tsx
  * @description 진행 상태, 담당자 선택 드롭다운 메뉴의 리스트 컴포넌트입니다.
  *
-* @example
-// // Assignee 드롭다운
-// <DropdownList
-//   open={open}
-//   items={Object.values(MOCK_ASSIGNEE)}
-//   onSelect={(user) => {
-//     setQuery(user.nickname);
-//     setOpen(false);
-//     setSelected(true);
-//   }}
-//   getKey={(user) => user.id}
-//   renderItem={(user) => <UserName assignee={user} />}
-// />
-
-// // Status 드롭다운
-// <DropdownList
-//   open={open}
-//   items={Object.values(STATUS_LIST)}
-//   onSelect={handleSelect}
-//   getKey={(status) => status}
-//   renderItem={(status) => <StatusChip status={status} />}
-// />
- *
  * @author 수경
  */
 

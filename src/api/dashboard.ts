@@ -87,6 +87,20 @@ export async function deleteColumn(columnId: number) {
   await api.delete(`/columns/${columnId}`);
 }
 
+/** 카드 이미지 업로드 */
+// api/cardImage.ts
+export async function uploadCardImage(columnId: number, image: File) {
+  const formData = new FormData();
+  formData.append('image', image);
+
+  const { data } = await api.post(`/columns/${columnId}/card-image`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+}
+
 /** 할 일 카드 조회 */
 export async function readCard(cardId: number) {
   const { data } = await api.get(`/cards/${cardId}`);
