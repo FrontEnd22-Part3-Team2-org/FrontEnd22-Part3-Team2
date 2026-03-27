@@ -99,7 +99,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     try {
       const data = await readCard(cardId);
       setCard(data);
-      console.log(data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -118,7 +117,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     const fetchComments = async () => {
       try {
         const res = await getComments(cardId);
-        console.log(res);
         setCommentsList(res);
         setHasComments(res.comments.length > 0);
       } catch (error) {
@@ -246,16 +244,14 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
             {/* 댓글 섹션 */}
             <section className="flex flex-col">
-              {/* <p className="mb-1 text-lg-medium">댓글</p> */}
               {/* 댓글 인풋 */}
-              {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
-              {/* <Textarea label="댓글" placeholder="댓글 작성하기" /> */}
-              {/* 댓글 리스트 */}
               <CommentsForm
                 cardId={cardId}
                 columnId={card.columnId}
                 dashboardId={card.dashboardId}
               />
+              {/* TODO : [수경] Server Action 연동을 위한 form */}
+              {/* 댓글 리스트 */}
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (
                   <>

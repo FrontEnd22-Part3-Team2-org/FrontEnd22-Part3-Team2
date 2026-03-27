@@ -19,9 +19,9 @@
  * @author 수경
  */
 
-'use server';
+// 'use server';
 
-import { revalidatePath } from 'next/cache';
+// import { revalidatePath } from 'next/cache';
 import {
   updateComments,
   deleteComments,
@@ -52,5 +52,5 @@ export async function createCommentAction(
     dashboardId,
   });
 
-  revalidatePath(`/dashboard/${dashboardId}`);
+  // revalidatePath(`/dashboard/${dashboardId}`);
 }

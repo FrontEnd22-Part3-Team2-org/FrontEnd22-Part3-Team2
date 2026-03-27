@@ -62,6 +62,7 @@ export default function Textarea({
       >
         <textarea
           id={textareaId}
+          name="content"
           {...props}
           className={clsx(
             'min-h-[110px] w-full resize-none text-sm outline-none',
@@ -75,7 +76,7 @@ export default function Textarea({
 
         <div className="mt-3 flex justify-end">
           <button
-            type="button"
+            type="submit"
             onClick={onButtonClick}
             disabled={buttonDisabled}
             className={clsx(
