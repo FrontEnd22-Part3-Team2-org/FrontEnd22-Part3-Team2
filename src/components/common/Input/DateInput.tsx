@@ -5,11 +5,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import CalendarIcon from '../Icon/CalendarIcon';
 
 interface DateProps {
+  fontStyle?: string;
   onDateChange?: (date: Date | null) => void;
   defaultDate?: string | null;
 }
 
 export default function DateInput({
+  fontStyle,
   onDateChange,
   defaultDate = null,
 }: DateProps) {
@@ -25,7 +27,7 @@ export default function DateInput({
 
   return (
     <div className="flex flex-col text-gray-700">
-      <label className="text-2lg-medium mb-2">마감일</label>
+      <label className={fontStyle}>마감일</label>
       <div className="w-full h-[48px] border border-gray-300 px-4 rounded-md flex items-center gap-2 bg-white focus-within:border-brand-violet transition-colors">
         <CalendarIcon
           className={`w-5 shrink-0 pb-[2px] ${date ? 'text-gray-700' : 'text-gray-400'}`}

@@ -104,6 +104,7 @@ export default function DropdownAssignee({
         }}
         getKey={(user) => user.userId}
         renderItem={(user) => <UserName profile={user} />}
+        onClose={() => setOpen(false)}
       />
     </div>
   );

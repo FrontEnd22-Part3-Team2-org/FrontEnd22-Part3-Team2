@@ -45,6 +45,7 @@ import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
 import { useQuery } from '@tanstack/react-query';
+import { useDropdownClose } from '@/hooks/useToggle';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -89,19 +90,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   };
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
-  const menuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        handleCloseMenu();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  const menuRef = useDropdownClose(handleCloseMenu);
 
   /** 1️⃣ 카드 조회 */
   const fetchCardData = useCallback(async () => {

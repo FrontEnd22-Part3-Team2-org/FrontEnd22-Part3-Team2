@@ -54,6 +54,7 @@ export default function DropdownProgress({
           onSelect={handleSelect}
           getKey={(status) => status.id}
           renderItem={(status) => <StatusChip status={status.title} />}
+          onClose={() => setOpen(false)}
         />
       </div>
     </>

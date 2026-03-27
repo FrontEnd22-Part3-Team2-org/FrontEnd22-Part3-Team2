@@ -130,9 +130,9 @@ export async function updateCard(
     assigneeUserId?: number;
     title?: string;
     description?: string;
-    dueDate?: string;
+    dueDate?: string | null;
     tags?: string[];
-    imageUrl?: string;
+    imageUrl?: string | null;
   },
 ) {
   const { data } = await api.put(`/cards/${cardId}`, payload);
