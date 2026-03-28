@@ -1,13 +1,58 @@
-import { Dashboard } from '@/types/dashboard';
+import { Invitation } from '@/types/dashboard';
 import ConfirmButton from '../common/ConfirmButton';
 import SearchIcon from '../common/Icon/SearchIcon';
 import { Input } from '../common/Input';
+import { RefObject, useMemo, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { respondToInvitation } from '@/api/dashboard';
 
 interface InvitationTableProps {
-  data: Dashboard[];
+  data: Invitation[];
+  observerRef: RefObject<HTMLDivElement | null>;
 }
 
-export default function InvitationTable({ data }: InvitationTableProps) {
+function filterInvitationsByTitle(
+  items: Invitation[],
+  keyword: string,
+): Invitation[] {
+  const q = keyword.trim().toLowerCase();
+  if (!q) return items;
+  return items.filter((item) => item.dashboard.title.toLowerCase().includes(q));
+}
+
+export default function InvitationTable({
+  data,
+  observerRef,
+}: InvitationTableProps) {
+  const queryClient = useQueryClient();
+  const mutationInFlightRef = useRef(false);
+  const [titleSearch, setTitleSearch] = useState('');
+
+  const filteredData = useMemo(
+    () => filterInvitationsByTitle(data, titleSearch),
+    [data, titleSearch],
+  );
+
+  const { mutate } = useMutation({
+    mutationFn: ({ id, accepted }: { id: number; accepted: boolean }) =>
+      respondToInvitation(id, accepted),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myInvitations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboards'] });
+    },
+  });
+
+  const handleInvitation = (params: { id: number; accepted: boolean }) => {
+    if (mutationInFlightRef.current) return;
+    mutationInFlightRef.current = true;
+    mutate(params, {
+      onSettled: () => {
+        mutationInFlightRef.current = false;
+      },
+    });
+  };
+
   return (
     <div className="py-[24px] bg-white md:py-[18px] lg:py-[32px]">
       <div>
@@ -22,16 +67,20 @@ export default function InvitationTable({ data }: InvitationTableProps) {
             <SearchIcon className="w-[22px] md:w-[24px]" />
           </div>
           <Input
+            type="search"
             placeholder="검색"
+            value={titleSearch}
+            aria-label="대시보드 이름으로 검색"
+            onChange={(e) => setTitleSearch(e.target.value)}
             className="w-full px-[44px] border border-gray-300 rounded-[6px]"
           />
         </div>
       </div>
 
-      <div className="mt-[13px] md:mt-[24px]">
+      <div className="flex-1 max-h-[625px] overflow-y-auto custom-scrollbar mt-[13px] md:mt-[24px]">
         {/** --- 1. 모바일 카드 레이아웃 (768px 미만) --- */}
         <div className="md:hidden px-[16px] flex flex-col">
-          {data.map((item) => (
+          {filteredData.map((item) => (
             <div key={item.id} className="py-[14px] border-b border-gray-200">
               <div className="flex flex-col gap-[3px] mb-[14px]">
                 <div className="flex items-center">
@@ -39,7 +88,7 @@ export default function InvitationTable({ data }: InvitationTableProps) {
                     이름
                   </span>
                   <span className="text-md-regular text-gray-700">
-                    {item.title}
+                    {item.dashboard.title}
                   </span>
                 </div>
                 <div className="flex items-center">
@@ -47,18 +96,25 @@ export default function InvitationTable({ data }: InvitationTableProps) {
                     초대자
                   </span>
                   <span className="text-md-regular text-gray-700">
-                    {item.userId}
+                    {item.inviter.nickname}
                   </span>
                 </div>
               </div>
-              <ConfirmButton onAccept={() => {}} onReject={() => {}} />
+              <ConfirmButton
+                onAccept={() =>
+                  handleInvitation({ id: item.id, accepted: true })
+                }
+                onReject={() =>
+                  handleInvitation({ id: item.id, accepted: false })
+                }
+              />
             </div>
           ))}
         </div>
         {/** --- 2. pc 테이블 레이아웃 (768px 이상) --- */}
         <div className="hidden md:block">
           <table className="w-full text-lg-regular text-gray-500">
-            <thead className="text-lg-regular text-gray-400">
+            <thead className="sticky top-0 bg-white z-10 text-lg-regular text-gray-400">
               <tr>
                 <th className="pl-[28px] font-normal text-left lg:pl-[76px]">
                   이름
@@ -69,22 +125,30 @@ export default function InvitationTable({ data }: InvitationTableProps) {
             </thead>
 
             <tbody>
-              {data.map((item) => (
+              {filteredData.map((item) => (
                 <tr key={item.id} className="border-gray-200 border-b">
                   <td className="pl-[28px] py-[20px] font-normal text-left lg:pl-[76px] text-gray-700">
-                    {item.title}
+                    {item.dashboard.title}
                   </td>
                   <td className="py-[20px] font-normal text-left">
-                    {item.userId}
+                    {item.inviter.nickname}
                   </td>
                   <td className="px-[28px] text-center">
-                    <ConfirmButton onAccept={() => {}} onReject={() => {}} />
+                    <ConfirmButton
+                      onAccept={() =>
+                        handleInvitation({ id: item.id, accepted: true })
+                      }
+                      onReject={() =>
+                        handleInvitation({ id: item.id, accepted: false })
+                      }
+                    />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <div ref={observerRef} className="h-1 w-full" />
       </div>
     </div>
   );
