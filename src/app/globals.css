@@ -3,6 +3,21 @@
 @tailwind utilities;
 
 /* TODO: [하늘] 이 아래로 Tailwind로 해결되지 않는 글로벌 스타일만 적어둘 것 */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #EEEEEE 25%, #FAFAFA 50%, #EEEEEE 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;
