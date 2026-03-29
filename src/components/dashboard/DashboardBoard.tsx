@@ -40,6 +40,7 @@ import {
 import Column from './Column';
 import TaskCard from './TaskCard';
 import Button from '@/components/common/Button';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import Cards from '@/components/Modal/Cards/Cards';
 import CreateCard from '@/components/Modal/Cards/CreateCard';
@@ -81,6 +82,71 @@ function applySavedOrder(columnId: number, cards: Card[]): Card[] {
   } catch {
     return cards;
   }
+}
+
+function TaskCardSkeleton() {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-4 flex flex-col gap-2">
+      <Skeleton className="h-5 w-3/4 rounded" />
+      <div className="flex gap-1.5">
+        <Skeleton className="h-5 w-16 rounded-full" />
+        <Skeleton className="h-5 w-12 rounded-full" />
+      </div>
+      <div className="flex items-center justify-between mt-1">
+        <Skeleton className="h-4 w-24 rounded" />
+        <Skeleton className="w-[26px] h-[26px] rounded-full" />
+      </div>
+    </div>
+  );
+}
+
+function ColumnSkeleton({ cardCount = 3 }: { cardCount?: number }) {
+  return (
+    <div
+      className={[
+        'flex flex-col shrink-0',
+        'w-full lg:w-[354px]',
+        'border-b lg:border-b-0 lg:border-r border-gray-200',
+        'pb-4 lg:pb-0',
+      ].join(' ')}
+    >
+      {/* 컬럼 헤더 */}
+      <div className="flex items-center justify-between px-4 md:px-5 h-[64px] shrink-0">
+        <div className="flex items-center gap-2">
+          <Skeleton className="w-2 h-2 rounded-full shrink-0" />
+          <Skeleton className="h-5 w-24 rounded" />
+          <Skeleton className="h-5 w-7 rounded-full" />
+        </div>
+        <Skeleton className="w-6 h-6 rounded" />
+      </div>
+
+      {/* 추가 버튼 */}
+      <div className="px-4 md:px-5 mb-4 shrink-0">
+        <Skeleton className="h-10 w-full lg:w-[314px] rounded-[6px]" />
+      </div>
+
+      {/* 카드 목록 */}
+      <div className="flex-1 px-4 md:px-5 flex flex-col gap-2 pb-4">
+        {Array.from({ length: cardCount }).map((_, i) => (
+          <TaskCardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DashboardBoardSkeleton() {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden bg-gray-100">
+        <div className="flex flex-col lg:flex-row h-full overflow-y-auto lg:overflow-y-hidden lg:overflow-x-auto">
+          <ColumnSkeleton cardCount={3} />
+          <ColumnSkeleton cardCount={2} />
+          <ColumnSkeleton cardCount={4} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
@@ -488,11 +554,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
   };
 
   if (isDashboardLoading || isColumnsLoading) {
-    return (
-      <div className="flex items-center justify-center flex-1 h-full min-h-[calc(100vh-64px)]">
-        <p className="text-gray-400 text-lg-regular">불러오는 중...</p>
-      </div>
-    );
+    return <DashboardBoardSkeleton />;
   }
 
   if (!dashboard) {
