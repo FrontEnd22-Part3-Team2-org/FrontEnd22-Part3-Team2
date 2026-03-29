@@ -10,7 +10,6 @@
 
 import { useState } from 'react';
 import StatusChip from '../Chip/StatusChip';
-import { Status, STATUS_LIST } from '../Chip/StatusConfig';
 import ArrowDropDownIcon from '../Icon/ArrowDropDownIcon';
 import DropdownList from './DropdownList';
 import { Column } from '@/types/dashboard';
