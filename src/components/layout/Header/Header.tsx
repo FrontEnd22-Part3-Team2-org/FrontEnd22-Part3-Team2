@@ -23,6 +23,7 @@ import { getMe } from '@/api/auth';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { useDashboardStore } from '@/store/useDashboardStore';
 import UserProfileImage from '@/components/common/User/UserProfileImage';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
 
 const MAX_VISIBLE_MEMBERS = 4;
 
@@ -43,19 +44,19 @@ export default function Header() {
   /** URL에 id가 없으면 스토어의 마지막 방문 대시보드 사용 */
   const effectiveDashboardId = dashboardId ?? activeDashboardId;
 
-  const { data: dashboard } = useQuery({
+  const { data: dashboard, isLoading: isDashboardLoading } = useQuery({
     queryKey: QUERY_KEYS.dashboard(effectiveDashboardId!),
     queryFn: () => getDashboard(effectiveDashboardId!),
     enabled: !!effectiveDashboardId,
   });
 
-  const { data: membersData } = useQuery({
+  const { data: membersData, isLoading: isMembersLoading } = useQuery({
     queryKey: QUERY_KEYS.members(effectiveDashboardId!),
     queryFn: () => getMembers(effectiveDashboardId!),
     enabled: !!effectiveDashboardId,
   });
 
-  const { data: me } = useQuery({
+  const { data: me, isLoading: isMeLoading } = useQuery({
     queryKey: QUERY_KEYS.me(),
     queryFn: getMe,
   });
@@ -72,85 +73,127 @@ export default function Header() {
 
   return (
     <header className="flex h-[64px] w-full items-center justify-between shrink-0 border-b border-gray-200 bg-white px-8">
+      {/* ── 좌측: 대시보드 타이틀 ── */}
       <div className="flex min-w-0 items-center gap-2">
-        <h1 className="hidden lg:block truncate text-xl-bold text-gray-700">
-          {staticTitle ?? dashboard?.title ?? ''}
-        </h1>
-        {!staticTitle && dashboard?.createdByMe && (
-          <CrownIcon className="hidden lg:block h-[20px] w-[16px] shrink-0" />
+        {isDashboardLoading && !staticTitle ? (
+          <Skeleton className="hidden lg:block h-6 w-36 rounded" />
+        ) : (
+          <>
+            <h1 className="hidden lg:block truncate text-xl-bold text-gray-700">
+              {staticTitle ?? dashboard?.title ?? ''}
+            </h1>
+            {!staticTitle && dashboard?.createdByMe && (
+              <CrownIcon className="hidden lg:block h-[20px] w-[16px] shrink-0" />
+            )}
+          </>
         )}
       </div>
 
+      {/* ── 우측: 버튼 + 멤버 아바타 + 프로필 ── */}
       <div className="flex shrink-0 items-center gap-4">
-        {dashboardId && dashboard?.createdByMe && (
-          <button
-            type="button"
-            onClick={handleManageClick}
-            className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
-          >
-            <SettingIcon className="h-[20px] w-[20px]" />
-            관리
-          </button>
+        {isDashboardLoading && dashboardId ? (
+          <>
+            <Skeleton className="h-[40px] w-[72px] rounded-[8px]" />
+            <Skeleton className="h-[40px] w-[88px] rounded-[8px]" />
+          </>
+        ) : (
+          <>
+            {dashboardId && dashboard?.createdByMe && (
+              <button
+                type="button"
+                onClick={handleManageClick}
+                className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
+              >
+                <SettingIcon className="h-[20px] w-[20px]" />
+                관리
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
+            >
+              <AddBoxIcon className="h-[20px] w-[20px]" />
+              초대하기
+            </button>
+          </>
         )}
 
-        <button
-          type="button"
-          className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
-        >
-          <AddBoxIcon className="h-[20px] w-[20px]" />
-          초대하기
-        </button>
-
         <div className="ml-1 flex items-center gap-0">
-          {visibleMembers.length > 0 && (
+          {/* 멤버 아바타 */}
+          {isMembersLoading && dashboardId ? (
             <div className="flex items-center">
-              {visibleMembers.map((member, index) => (
-                <div
-                  key={member.id}
-                  title={member.nickname}
-                  style={{
-                    marginLeft: index !== 0 ? '-8px' : undefined,
-                    zIndex: index + 1,
-                  }}
-                >
-                  <UserProfileImage profile={member} index={index} size={38} />
-                </div>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton
+                  key={i}
+                  className="w-[38px] h-[38px] rounded-full border-2 border-white"
+                  style={{ marginLeft: i !== 0 ? '-8px' : undefined }}
+                />
               ))}
-
-              {extraCount > 0 && (
-                <div
-                  className="-ml-2 flex h-[38px] min-w-[38px] items-center justify-center rounded-full border-2 border-white bg-[#F4D7DA] px-[8px] text-xs-semibold text-[#D25B68]"
-                  style={{ zIndex: visibleMembers.length + 1 }}
-                >
-                  +{extraCount}
-                </div>
-              )}
             </div>
+          ) : (
+            visibleMembers.length > 0 && (
+              <div className="flex items-center">
+                {visibleMembers.map((member, index) => (
+                  <div
+                    key={member.id}
+                    title={member.nickname}
+                    style={{
+                      marginLeft: index !== 0 ? '-8px' : undefined,
+                      zIndex: index + 1,
+                    }}
+                  >
+                    <UserProfileImage
+                      profile={member}
+                      index={index}
+                      size={38}
+                    />
+                  </div>
+                ))}
+
+                {extraCount > 0 && (
+                  <div
+                    className="-ml-2 flex h-[38px] min-w-[38px] items-center justify-center rounded-full border-2 border-white bg-[#F4D7DA] px-[8px] text-xs-semibold text-[#D25B68]"
+                    style={{ zIndex: visibleMembers.length + 1 }}
+                  >
+                    +{extraCount}
+                  </div>
+                )}
+              </div>
+            )
           )}
 
-          <button
-            type="button"
-            onClick={() => router.push('/mypage')}
-            className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6 hover:opacity-80 transition-opacity"
-          >
-            <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden bg-[#A3C4A2] text-lg-medium text-white shrink-0">
-              {me?.profileImageUrl ? (
-                <Image
-                  src={me.profileImageUrl}
-                  alt={me.nickname}
-                  width={38}
-                  height={38}
-                  className="object-cover w-full h-full"
-                  unoptimized
-                />
-              ) : (
-                (me?.nickname?.[0]?.toUpperCase() ?? 'U')
-              )}
+          {/* 내 프로필 */}
+          {isMeLoading ? (
+            <div className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6">
+              <Skeleton className="w-[38px] h-[38px] rounded-full shrink-0" />
+              <Skeleton className="h-4 w-20 rounded hidden lg:block" />
             </div>
-            <span className="text-lg-medium text-gray-700">
-              {me?.nickname ?? ''}
-            </span>
-          </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push('/mypage')}
+              className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6 hover:opacity-80 transition-opacity"
+            >
+              <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden bg-[#A3C4A2] text-lg-medium text-white shrink-0">
+                {me?.profileImageUrl ? (
+                  <Image
+                    src={me.profileImageUrl}
+                    alt={me.nickname}
+                    width={38}
+                    height={38}
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                ) : (
+                  (me?.nickname?.[0]?.toUpperCase() ?? 'U')
+                )}
+              </div>
+              <span className="text-lg-medium text-gray-700">
+                {me?.nickname ?? ''}
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </header>

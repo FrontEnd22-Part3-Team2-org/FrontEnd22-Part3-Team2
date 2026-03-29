@@ -37,6 +37,7 @@ import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
 import CrownIcon from '@/components/common/Icon/CrownIcon';
 import Pagination from '@/components/common/Pagination/Pagination';
 import Logo from '@/components/common/Logo';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
 import { cn } from '@/lib/utils';
 import { getDashboards } from '@/api/dashboard';
 import { QUERY_KEYS } from '@/constants/queryKeys';
@@ -179,6 +180,31 @@ function SortableDashboardItem({
   );
 }
 
+function SideMenuSkeleton() {
+  return (
+    <ul className="flex flex-col gap-1.5 md:gap-0.5 lg:gap-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <li key={i}>
+          {/* mobile */}
+          <div className="md:hidden flex items-center justify-center w-10 h-10 ml-[14px]">
+            <Skeleton className="w-2 h-2 rounded-full" />
+          </div>
+          {/* tablet */}
+          <div className="hidden md:flex lg:hidden items-center gap-4 h-[43px] mx-2 px-[10px]">
+            <Skeleton className="w-2 h-2 rounded-full shrink-0" />
+            <Skeleton className="h-4 flex-1 rounded-[4px]" />
+          </div>
+          {/* desktop */}
+          <div className="hidden lg:flex items-center gap-4 h-[50px] mx-3 px-3">
+            <Skeleton className="w-2 h-2 rounded-full shrink-0" />
+            <Skeleton className="h-4 flex-1 rounded-[4px]" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 const SideMenu = () => {
   const pathname = usePathname();
   const [page, setPage] = useState(1);
@@ -198,7 +224,7 @@ const SideMenu = () => {
     }),
   );
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: [...QUERY_KEYS.dashboards(), page],
     queryFn: () => getDashboards(page, PAGE_SIZE),
   });
@@ -270,7 +296,7 @@ const SideMenu = () => {
     >
       {/* ── 로고 ── */}
       <Link
-        href={pathname === '/mydashboard' ? '/' : '/mydashboard'}
+        href={pathname.startsWith('/dashboard/') ? '/mydashboard' : '/'}
         className="flex items-center shrink-0 pt-5 pl-[22px] md:pt-5 md:pl-[13px] lg:pl-2 mb-[39px] md:mb-[57px] lg:mb-14"
       >
         <span className="md:hidden">
@@ -297,32 +323,36 @@ const SideMenu = () => {
 
       {/* ── 대시보드 목록 (드래그앤드롭) ── */}
       <div className="flex-1 overflow-y-auto">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={orderedDashboards.map((d) => d.id)}
-            strategy={verticalListSortingStrategy}
+        {isLoading ? (
+          <SideMenuSkeleton />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <ul className="flex flex-col gap-1.5 md:gap-0.5 lg:gap-2">
-              {orderedDashboards.map((dashboard) => {
-                const isActive =
-                  pathname === `/dashboard/${dashboard.id}` ||
-                  pathname.startsWith(`/dashboard/${dashboard.id}/`);
+            <SortableContext
+              items={orderedDashboards.map((d) => d.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="flex flex-col gap-1.5 md:gap-0.5 lg:gap-2">
+                {orderedDashboards.map((dashboard) => {
+                  const isActive =
+                    pathname === `/dashboard/${dashboard.id}` ||
+                    pathname.startsWith(`/dashboard/${dashboard.id}/`);
 
-                return (
-                  <SortableDashboardItem
-                    key={dashboard.id}
-                    dashboard={dashboard}
-                    isActive={isActive}
-                  />
-                );
-              })}
-            </ul>
-          </SortableContext>
-        </DndContext>
+                  return (
+                    <SortableDashboardItem
+                      key={dashboard.id}
+                      dashboard={dashboard}
+                      isActive={isActive}
+                    />
+                  );
+                })}
+              </ul>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
 
       {/* ── 페이지네이션 ── */}
