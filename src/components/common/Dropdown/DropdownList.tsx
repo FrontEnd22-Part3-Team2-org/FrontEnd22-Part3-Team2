@@ -5,6 +5,8 @@
  * @author 수경
  */
 
+import { useDropdownClose } from '@/hooks/useToggle';
+
 interface DropdownListProps<T> {
   /** 드롭다운 표시 여부 */
   open: boolean;
@@ -16,19 +18,26 @@ interface DropdownListProps<T> {
   renderItem: (item: T) => React.ReactNode;
   /** 각 아이템의 고유 key 값을 반환하는 함수 */
   getKey: (item: T) => string | number;
+  /** 드롭다운 외부 클릭 시 닫힘 */
+  onClose: () => void;
 }
 
-export default function DropdownList<T>({
+export default function DropdownList<T extends object>({
   open,
   items,
   onSelect,
   renderItem,
   getKey,
+  onClose,
 }: DropdownListProps<T>) {
+  const ref = useDropdownClose(onClose);
   if (!open) return null;
 
   return (
-    <div className="absolute z-10 mt-1 w-full border rounded bg-white shadow">
+    <div
+      ref={ref}
+      className="absolute z-10 mt-1 w-full border rounded bg-white shadow"
+    >
       {items.map((item) => (
         <button
           key={getKey(item)}

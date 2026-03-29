@@ -25,7 +25,6 @@ import { Assignee, Member } from '@/types/dashboard';
 import DropdownList from './DropdownList';
 
 // TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
-
 interface AssigneeProps {
   /** 드롭다운에 보여줄 전체 멤버 목록 */
   members: Member[];
@@ -104,6 +103,7 @@ export default function DropdownAssignee({
         }}
         getKey={(user) => user.userId}
         renderItem={(user) => <UserName profile={user} />}
+        onClose={() => setOpen(false)}
       />
     </div>
   );

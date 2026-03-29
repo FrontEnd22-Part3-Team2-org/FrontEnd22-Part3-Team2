@@ -28,6 +28,7 @@ interface TaskCardProps {
   onClick: (card: Card) => void;
   /** DragOverlay 내부에서 렌더링될 때 true — 드래그 훅 비활성화 */
   isDragOverlay?: boolean;
+  priority?: boolean;
 }
 
 export default function TaskCard({
@@ -35,6 +36,7 @@ export default function TaskCard({
   columnId,
   onClick,
   isDragOverlay = false,
+  priority,
 }: TaskCardProps) {
   const { title, tags, dueDate, assignee, imageUrl } = card;
 
