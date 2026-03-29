@@ -4,6 +4,24 @@
  * @note 백엔드 API 명세서의 Response 응답값과 정확히 일치하도록 타입을 정의해야 합니다.
  */
 
+/** 초대받은 대시보드 */
+export interface Invitation {
+  id: number;
+  inviter: Pick<Member, 'nickname' | 'email' | 'id'>;
+  teamId: string;
+  dashboard: Pick<Dashboard, 'id' | 'title'>;
+  invitee: Pick<Member, 'nickname' | 'email' | 'id'>;
+  inviteAccepted: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** GET /invitations 응답 */
+export interface GetInvitationsResponse {
+  cursorId: number | null;
+  invitations: Invitation[];
+}
+
 /** 대시보드 (한 개) */
 export interface Dashboard {
   id: number;

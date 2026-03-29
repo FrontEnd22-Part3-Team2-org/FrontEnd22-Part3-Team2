@@ -6,7 +6,7 @@
 import DashboardList from '@/components/mydashboard/DashboardList';
 import InvitationList from '@/components/mydashboard/InvitationList';
 
-export default function MyDashboardPage() {
+export default async function MyDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-100 px-[24px] md:px-[40px]">
       <div className="max-w-[1022px] flex flex-col gap-[74px]">

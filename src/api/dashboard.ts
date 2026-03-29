@@ -13,6 +13,8 @@ import type {
   MembersResponse,
   Comments,
   CommentsResponse,
+  GetInvitationsResponse,
+  Invitation,
 } from '@/types/dashboard';
 
 /** 대시보드 목록 조회 (사이드 네비게이션용, 페이지 기반) */
@@ -148,6 +150,31 @@ export async function deleteCard(cardId: number) {
 export async function inviteMember(dashboardId: number, email: string) {
   const { data } = await api.post(`/dashboards/${dashboardId}/invitations`, {
     email,
+  });
+  return data;
+}
+
+/** 내가 받은 초대 목록 조회 (무한 스크롤용) */
+export async function getMyInvitations(
+  size?: number,
+  cursorId?: number | null,
+): Promise<GetInvitationsResponse> {
+  const { data } = await api.get<GetInvitationsResponse>('/invitations', {
+    params: {
+      size,
+      ...(cursorId !== null && cursorId !== undefined && { cursorId }),
+    },
+  });
+  return data;
+}
+
+/** 받은 초대에 대해 수락 또는 거절 응답 */
+export async function respondToInvitation(
+  invitationId: number,
+  inviteAccepted: boolean,
+): Promise<Invitation> {
+  const { data } = await api.put<Invitation>(`/invitations/${invitationId}`, {
+    inviteAccepted,
   });
   return data;
 }
