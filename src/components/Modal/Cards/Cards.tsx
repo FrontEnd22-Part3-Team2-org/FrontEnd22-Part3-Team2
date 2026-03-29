@@ -111,21 +111,21 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   }, [fetchCardData]);
 
   /** 2️⃣ 댓글 목록 조회  */
-  useEffect(() => {
+  const fetchComments = useCallback(async () => {
     if (!cardId) return;
 
-    const fetchComments = async () => {
-      try {
-        const res = await getComments(cardId);
-        setCommentsList(res);
-        setHasComments(res.comments.length > 0);
-      } catch (error) {
-        console.error('댓글 조회 실패', error);
-      }
-    };
-
-    fetchComments();
+    try {
+      const res = await getComments(cardId);
+      setCommentsList(res);
+      setHasComments(res.comments.length > 0);
+    } catch (error) {
+      console.error('댓글 조회 실패', error);
+    }
   }, [cardId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   /** 2️⃣ 컬럼 조회  */
   useEffect(() => {
@@ -249,8 +249,8 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
                 cardId={cardId}
                 columnId={card.columnId}
                 dashboardId={card.dashboardId}
+                onSuccess={fetchComments}
               />
-              {/* TODO : [수경] Server Action 연동을 위한 form */}
               {/* 댓글 리스트 */}
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (

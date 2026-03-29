@@ -22,7 +22,7 @@ interface DropdownListProps<T> {
   onClose: () => void;
 }
 
-export default function DropdownList<T>({
+export default function DropdownList<T extends object>({
   open,
   items,
   onSelect,

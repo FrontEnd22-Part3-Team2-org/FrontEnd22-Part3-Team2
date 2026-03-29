@@ -175,15 +175,7 @@ export async function createComments(payload: {
   columnId: number;
   dashboardId: number;
 }) {
-  const { data } = await api.post('/comments', payload, {
-    headers: {
-      // 클라이언트에서는 localStorage 접근 가능
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-
-      // 서버에서는 localStorage 사용 불가 → 쿠키/헤더로 전달받은 토큰 사용
-      // Authorization: `Bearer ${token}`,
-    },
-  });
+  const { data } = await api.post('/comments', payload);
   return data;
 }
 
