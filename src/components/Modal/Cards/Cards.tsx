@@ -46,6 +46,7 @@ import {
 } from '@/api/dashboard';
 import { useDropdownClose } from '@/hooks/useToggle';
 import CommentsForm from './CommentsForm';
+import AlertModal from '../AlertModal';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -59,10 +60,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
 
   /** 댓글 관련 상태 관리 */
-  const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
   const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
     null,
   );
@@ -90,9 +90,10 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const handleDeleteCard = async () => {
     try {
       await deleteCard(cardId);
-      console.log(cardId, '삭제 완료');
+      onModalClose();
     } catch (error) {
       console.error('카드 삭제 실패', error);
+      setErrorMessage('카드 삭제에 실패했습니다.');
     } finally {
     }
   };
@@ -129,6 +130,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
       setCard(data);
     } catch (error) {
       console.error(error);
+      setErrorMessage(
+        '카드를 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -145,9 +149,11 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     try {
       const res = await getComments(cardId);
       setCommentsList(res);
-      setHasComments(res.comments.length > 0);
     } catch (error) {
       console.error('댓글 조회 실패', error);
+      setErrorMessage(
+        '댓글 목록을 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      );
     }
   }, [cardId]);
 
@@ -165,6 +171,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
         setColumns(res.data);
       } catch (error) {
         console.error('컬럼 조회 실패', error);
+        setErrorMessage(
+          '컬럼을 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        );
       }
     };
 
@@ -180,21 +189,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  if (isLoading) {
-    return (
-      <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">{isLoading ?? '불러오는 중'}</p>
-      </ModalOverlay>
-    );
-  }
-  if (error || !card) {
-    return (
-      <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">{error ?? '카드를 찾을 수 없습니다.'}</p>
-      </ModalOverlay>
-    );
-  }
-
+  if (!card) return;
   const { title, description, tags, dueDate, assignee, imageUrl } = card ?? {};
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
@@ -251,7 +246,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
             {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
             {imageUrl && (
-              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:min-h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4">
+              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4">
                 <Image
                   src={imageUrl}
                   alt="할 일 카드 이미지"
@@ -273,7 +268,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               />
               {/* 댓글 리스트 */}
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                {hasComments ? (
+                {commentsList?.comments?.length ? (
                   <>
                     {commentsList?.comments.map((comment) => {
                       return (
@@ -329,7 +324,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               message="정말 카드를 삭제하겠습니까?"
               onCancel={() => setIsDeleting(false)}
               onConfirm={() => {
-                onModalClose();
                 handleDeleteCard();
               }}
             />
@@ -343,6 +337,16 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               message="정말 댓글을 삭제하겠습니까?"
               onCancel={() => setDeletingCommentId(null)}
               onConfirm={handleDeleteCommentConfirm}
+            />
+          </div>
+        )}
+
+        {/* API 호출 에러 처리 */}
+        {errorMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <AlertModal
+              message={errorMessage}
+              onConfirm={() => setErrorMessage(null)}
             />
           </div>
         )}

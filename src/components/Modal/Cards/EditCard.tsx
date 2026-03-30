@@ -24,6 +24,7 @@ import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { getMembers, updateCard, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
+import AlertModal from '../AlertModal';
 
 interface EditCardProps {
   cardData: Card;
@@ -59,6 +60,8 @@ export default function EditCard({
   const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [isTagFocused, setIsTagFocused] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   /** 변경된 필드만 감지 */
@@ -104,6 +107,9 @@ export default function EditCard({
         setMembers(data.members);
       } catch (error) {
         console.error('멤버 조회 실패', error);
+        setErrorMessage(
+          '멤버 목록을 불러오는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        );
       } finally {
         setIsLoading(false);
       }
@@ -153,6 +159,9 @@ export default function EditCard({
       onSuccess?.();
     } catch (error) {
       console.error('카드 수정 실패', error);
+      setErrorMessage(
+        '카드를 수정하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -295,12 +304,24 @@ export default function EditCard({
             variant="primary"
             className="flex-1"
             onClick={handleSubmit}
-            disabled={isLoading || !isDirty} // ✅ 변경 없으면 비활성화
+            disabled={
+              isLoading || !isDirty || !formData.title || !formData.description
+            } // 변경 없으면 비활성화
           >
             {isLoading ? '수정 중...' : '수정'}
           </Button>
         </div>
       </ModalBase>
+
+      {/* API 호출 에러 처리 */}
+      {errorMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <AlertModal
+            message={errorMessage}
+            onConfirm={() => setErrorMessage(null)}
+          />
+        </div>
+      )}
     </ModalOverlay>
   );
 }

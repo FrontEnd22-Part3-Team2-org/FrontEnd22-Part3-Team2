@@ -24,6 +24,7 @@ import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
+import AlertModal from '../AlertModal';
 
 interface CreateCardForm {
   title: string;
@@ -53,12 +54,12 @@ export default function CreateCard({
 }: CreateCardProps) {
   const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagInput, setTagInput] = useState('');
   const [isTagFocused, setIsTagFocused] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
 
   /** 멤버 목록 조회 */
   useEffect(() => {
@@ -69,7 +70,9 @@ export default function CreateCard({
         setMembers(data.members);
       } catch (error) {
         console.error('멤버 조회 실패', error);
-        setError('카드를 불러오는 데 실패했습니다.');
+        setErrorMessage(
+          '멤버 목록을 불러오는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        );
       } finally {
         setIsLoading(false);
       }
@@ -104,6 +107,9 @@ export default function CreateCard({
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
+      setErrorMessage(
+        '카드를 생성하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -239,12 +245,22 @@ export default function CreateCard({
               variant="primary"
               className="flex-1"
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !formData.title || !formData.description}
             >
               {isLoading ? '생성 중...' : '생성'}
             </Button>
           </div>
         </ModalBase>
+
+        {/* API 호출 에러 처리 */}
+        {errorMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <AlertModal
+              message={errorMessage}
+              onConfirm={() => setErrorMessage(null)}
+            />
+          </div>
+        )}
       </ModalOverlay>
     </>
   );
