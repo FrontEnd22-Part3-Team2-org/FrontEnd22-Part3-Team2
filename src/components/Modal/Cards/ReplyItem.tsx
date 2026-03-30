@@ -24,10 +24,9 @@ export default function ReplyItem({ comment, onDeleteClick }: Props) {
   const [editContent, setEditContent] = useState(comment.content);
   const [displayContent, setDisplayContent] = useState(comment.content);
 
-  if (!comment) return null; // null이면 렌더링 안함
+  if (!comment) return null;
   const { id, author, createdAt } = comment;
   const formatted = formatDateTime(createdAt);
-  console.log(comment);
 
   /** 댓글 수정 */
   const handleEditConfirm = async () => {
@@ -44,7 +43,7 @@ export default function ReplyItem({ comment, onDeleteClick }: Props) {
 
   return (
     <>
-      <div className="relative flex items-start mt-4 gap-[10px]">
+      <div className="flex items-start mt-4 gap-[10px]">
         <UserProfileImage profile={author} />
         <div className="flex flex-col gap-[6px] flex-1 pr-5">
           {/* 작성자 이름, 작성 날짜 */}
