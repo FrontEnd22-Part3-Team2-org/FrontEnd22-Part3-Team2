@@ -79,8 +79,7 @@ export default function CreateCard({
   }, [dashboardId]);
 
   const handleSubmit = async () => {
-    // if (!formData.title || !formData.description) return;
-    console.log(formData);
+    if (!formData.title || !formData.description) return;
 
     setIsLoading(true);
 
@@ -105,7 +104,6 @@ export default function CreateCard({
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
-      // TODO: 에러 처리
     } finally {
       setIsLoading(false);
     }
