@@ -106,6 +106,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
       fetchComments();
     } catch (error) {
       console.error('댓글 삭제 실패', error);
+      setErrorMessage('댓글 삭제에 문제가 발생했습니다.');
     } finally {
       setDeletingCommentId(null);
     }
@@ -113,8 +114,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 수정 완료 핸들러 */
   const handleEditSuccess = () => {
-    console.log('수정 완료!');
-
     setIsEditing(false); // 모달 닫기
     fetchCardData();
   };
