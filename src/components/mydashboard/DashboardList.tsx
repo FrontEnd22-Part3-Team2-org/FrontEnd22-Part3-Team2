@@ -1,32 +1,43 @@
 'use client';
 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getDashboards } from '@/api/dashboard';
+import { Dashboard } from '@/types/dashboard';
+
 import Button from '@/components/common/Button';
 import AddItemChip from '../common/Chip/AddItemChip';
 import DashboardCard from './DashboardCard';
-import { Dashboard } from '@/types/dashboard';
-import { useState } from 'react';
 import Pagination from '../common/Pagination';
+import DashboardCreateModal from '../Modal/DashboardCreateModal';
 
-const DASHBOARD_LIMIT_PER_PAGE = 6;
-const ADD_BUTTON_SLOT = 1;
-const FIRST_PAGE_DATA_LIMIT = DASHBOARD_LIMIT_PER_PAGE - ADD_BUTTON_SLOT;
+const DASHBOARD_LIMIT = 5;
 
 export default function DashboardList() {
-  const dashboards: Dashboard[] = [];
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data, isPlaceholderData } = useQuery({
+    queryKey: ['dashboards', currentPage],
+    queryFn: () => getDashboards(currentPage, DASHBOARD_LIMIT),
+    placeholderData: (previousData) => previousData,
+  });
 
   const isFirstPage = currentPage === 1;
+  const rawDashboards = data?.dashboards || [];
+  const isTransitioningFromFirst =
+    isPlaceholderData && isFirstPage === false && rawDashboards.length > 5;
 
-  const pageSize = isFirstPage
-    ? FIRST_PAGE_DATA_LIMIT
-    : DASHBOARD_LIMIT_PER_PAGE;
-  const startIndex = isFirstPage
-    ? 0
-    : (currentPage - 1) * DASHBOARD_LIMIT_PER_PAGE - ADD_BUTTON_SLOT;
-  const currentDashboards = dashboards.slice(startIndex, startIndex + pageSize);
-  const totalPages = Math.ceil(
-    (dashboards.length + ADD_BUTTON_SLOT) / DASHBOARD_LIMIT_PER_PAGE,
-  );
+  const dashboards =
+    isFirstPage || isTransitioningFromFirst
+      ? rawDashboards.slice(0, 5)
+      : rawDashboards;
+
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / DASHBOARD_LIMIT));
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div className="pt-[40px] flex flex-col w-full">
@@ -36,15 +47,22 @@ export default function DashboardList() {
           ${dashboards.length > 0 ? 'min-h-[160px] md:min-h-[235px] lg:min-h-[160px]' : 'min-h-0'}`}
       >
         {isFirstPage && (
-          <Button variant="secondary" size="add_board" className="!w-full">
+          <Button
+            variant="secondary"
+            size="add_board"
+            className="!w-full"
+            onClick={openModal}
+          >
             새로운 대시보드
             <AddItemChip asIcon={true} />
           </Button>
         )}
 
-        {currentDashboards.map((board) => (
+        {dashboards.map((board: Dashboard) => (
           <DashboardCard key={board.id} board={board} />
         ))}
+
+        <DashboardCreateModal isOpen={isModalOpen} onClose={closeModal} />
       </div>
 
       {dashboards.length > 0 && (

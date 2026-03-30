@@ -26,7 +26,7 @@ interface Props {
    */
   size?: number;
   /** 이미지 업로드 후 URL을 부모 컴포넌트로 전달하는 콜백 함수 */
-  onUpload?: (url: string) => void;
+  onUpload: (file: File | null) => void;
   defaultUrl?: string | null;
 }
 
@@ -42,6 +42,12 @@ export default function ImageUploaderInput({
   const [imageUrl, setImageUrl] = useState<string>(defaultUrl ?? '');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const handleClick = () => {
+    setFile(null);
+    setImageUrl(''); // ✅ 버튼 클릭 시점에 바로 초기화
+    onUpload(null);
+  };
+
   /** 파일(input[type="file"]) 변경 시 실행되는 핸들러 */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     /** 선택된 파일 중 첫 번째 파일 가져오기 */
@@ -51,21 +57,19 @@ export default function ImageUploaderInput({
     if (!selected) {
       setFile(null);
       setImageUrl('');
-      onUpload?.('');
+      onUpload(null);
       return;
     }
 
-    /** 이미지 파일이 아닌 경우 필터링 */
     if (!selected.type.startsWith('image/')) {
       alert('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
 
-    /** 브라우저 미리보기용 blob URL로 변환 */
     const blobUrl = URL.createObjectURL(selected);
     setFile(selected); // 실제 파일 저장 (서버 업로드용)
     setImageUrl(blobUrl); // 미리보기용 URL 저장
-    onUpload?.(blobUrl); // prop으로 전달
+    onUpload(selected);
   };
 
   /** 업로드 버튼 클릭 시 숨겨진 input[type="file"]을 트리거하는 함수 */
@@ -87,6 +91,7 @@ export default function ImageUploaderInput({
         type="file"
         accept="image/*"
         onChange={handleChange}
+        onClick={handleClick}
         ref={inputRef}
         className="hidden"
       />

@@ -17,40 +17,28 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useState } from 'react';
-import { Assignee, Card } from '@/types/dashboard';
+import { useEffect, useRef, useState } from 'react';
+import { Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { createCard } from '@/api/dashboard';
+import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
+import { formatDateTime } from '@/utils/formatDate';
+import TagChip from '@/components/common/Chip/TagChip';
 
-/** 드롭다운으로 보여줄 전체 멤버 mock 데이터 */
-const MOCK_MEMBERS: Assignee[] = [
-  {
-    id: 1,
-    nickname: '공민수',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=1',
-  },
-  {
-    id: 2,
-    nickname: '이지은',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=2',
-  },
-  {
-    id: 3,
-    nickname: '김현우',
-    profileImageUrl: '',
-  },
-  {
-    id: 4,
-    nickname: '이수빈',
-    profileImageUrl: '',
-  },
-  {
-    id: 5,
-    nickname: '문지훈',
-    profileImageUrl: 'https://i.pravatar.cc/150?img=5',
-  },
-];
+interface CreateCardForm {
+  title: string;
+  description: string;
+  tags: string[];
+  dueDate: string | null;
+  imageUrl?: string;
+}
+
+const INITIAL_FORM: CreateCardForm = {
+  title: '',
+  description: '',
+  tags: [],
+  dueDate: null,
+};
 
 interface CreateCardProps {
   dashboardId: number;
@@ -63,39 +51,56 @@ export default function CreateCard({
   columnId,
   onModalClose,
 }: CreateCardProps) {
-  /**
-   * id, createdAt, updatedAt은 서버에서 생성되어 폼 상태에 미포함
-   * dashboardId, columnId는 props로 받아야 함
-   */
-  const [formData, setFormData] = useState<
-    Pick<
-      Card,
-      'title' | 'description' | 'tags' | 'dueDate' | 'assignee' | 'imageUrl'
-    >
-  >({
-    title: '',
-    description: '',
-    tags: [],
-    dueDate: null,
-    assignee: null,
-    imageUrl: null,
-  });
-
+  const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [tagInput, setTagInput] = useState('');
+  const [isTagFocused, setIsTagFocused] = useState(false);
+
+  /** 멤버 목록 조회 */
+  useEffect(() => {
+    const fetchMembers = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getMembers(dashboardId);
+        setMembers(data.members);
+      } catch (error) {
+        console.error('멤버 조회 실패', error);
+        setError('카드를 불러오는 데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [dashboardId]);
 
   const handleSubmit = async () => {
+    // if (!formData.title || !formData.description) return;
     console.log(formData);
+
     setIsLoading(true);
+
     try {
+      // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
+      const imageUrl = imageFile
+        ? (await uploadCardImage(columnId, imageFile)).imageUrl
+        : undefined;
+
+      // 2️⃣ 카드 생성
       await createCard({
         dashboardId,
         columnId,
         title: formData.title,
         description: formData.description,
-        ...(formData.assignee && { assigneeUserId: formData.assignee.id }),
+        // 선택 필드들은 값이 있을 때만 객체에 포함
+        ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
+        ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
-        ...(formData.tags?.length && { tags: formData.tags }),
-        ...(formData.imageUrl && { imageUrl: formData.imageUrl }),
+        ...(imageUrl && { imageUrl }),
       });
       onModalClose();
     } catch (error) {
@@ -106,19 +111,29 @@ export default function CreateCard({
     }
   };
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   /** 태그 입력 - Enter 키로 추가 */
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const value = e.currentTarget.value.trim();
+      if (e.nativeEvent.isComposing) return; // ✅ 한글 조합 중이면 무시
+      const value = tagInput.trim();
       if (!value) return;
       setFormData((prev) => ({ ...prev, tags: [...prev.tags, value] }));
-      e.currentTarget.value = '';
+      setTagInput('');
     }
+  };
+  const handleTagRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index),
+    }));
   };
 
   /** 타이틀 공통 CSS */
   const baseFontStyle = 'text-2lg-medium mb-2';
+  // const baseFontStyle = 'mb-1 block text-xs font-medium text-gray-600';
 
   return (
     <>
@@ -132,9 +147,9 @@ export default function CreateCard({
           <div className="">
             <p className={`${baseFontStyle}`}>담당자</p>
             <DropdownAssignee
-              members={MOCK_MEMBERS}
-              onSelect={(user) => {
-                setFormData((prev) => ({ ...prev, assignee: user }));
+              members={members}
+              onSelect={(id) => {
+                setSelectedMemberId(id);
               }}
             />
           </div>
@@ -163,30 +178,54 @@ export default function CreateCard({
 
           {/* 마감일 */}
           <DateInput
-            onDateChange={(date) =>
+            fontStyle={baseFontStyle}
+            onDateChange={(date) => {
               setFormData((prev) => ({
                 ...prev,
-                dueDate: date ? date.toISOString() : null,
-              }))
-            }
+                dueDate: date ? formatDateTime(date.toISOString()) : null,
+              }));
+            }}
           />
 
           {/* 태그 */}
-          <Input
-            label="태그"
-            placeholder="입력 후 Enter"
-            onKeyDown={handleTagKeyDown}
-          />
+          <div className="">
+            <p className={`${baseFontStyle}`}>태그</p>
+            <div
+              className={`flex flex-wrap gap-1 items-center w-full min-h-[50px] px-4 py-2 text-sm rounded-md border cursor-text outline-none transition ${
+                isTagFocused ? 'border-brand-violet' : 'border-gray-300'
+              }`}
+              onClick={() => inputRef.current?.focus()}
+            >
+              {/* 저장된 태그칩 */}
+              {formData.tags.map((tag, index) => (
+                <TagChip
+                  key={index}
+                  label={tag}
+                  onClick={() => handleTagRemove(index)}
+                  className="cursor-pointer"
+                />
+              ))}
+
+              {/* 실제 인풋 */}
+              <input
+                ref={inputRef}
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                onFocus={() => setIsTagFocused(true)}
+                onBlur={() => setIsTagFocused(false)}
+                className="bg-transparent outline-none flex-1 min-w-[80px] text-gray-700 text-lg-regular"
+                placeholder={
+                  formData.tags.length === 0 ? '태그 입력 후 Enter' : ''
+                }
+              />
+            </div>
+          </div>
 
           {/* 이미지 */}
-          {/* TODO: [수경] 이미지 업로드 API 연동 */}
           <div>
             <p className={`${baseFontStyle}`}>이미지</p>
-            <ImageUploaderInput
-              onUpload={(url) =>
-                setFormData((prev) => ({ ...prev, imageUrl: url }))
-              }
-            />
+            <ImageUploaderInput onUpload={(file) => setImageFile(file)} />
           </div>
 
           {/* 생성,취소 버튼 */}

@@ -20,7 +20,7 @@ type Color = {
   color: string;
   hex: string;
 };
-const COLORS: Color[] = [
+export const COLORS: Color[] = [
   { name: 'green', color: 'bg-green', hex: '#7AC555' },
   { name: 'purple', color: 'bg-purple', hex: '#760DDE' },
   { name: 'orange', color: 'bg-orange', hex: '#FFA500' },

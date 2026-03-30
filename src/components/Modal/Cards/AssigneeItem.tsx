@@ -31,15 +31,19 @@ export default function AssigneeItem({ assignee, dueDate }: Props) {
     <div className="flex md:flex-col flex-row items-center md:gap-4 gap-1 md:w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
       <div className={sectionClass}>
         <p className={titleClass}>담당자</p>
-        <div className="md:h-5 h-4">
-          {assignee ? <UserName profile={assignee} /> : '-'}
+        <div>
+          {assignee ? (
+            <UserName profile={assignee} />
+          ) : (
+            <span className="md:h-5 h-4">-</span>
+          )}
         </div>
       </div>
       <div className={sectionClass}>
         <p className={titleClass}>마감일</p>
-        <div className="md:h-5 h-4">
+        <div>
           <p className="text-gray-700 text-md-regular">
-            {dueDate ? formatDateTime(dueDate) : '-'}
+            {dueDate ? dueDate : <span className="md:h-5 h-4">-</span>}
           </p>
         </div>
       </div>

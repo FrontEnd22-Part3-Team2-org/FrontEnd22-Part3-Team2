@@ -21,18 +21,17 @@
 import { useState } from 'react';
 import ArrowDropDownIcon from '../Icon/ArrowDropDownIcon';
 import UserName from '../User/UserName';
-import { Assignee } from '@/types/dashboard';
+import { Assignee, Member } from '@/types/dashboard';
 import DropdownList from './DropdownList';
 
 // TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
-
 interface AssigneeProps {
   /** 드롭다운에 보여줄 전체 멤버 목록 */
-  members: Assignee[];
+  members: Member[];
   /** 이미 선택된 담당자 초기값 */
   defaultAssignee?: Assignee | null;
   /** 담당자 선택 시 선택된 유저를 부모로 전달하는 콜백 함수 */
-  onSelect?: (user: Assignee) => void;
+  onSelect?: (user: number) => void;
   /** @defalut '이름을 입력해 주세요' */
   placeholder?: string;
 }
@@ -100,10 +99,11 @@ export default function DropdownAssignee({
           setQuery(user.nickname);
           setOpen(false);
           setSelectedUser(user);
-          onSelect?.(user);
+          onSelect?.(user.userId);
         }}
-        getKey={(user) => user.id}
+        getKey={(user) => user.userId}
         renderItem={(user) => <UserName profile={user} />}
+        onClose={() => setOpen(false)}
       />
     </div>
   );
