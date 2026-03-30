@@ -25,17 +25,11 @@
 
 import StatusChip from '../../common/Chip/StatusChip';
 import TagChip from '../../common/Chip/TagChip';
-import { Textarea } from '../../common/Input';
 import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type {
-  Card,
-  Column,
-  Comments,
-  CommentsResponse,
-} from '@/types/dashboard';
+import { useCallback, useEffect, useState } from 'react';
+import type { Card, Column, CommentsResponse } from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
@@ -43,10 +37,16 @@ import ModalBase from '@/components/common/ModalBase';
 import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
-import { useQuery } from '@tanstack/react-query';
+import {
+  deleteCard,
+  deleteComments,
+  getColumns,
+  getComments,
+  readCard,
+} from '@/api/dashboard';
 import { useDropdownClose } from '@/hooks/useToggle';
 import CommentsForm from './CommentsForm';
+import AlertModal from '../AlertModal';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -60,11 +60,13 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
 
   /** 댓글 관련 상태 관리 */
-  const [hasComments, setHasComments] = useState(false); // 댓글 유무 확인
   const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
+    null,
+  );
+  const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
 
@@ -72,22 +74,48 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const handleCloseMenu = () => setIsMenuOpen(false);
+
+  /** 카드 수정하기 버튼 클릭 핸들러 */
   const handleEditClick = () => {
     setIsEditing(true);
     handleCloseMenu();
   };
+
+  /** 카드 삭제하기 버튼 클릭 핸들러 */
   const handleDeleteClick = () => {
     setIsDeleting(true);
   };
 
+  /** 카드 삭제 API 호출 핸들러 */
   const handleDeleteCard = async () => {
     try {
       await deleteCard(cardId);
-      console.log(cardId, '삭제 완료');
+      onModalClose();
     } catch (error) {
       console.error('카드 삭제 실패', error);
+      setErrorMessage('카드 삭제에 실패했습니다.');
     } finally {
     }
+  };
+
+  /** 댓글 삭제 API 호출 핸들러 */
+  const handleDeleteCommentConfirm = async () => {
+    if (!deletingCommentId) return;
+    try {
+      await deleteComments(deletingCommentId);
+      fetchComments();
+    } catch (error) {
+      console.error('댓글 삭제 실패', error);
+      setErrorMessage('댓글 삭제에 문제가 발생했습니다.');
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
+  /** 수정 완료 핸들러 */
+  const handleEditSuccess = () => {
+    setIsEditing(false); // 모달 닫기
+    fetchCardData();
   };
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
@@ -101,6 +129,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
       setCard(data);
     } catch (error) {
       console.error(error);
+      setErrorMessage('카드 조회에 문제가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +146,9 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     try {
       const res = await getComments(cardId);
       setCommentsList(res);
-      setHasComments(res.comments.length > 0);
     } catch (error) {
       console.error('댓글 조회 실패', error);
+      setErrorMessage('댓글 목록 조회에 문제가 발생했습니다.');
     }
   }, [cardId]);
 
@@ -137,6 +166,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
         setColumns(res.data);
       } catch (error) {
         console.error('컬럼 조회 실패', error);
+        setErrorMessage('컬럼 조회에 문제가 발생했습니다.');
       }
     };
 
@@ -152,29 +182,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  /** 수정 완료 핸들러 */
-  const handleEditSuccess = () => {
-    console.log('수정 완료!');
-
-    setIsEditing(false); // 모달 닫기
-    fetchCardData();
-  };
-
-  if (isLoading) {
-    return (
-      <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">{isLoading ?? '불러오는 중'}</p>
-      </ModalOverlay>
-    );
-  }
-  if (error || !card) {
-    return (
-      <ModalOverlay onClose={onModalClose}>
-        <p className="text-gray-400">{error ?? '카드를 찾을 수 없습니다.'}</p>
-      </ModalOverlay>
-    );
-  }
-
+  if (!card) return;
   const { title, description, tags, dueDate, assignee, imageUrl } = card ?? {};
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
@@ -231,7 +239,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
             {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
             {imageUrl && (
-              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:min-h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4 overflow-hidden">
+              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4">
                 <Image
                   src={imageUrl}
                   alt="할 일 카드 이미지"
@@ -253,10 +261,16 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
               />
               {/* 댓글 리스트 */}
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                {hasComments ? (
+                {commentsList?.comments?.length ? (
                   <>
                     {commentsList?.comments.map((comment) => {
-                      return <ReplyItem key={comment.id} comment={comment} />;
+                      return (
+                        <ReplyItem
+                          key={comment.id}
+                          comment={comment}
+                          onDeleteClick={(id) => setDeletingCommentId(id)}
+                        />
+                      );
                     })}
                   </>
                 ) : (
@@ -296,17 +310,36 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
             </div>
           </div>
         </ModalBase>
-        {/* 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
+        {/* 카드 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
         {isDeleting && (
           <div className="absolute z-20 flex items-center justify-center shadow-lg">
             <ConfirmModal
               message="정말 카드를 삭제하겠습니까?"
               onCancel={() => setIsDeleting(false)}
               onConfirm={() => {
-                // TODO: 카드 삭제 API 호출
-                onModalClose();
                 handleDeleteCard();
               }}
+            />
+          </div>
+        )}
+
+        {/* 댓글 삭제 버튼 클릭시 확인 모달 렌더링 */}
+        {deletingCommentId && (
+          <div className="absolute z-20 flex items-center justify-center shadow-lg">
+            <ConfirmModal
+              message="정말 댓글을 삭제하겠습니까?"
+              onCancel={() => setDeletingCommentId(null)}
+              onConfirm={handleDeleteCommentConfirm}
+            />
+          </div>
+        )}
+
+        {/* API 호출 에러 처리 */}
+        {errorMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+            <AlertModal
+              message={errorMessage}
+              onConfirm={() => setErrorMessage(null)}
             />
           </div>
         )}

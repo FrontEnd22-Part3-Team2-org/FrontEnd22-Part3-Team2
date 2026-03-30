@@ -1,3 +1,4 @@
+'use client';
 /**
  * @file ReplyItem.tsx
  * @description 할 일 카드 모달 내 댓글 리스트 컴포넌트입니다.
@@ -9,24 +10,42 @@
 
 import UserProfileImage from '@/components/common/User/UserProfileImage';
 import { Comments } from '@/types/dashboard';
+import { updateComments } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
+import { useState } from 'react';
 
 interface Props {
   comment: Comments;
+  onDeleteClick: (id: number) => void;
 }
 
-export default function ReplyItem({ comment }: Props) {
-  if (!comment) return null; // null이면 렌더링 안함
+export default function ReplyItem({ comment, onDeleteClick }: Props) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [displayContent, setDisplayContent] = useState(comment.content);
 
-  const { content, author, createdAt } = comment;
-
+  if (!comment) return null;
+  const { id, author, createdAt } = comment;
   const formatted = formatDateTime(createdAt);
+
+  /** 댓글 수정 */
+  const handleEditConfirm = async () => {
+    setIsEditing(false);
+
+    try {
+      await updateComments(id, editContent);
+      setDisplayContent(editContent);
+    } catch (error) {
+      console.error('댓글 수정 실패', error);
+      setEditContent(displayContent);
+    }
+  };
 
   return (
     <>
       <div className="flex items-start mt-4 gap-[10px]">
         <UserProfileImage profile={author} />
-        <div className="flex flex-col gap-[6px]">
+        <div className="flex flex-col gap-[6px] flex-1 pr-5">
           {/* 작성자 이름, 작성 날짜 */}
           <div className="flex items-center gap-2">
             <span className="text-md-semibold leading-4">
@@ -35,21 +54,36 @@ export default function ReplyItem({ comment }: Props) {
             <p className="text-gray-400 text-xs-regular">{formatted}</p>
           </div>
 
-          {/* 댓글 내용 */}
-          <div className="text-md-regular leading-4">{content}</div>
+          {/* TODO : [수경] 댓글 작성자 확인 필요 */}
+          {/* 댓글 내용 or 수정 input */}
+          {isEditing ? (
+            <input
+              type="text"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full text-md-regular border border-gray-300 rounded px-2 py-1 outline-none bg-transparent"
+              autoFocus
+            />
+          ) : (
+            <div className="text-md-regular leading-4">{displayContent}</div>
+          )}
 
           {/* 댓글 수정, 삭제 버튼 */}
           <div className="flex items-center gap-2 md:gap-[14px]">
             <button
               type="button"
               className="text-xs text-gray-400 underline underline-offset-2"
+              onClick={() =>
+                isEditing ? handleEditConfirm() : setIsEditing(true)
+              }
             >
-              수정
+              {isEditing ? '확인' : '수정'}
             </button>
 
             <button
               type="button"
               className="text-xs text-gray-400 underline underline-offset-2"
+              onClick={() => onDeleteClick(id)}
             >
               삭제
             </button>
