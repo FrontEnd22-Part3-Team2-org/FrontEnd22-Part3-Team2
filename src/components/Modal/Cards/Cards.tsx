@@ -130,9 +130,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
       setCard(data);
     } catch (error) {
       console.error(error);
-      setErrorMessage(
-        '카드를 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      );
+      setErrorMessage('카드 조회에 문제가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -151,9 +149,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
       setCommentsList(res);
     } catch (error) {
       console.error('댓글 조회 실패', error);
-      setErrorMessage(
-        '댓글 목록을 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      );
+      setErrorMessage('댓글 목록 조회에 문제가 발생했습니다.');
     }
   }, [cardId]);
 
@@ -171,9 +167,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
         setColumns(res.data);
       } catch (error) {
         console.error('컬럼 조회 실패', error);
-        setErrorMessage(
-          '컬럼을 조회하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        );
+        setErrorMessage('컬럼 조회에 문제가 발생했습니다.');
       }
     };
 

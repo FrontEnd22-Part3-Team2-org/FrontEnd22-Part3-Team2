@@ -107,9 +107,7 @@ export default function EditCard({
         setMembers(data.members);
       } catch (error) {
         console.error('멤버 조회 실패', error);
-        setErrorMessage(
-          '멤버 목록을 불러오는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        );
+        setErrorMessage('멤버 조회에 문제가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -159,9 +157,7 @@ export default function EditCard({
       onSuccess?.();
     } catch (error) {
       console.error('카드 수정 실패', error);
-      setErrorMessage(
-        '카드를 수정하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      );
+      setErrorMessage('카드 수정에 문제가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

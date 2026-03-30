@@ -70,9 +70,7 @@ export default function CreateCard({
         setMembers(data.members);
       } catch (error) {
         console.error('멤버 조회 실패', error);
-        setErrorMessage(
-          '멤버 목록을 불러오는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        );
+        setErrorMessage('멤버 조회 문제가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -107,9 +105,7 @@ export default function CreateCard({
       onModalClose();
     } catch (error) {
       console.error('카드 생성 실패', error);
-      setErrorMessage(
-        '카드를 생성하는 데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-      );
+      setErrorMessage('카드 생성에 문제가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
