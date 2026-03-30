@@ -17,8 +17,7 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useEffect, useRef, useState } from 'react';
-import { Member } from '@/types/dashboard';
+import { useRef, useState } from 'react';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
@@ -26,6 +25,8 @@ import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
 import AlertModal from '../AlertModal';
 import Skeleton from '@/components/common/Skeleton/Skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 interface CreateCardForm {
   title: string;
@@ -107,10 +108,8 @@ export default function CreateCard({
   columnId,
   onModalClose,
 }: CreateCardProps) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
-  const [isMembersLoading, setIsMembersLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagInput, setTagInput] = useState('');
@@ -118,53 +117,48 @@ export default function CreateCard({
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
 
   /** 멤버 목록 조회 */
-  useEffect(() => {
-    const fetchMembers = async () => {
-      setIsMembersLoading(true);
-      try {
-        const data = await getMembers(dashboardId);
-        setMembers(data.members);
-      } catch (error) {
-        console.error('멤버 조회 실패', error);
-        setErrorMessage('멤버 조회 문제가 발생했습니다.');
-      } finally {
-        setIsMembersLoading(false);
-      }
-    };
+  const { data: membersData, isLoading: isMembersLoading } = useQuery({
+    queryKey: ['members', dashboardId],
+    queryFn: () => getMembers(dashboardId),
+    throwOnError: () => {
+      setErrorMessage('멤버 조회에 문제가 발생했습니다.');
+      return false;
+    },
+  });
+  const members = membersData?.members ?? [];
 
-    fetchMembers();
-  }, [dashboardId]);
-
-  const handleSubmit = async () => {
-    if (!formData.title || !formData.description) return;
-
-    setIsSubmitting(true);
-
-    try {
-      // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
+  /** 카드 생성 */
+  const { mutateAsync: submitCard, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
       const imageUrl = imageFile
         ? (await uploadCardImage(columnId, imageFile)).imageUrl
         : undefined;
 
-      // 2️⃣ 카드 생성
-      await createCard({
+      return createCard({
         dashboardId,
         columnId,
         title: formData.title,
         description: formData.description,
-        // 선택 필드들은 값이 있을 때만 객체에 포함
         ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
         ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
         ...(imageUrl && { imageUrl }),
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+      });
       onModalClose();
-    } catch (error) {
-      console.error('카드 생성 실패', error);
+    },
+    onError: () => {
       setErrorMessage('카드 생성에 문제가 발생했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.description) return;
+    await submitCard();
   };
 
   const inputRef = useRef<HTMLInputElement>(null);

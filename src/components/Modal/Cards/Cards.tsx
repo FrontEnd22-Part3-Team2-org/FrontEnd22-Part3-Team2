@@ -48,10 +48,13 @@ import { useDropdownClose } from '@/hooks/useToggle';
 import CommentsForm from './CommentsForm';
 import AlertModal from '../AlertModal';
 import Skeleton from '@/components/common/Skeleton/Skeleton';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 interface CardsProps {
   onModalClose: () => void;
   cardId: number;
+  dashboardId: number;
 }
 
 function CardSkeleton({ onModalClose }: { onModalClose: () => void }) {
@@ -131,14 +134,17 @@ function CardSkeleton({ onModalClose }: { onModalClose: () => void }) {
   );
 }
 
-export default function Cards({ onModalClose, cardId }: CardsProps) {
-  const [card, setCard] = useState<Card | null>(null);
+export default function Cards({
+  onModalClose,
+  cardId,
+  dashboardId,
+}: CardsProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [columnTitle, setColumnTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 카드 상세 조회 로딩
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false); // 드롭다운 열림 상태
 
   /** 댓글 관련 상태 관리 */
   const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
@@ -147,9 +153,19 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
+  const {
+    data: card,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['card', cardId],
+    queryFn: () => readCard(cardId),
+  });
 
-  /** 드롭다운 열림 상태 */
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+  queryClient.invalidateQueries({
+    queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+  });
 
   const handleCloseMenu = () => setIsMenuOpen(false);
 
@@ -168,11 +184,12 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   const handleDeleteCard = async () => {
     try {
       await deleteCard(cardId);
+      queryClient.invalidateQueries({
+        queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+      });
       onModalClose();
     } catch (error) {
-      console.error('카드 삭제 실패', error);
       setErrorMessage('카드 삭제에 실패했습니다.');
-    } finally {
     }
   };
 
@@ -192,30 +209,19 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
   /** 수정 완료 핸들러 */
   const handleEditSuccess = () => {
-    setIsEditing(false); // 모달 닫기
-    fetchCardData();
+    setIsEditing(false);
+    queryClient.invalidateQueries({
+      queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ['card', cardId], // 카드 모달 업데이트
+    });
   };
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
   const menuRef = useDropdownClose(handleCloseMenu);
 
   /** 1️⃣ 카드 조회 */
-  const fetchCardData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await readCard(cardId);
-      setCard(data);
-    } catch (error) {
-      console.error(error);
-      setErrorMessage('카드 조회에 문제가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [cardId]);
-
-  useEffect(() => {
-    fetchCardData();
-  }, [fetchCardData]);
 
   /** 2️⃣ 댓글 목록 조회  */
   const fetchComments = useCallback(async () => {
@@ -260,12 +266,13 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  if (isLoading) {
+  if (isError) {
     return <CardSkeleton onModalClose={onModalClose} />;
   }
 
   if (!card) return;
-  const { title, description, tags, dueDate, assignee, imageUrl } = card ?? {};
+  const { title, description, tags, dueDate, assignee, imageUrl } =
+    card as Card;
 
   /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
   if (isEditing) {
