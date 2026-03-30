@@ -30,7 +30,7 @@ export default function Textarea({
   label,
   isError = false,
   errorMessage,
-  buttonText = '입력',
+  buttonText,
   onButtonClick,
   buttonDisabled = false,
   className,
@@ -46,7 +46,7 @@ export default function Textarea({
       {label && (
         <label
           htmlFor={textareaId}
-          className="mb-1 block text-xs font-medium text-gray-600"
+          className="mb-1 block text-lg-medium text-gray-700"
         >
           {label}
         </label>
@@ -54,7 +54,7 @@ export default function Textarea({
 
       <div
         className={clsx(
-          'rounded-md border bg-white p-4',
+          'rounded-md border bg-white p-3 min-h-[110px] h-full flex flex-col',
           hasError
             ? 'border-red focus-within:border-red'
             : 'border-gray-300 focus-within:border-brand-violet',
@@ -62,10 +62,11 @@ export default function Textarea({
       >
         <textarea
           id={textareaId}
+          name="content"
           {...props}
           className={clsx(
-            'min-h-[110px] w-full resize-none text-sm outline-none',
-            'placeholder:text-gray-400',
+            'w-full h-full resize-none text-sm outline-none flex-1',
+            'placeholder:text-gray-400 placeholder:text-md-regular',
             'bg-transparent text-gray-900',
             className,
           )}
@@ -73,21 +74,23 @@ export default function Textarea({
           aria-describedby={errorMessage ? `${textareaId}-error` : undefined}
         />
 
-        <div className="mt-3 flex justify-end">
-          <button
-            type="button"
-            onClick={onButtonClick}
-            disabled={buttonDisabled}
-            className={clsx(
-              'rounded-md border px-6 py-2 text-sm font-medium transition',
-              buttonDisabled
-                ? 'cursor-not-allowed border-gray-300 text-gray-300'
-                : 'border-brand-violet text-brand-violet hover:bg-brand-violet-light',
-            )}
-          >
-            {buttonText}
-          </button>
-        </div>
+        {buttonText && (
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              onClick={onButtonClick}
+              disabled={buttonDisabled}
+              className={clsx(
+                'rounded-md border px-8 py-2 text-sm font-medium transition',
+                buttonDisabled
+                  ? 'cursor-not-allowed border-gray-300 text-gray-300'
+                  : 'border-brand-violet text-brand-violet hover:bg-brand-violet-light',
+              )}
+            >
+              {buttonText}
+            </button>
+          </div>
+        )}
       </div>
 
       {errorMessage && (

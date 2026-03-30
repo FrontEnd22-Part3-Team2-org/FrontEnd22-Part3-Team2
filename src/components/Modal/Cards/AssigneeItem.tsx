@@ -43,11 +43,7 @@ export default function AssigneeItem({ assignee, dueDate }: Props) {
         <p className={titleClass}>마감일</p>
         <div>
           <p className="text-gray-700 text-md-regular">
-            {dueDate ? (
-              formatDateTime(dueDate)
-            ) : (
-              <span className="md:h-5 h-4">-</span>
-            )}
+            {dueDate ? dueDate : <span className="md:h-5 h-4">-</span>}
           </p>
         </div>
       </div>

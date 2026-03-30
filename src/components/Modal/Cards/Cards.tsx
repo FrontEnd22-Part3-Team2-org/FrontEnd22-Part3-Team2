@@ -45,6 +45,8 @@ import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { deleteCard, getColumns, getComments, readCard } from '@/api/dashboard';
 import { useQuery } from '@tanstack/react-query';
+import { useDropdownClose } from '@/hooks/useToggle';
+import CommentsForm from './CommentsForm';
 
 interface CardsProps {
   onModalClose: () => void;
@@ -89,19 +91,7 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   };
 
   /** 드롭다운 외부 클릭 시 닫기 구현 */
-  const menuRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        handleCloseMenu();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  const menuRef = useDropdownClose(handleCloseMenu);
 
   /** 1️⃣ 카드 조회 */
   const fetchCardData = useCallback(async () => {
@@ -109,7 +99,6 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
     try {
       const data = await readCard(cardId);
       setCard(data);
-      console.log(data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -122,22 +111,21 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
   }, [fetchCardData]);
 
   /** 2️⃣ 댓글 목록 조회  */
-  useEffect(() => {
+  const fetchComments = useCallback(async () => {
     if (!cardId) return;
 
-    const fetchComments = async () => {
-      try {
-        const res = await getComments(cardId);
-        console.log(res);
-        setCommentsList(res);
-        setHasComments(res.comments.length > 0);
-      } catch (error) {
-        console.error('댓글 조회 실패', error);
-      }
-    };
-
-    fetchComments();
+    try {
+      const res = await getComments(cardId);
+      setCommentsList(res);
+      setHasComments(res.comments.length > 0);
+    } catch (error) {
+      console.error('댓글 조회 실패', error);
+    }
   }, [cardId]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   /** 2️⃣ 컬럼 조회  */
   useEffect(() => {
@@ -256,10 +244,13 @@ export default function Cards({ onModalClose, cardId }: CardsProps) {
 
             {/* 댓글 섹션 */}
             <section className="flex flex-col">
-              <p className="mb-1 text-lg-medium">댓글</p>
               {/* 댓글 인풋 */}
-              {/* TODO : [수경] Server Action 연동을 위한 form, CSS 수정 */}
-              <Textarea placeholder="댓글 작성하기" />
+              <CommentsForm
+                cardId={cardId}
+                columnId={card.columnId}
+                dashboardId={card.dashboardId}
+                onSuccess={fetchComments}
+              />
               {/* 댓글 리스트 */}
               <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
                 {hasComments ? (
