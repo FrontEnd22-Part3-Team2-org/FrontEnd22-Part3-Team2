@@ -26,6 +26,8 @@ const TAG_COLORS = [
 
 interface TagChipProps {
   label: string;
+  onClick?: () => void;
+  className?: string;
 }
 
 /**
@@ -42,13 +44,16 @@ const getColorIndex = (label: string) => {
   return hash % TAG_COLORS.length; // TAG_COLORS 배열 범위 내 인덱스 반환
 };
 
-export default function TagChip({ label }: TagChipProps) {
+export default function TagChip({ label, onClick, className }: TagChipProps) {
   /** label 기반으로 색상 인덱스 계산 */
   const colorIndex = getColorIndex(label);
   const { bg, text } = TAG_COLORS[colorIndex];
   return (
-    <div className={`inline-flex rounded-md ${bg}`}>
-      <p className={`px-2 py-[5px] text-md-regular ${text}`}>{label}</p>
+    <div
+      className={`inline-flex rounded-md ${bg} ${className}`}
+      onClick={onClick}
+    >
+      <p className={`px-2 py-1 text-md-regular ${text}`}>{label}</p>
     </div>
   );
 }

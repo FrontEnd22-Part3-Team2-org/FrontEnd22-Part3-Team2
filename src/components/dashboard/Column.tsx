@@ -40,6 +40,7 @@ interface ColumnProps {
   onLoadMore?: (columnId: number, cursorId: number) => void;
   cursorId?: number | null;
   isLoadingMore?: boolean;
+  isFirstColumn?: boolean;
 }
 
 export default function Column({
@@ -53,6 +54,7 @@ export default function Column({
   onLoadMore,
   cursorId,
   isLoadingMore = false,
+  isFirstColumn,
 }: ColumnProps) {
   const dotColor = COLUMN_COLORS[colorIndex % COLUMN_COLORS.length];
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -145,12 +147,13 @@ export default function Column({
             isOver ? 'bg-brand-violet-light/30' : '',
           ].join(' ')}
         >
-          {cards.map((card) => (
+          {cards.map((card, index) => (
             <TaskCard
               key={card.id}
               card={card}
               columnId={column.id}
               onClick={onCardClick}
+              priority={isFirstColumn && index === 0}
             />
           ))}
 

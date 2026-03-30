@@ -17,12 +17,13 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Member } from '@/types/dashboard';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
+import TagChip from '@/components/common/Chip/TagChip';
 
 interface CreateCardForm {
   title: string;
@@ -56,6 +57,8 @@ export default function CreateCard({
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [tagInput, setTagInput] = useState('');
+  const [isTagFocused, setIsTagFocused] = useState(false);
 
   /** 멤버 목록 조회 */
   useEffect(() => {
@@ -76,7 +79,8 @@ export default function CreateCard({
   }, [dashboardId]);
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.description) return;
+    // if (!formData.title || !formData.description) return;
+    console.log(formData);
 
     setIsLoading(true);
 
@@ -107,19 +111,29 @@ export default function CreateCard({
     }
   };
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   /** 태그 입력 - Enter 키로 추가 */
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const value = e.currentTarget.value.trim();
+      if (e.nativeEvent.isComposing) return; // ✅ 한글 조합 중이면 무시
+      const value = tagInput.trim();
       if (!value) return;
       setFormData((prev) => ({ ...prev, tags: [...prev.tags, value] }));
-      e.currentTarget.value = '';
+      setTagInput('');
     }
+  };
+  const handleTagRemove = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index),
+    }));
   };
 
   /** 타이틀 공통 CSS */
   const baseFontStyle = 'text-2lg-medium mb-2';
+  // const baseFontStyle = 'mb-1 block text-xs font-medium text-gray-600';
 
   return (
     <>
@@ -164,6 +178,7 @@ export default function CreateCard({
 
           {/* 마감일 */}
           <DateInput
+            fontStyle={baseFontStyle}
             onDateChange={(date) => {
               setFormData((prev) => ({
                 ...prev,
@@ -173,11 +188,39 @@ export default function CreateCard({
           />
 
           {/* 태그 */}
-          <Input
-            label="태그"
-            placeholder="입력 후 Enter"
-            onKeyDown={handleTagKeyDown}
-          />
+          <div className="">
+            <p className={`${baseFontStyle}`}>태그</p>
+            <div
+              className={`flex flex-wrap gap-1 items-center w-full min-h-[50px] px-4 py-2 text-sm rounded-md border cursor-text outline-none transition ${
+                isTagFocused ? 'border-brand-violet' : 'border-gray-300'
+              }`}
+              onClick={() => inputRef.current?.focus()}
+            >
+              {/* 저장된 태그칩 */}
+              {formData.tags.map((tag, index) => (
+                <TagChip
+                  key={index}
+                  label={tag}
+                  onClick={() => handleTagRemove(index)}
+                  className="cursor-pointer"
+                />
+              ))}
+
+              {/* 실제 인풋 */}
+              <input
+                ref={inputRef}
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                onFocus={() => setIsTagFocused(true)}
+                onBlur={() => setIsTagFocused(false)}
+                className="bg-transparent outline-none flex-1 min-w-[80px] text-gray-700 text-lg-regular"
+                placeholder={
+                  formData.tags.length === 0 ? '태그 입력 후 Enter' : ''
+                }
+              />
+            </div>
+          </div>
 
           {/* 이미지 */}
           <div>
