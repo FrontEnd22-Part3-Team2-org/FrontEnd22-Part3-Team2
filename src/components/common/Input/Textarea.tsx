@@ -24,6 +24,7 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
   buttonText?: string;
   onButtonClick?: () => void;
   buttonDisabled?: boolean;
+  required?: boolean;
 }
 
 export default function Textarea({
@@ -35,6 +36,7 @@ export default function Textarea({
   buttonDisabled = false,
   className,
   id,
+  required = false,
   ...props
 }: TextareaProps) {
   const autoId = useId();
@@ -46,15 +48,16 @@ export default function Textarea({
       {label && (
         <label
           htmlFor={textareaId}
-          className="mb-1 block text-lg-medium text-gray-700"
+          className="mb-2 block text-2lg-medium text-gray-700"
         >
           {label}
+          {required && <span className="text-brand-violet pl-[2px]">*</span>}
         </label>
       )}
 
       <div
         className={clsx(
-          'rounded-md border bg-white p-3 min-h-[110px] h-full flex flex-col',
+          'rounded-md border bg-white px-4 py-[11px] flex flex-col',
           hasError
             ? 'border-red focus-within:border-red'
             : 'border-gray-300 focus-within:border-brand-violet',
@@ -65,8 +68,8 @@ export default function Textarea({
           name="content"
           {...props}
           className={clsx(
-            'w-full h-full resize-none text-sm outline-none flex-1',
-            'placeholder:text-gray-400 placeholder:text-md-regular',
+            'w-full min-h-[110px] resize-none text-lg-regular outline-none flex-1',
+            'placeholder:text-gray-400 ',
             'bg-transparent text-gray-900',
             className,
           )}

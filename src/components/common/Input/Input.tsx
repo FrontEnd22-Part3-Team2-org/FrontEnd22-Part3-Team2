@@ -26,6 +26,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isError?: boolean;
   errorMessage?: string;
   rightIcon?: ReactNode;
+  required?: boolean;
 }
 
 export default function Input({
@@ -35,6 +36,7 @@ export default function Input({
   className,
   id,
   rightIcon,
+  required = false,
   ...props
 }: InputProps) {
   const autoId = useId();
@@ -46,9 +48,10 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="mb-1 block text-xs font-medium text-gray-600"
+          className="mb-2 block text-2lg-medium text-gray-700"
         >
           {label}
+          {required && <span className="text-brand-violet pl-[2px]">*</span>}
         </label>
       )}
       <div className="relative">
@@ -56,10 +59,10 @@ export default function Input({
           id={inputId}
           {...props}
           className={clsx(
-            'w-full h-[42px] px-4 text-sm rounded-md border outline-none transition',
+            'w-full h-[48px] px-4 py-[11px] text-lg-regular rounded-md border outline-none transition',
             'placeholder:text-gray-400',
             'bg-white',
-            'text-gray-900',
+            'text-gray-800',
             rightIcon && 'pr-10',
             hasError
               ? 'border-red focus:border-red'
