@@ -1,35 +1,56 @@
 'use client';
 
+import { deleteInvitation, getInvitations } from '@/api/dashboard';
 import Button from '@/components/common/Button';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
+import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import Pagination from '@/components/common/Pagination';
 import { ConfirmModal } from '@/components/Modal';
-import { Member } from '@/types/dashboard';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 const EMAIL_PER_PAGE = 5;
 
 interface EmailTableProps {
-  data: Member[];
   dashboardId: string;
 }
 
-export default function ManageInvitations({ data }: EmailTableProps) {
+export default function ManageInvitations({ dashboardId }: EmailTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInviterEmail, setSelectedInviterEmail] = useState<
     number | null
   >(null);
+  const queryClient = useQueryClient();
 
-  const totalPages = Math.ceil(data.length / EMAIL_PER_PAGE);
-  const indexOfLastItem = currentPage * EMAIL_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - EMAIL_PER_PAGE;
-  const currentEmail = data.slice(indexOfFirstItem, indexOfLastItem);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['invitations', dashboardId, currentPage],
+    queryFn: () =>
+      getInvitations(Number(dashboardId), currentPage, EMAIL_PER_PAGE),
+    enabled: !!dashboardId,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (invitationId: number) =>
+      deleteInvitation(Number(dashboardId), invitationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitations', dashboardId] });
+      setSelectedInviterEmail(null);
+    },
+    onError: () => {
+      alert('초대 취소에 실패했습니다. 다시 시도해 주세요.');
+    },
+  });
+
+  const invitations = data?.invitations ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / EMAIL_PER_PAGE) || 1;
+
+  if (isLoading) return <div>초대 내역 로딩 중...</div>;
+  if (isError) return <div>데이터를 불러오는 중 에러가 발생했습니다.</div>;
 
   const handleDeleteConfirm = () => {
     if (selectedInviterEmail) {
-      console.log(`${selectedInviterEmail}번 멤버 삭제 API 호출 예정`);
-      // 여기서 API 호출 후 데이터를 갱신하는 로직을 추가하세요.
-      setSelectedInviterEmail(null);
+      deleteMutation.mutate(selectedInviterEmail);
     }
   };
 
@@ -72,8 +93,8 @@ export default function ManageInvitations({ data }: EmailTableProps) {
         </thead>
 
         <tbody>
-          {currentEmail.map((item, index) => {
-            const overallIndex = indexOfFirstItem + index + 1;
+          {invitations.map((item, index) => {
+            const overallIndex = (currentPage - 1) * EMAIL_PER_PAGE + index + 1;
             const isPageEnd = overallIndex % EMAIL_PER_PAGE === 0;
 
             return (
@@ -86,7 +107,7 @@ export default function ManageInvitations({ data }: EmailTableProps) {
                   font-normal text-left text-md-regular text-gray-700 
                   md:pl-[28px] md:py-[22px] md:gap-[12px] md:text-lg-regular"
                 >
-                  {item.email}
+                  {item.invitee.email}
                 </td>
                 <td className="pr-[16px] text-right md:pr-[28px]">
                   <Button
@@ -106,13 +127,15 @@ export default function ManageInvitations({ data }: EmailTableProps) {
       </table>
 
       {selectedInviterEmail !== null && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center px-[30px] bg-gray-900/70">
+        <ModalOverlay onClose={() => setSelectedInviterEmail(null)}>
           <ConfirmModal
-            message="초대 취소하시겠습니까?"
+            message="정말 초대를 취소하시겠습니까?"
+            cancelText="아니요"
+            confirmText="네"
             onConfirm={handleDeleteConfirm}
             onCancel={() => setSelectedInviterEmail(null)}
           />
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -15,6 +15,7 @@ import type {
   CommentsResponse,
   GetInvitationsResponse,
   Invitation,
+  DashboardInvitationsResponse,
 } from '@/types/dashboard';
 
 /** 대시보드 목록 조회 (사이드 네비게이션용, 페이지 기반) */
@@ -31,6 +32,15 @@ export async function getDashboards(
 /** 대시보드 단건 조회 */
 export async function getDashboard(dashboardId: number): Promise<Dashboard> {
   const { data } = await api.get<Dashboard>(`/dashboards/${dashboardId}`);
+  return data;
+}
+
+/** 대시보드 정보 수정 */
+export async function updateDashboard(
+  dashboardId: number,
+  body: Pick<Dashboard, 'title' | 'color'>,
+): Promise<Dashboard> {
+  const { data } = await api.put<Dashboard>(`/dashboards/${dashboardId}`, body);
   return data;
 }
 
@@ -70,6 +80,11 @@ export async function getMembers(
     params: { dashboardId, page, size },
   });
   return data;
+}
+
+/** 대시보드 멤버 삭제 */
+export async function deleteMember(memberId: number): Promise<void> {
+  await api.delete(`/members/${memberId}`);
 }
 
 /** 칼럼 생성 */
@@ -152,6 +167,34 @@ export async function inviteMember(dashboardId: number, email: string) {
     email,
   });
   return data;
+}
+
+/** 대시보드 초대 목록 조회 */
+export async function getInvitations(
+  dashboardId: number,
+  page = 1,
+  size = 5,
+): Promise<DashboardInvitationsResponse> {
+  const { data } = await api.get<DashboardInvitationsResponse>(
+    `/dashboards/${dashboardId}/invitations`,
+    {
+      params: { page, size },
+    },
+  );
+  return data;
+}
+
+/** 대시보드 초대 취소 */
+export async function deleteInvitation(
+  dashboardId: number,
+  invitationId: number,
+): Promise<void> {
+  await api.delete(`/dashboards/${dashboardId}/invitations/${invitationId}`);
+}
+
+/** 대시보드 삭제 */
+export async function deleteDashboard(dashboardId: number): Promise<void> {
+  await api.delete(`/dashboards/${dashboardId}`);
 }
 
 /** 내가 받은 초대 목록 조회 (무한 스크롤용) */

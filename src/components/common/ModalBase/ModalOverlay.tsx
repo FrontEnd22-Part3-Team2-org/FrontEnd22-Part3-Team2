@@ -38,7 +38,7 @@ export default function ModalOverlay({ children, onClose }: ModalOverlayProps) {
   return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center px-[20px] bg-black/70"
       onMouseDown={handleOverlayClick}
     >
       {children}
