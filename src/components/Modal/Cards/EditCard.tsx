@@ -52,7 +52,9 @@ export default function EditCard({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<
+    number | null | undefined
+  >(undefined);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isImageRemoved, setIsImageRemoved] = useState(false);
   const [tagInput, setTagInput] = useState('');
@@ -77,10 +79,11 @@ export default function EditCard({
 
     if (JSON.stringify(formData.tags) !== JSON.stringify(initial.tags))
       changes.tags = formData.tags;
-
-    if (selectedMemberId !== null && selectedMemberId !== initial.assignee?.id)
+    if (
+      selectedMemberId !== undefined &&
+      selectedMemberId !== initial.assignee?.id
+    )
       changes.assigneeUserId = selectedMemberId;
-
     if (imageFile || isImageRemoved) changes.imageUrl = true; // 이미지는 업로드 후 처리
 
     return changes;
@@ -138,7 +141,9 @@ export default function EditCard({
           (changedFields.description as string) ?? cardData.description,
         tags: (changedFields.tags as string[]) ?? cardData.tags,
         assigneeUserId:
-          (changedFields.assigneeUserId as number) ?? cardData.assignee?.id,
+          'assigneeUserId' in changedFields
+            ? (changedFields.assigneeUserId as number | null)
+            : (cardData.assignee?.id ?? null),
         dueDate:
           'dueDate' in changedFields
             ? (changedFields.dueDate as string)
