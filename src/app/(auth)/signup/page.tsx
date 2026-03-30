@@ -10,13 +10,23 @@ import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 
 import { Input } from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Checkbox from '@/components/common/Checkbox';
+import AlertModal from '@/components/Modal/AlertModal';
+
+// 팀 ID
+const TEAM_ID = '22-2';
+
+// 백엔드 서버 주소
+const BASE_URL = 'https://sp-taskify-api.vercel.app';
 
 export default function SignupPage() {
+  const router = useRouter();
+
   // 입력값 상태
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
@@ -27,6 +37,14 @@ export default function SignupPage() {
   // 비밀번호 보기/숨기기 상태
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
+  // 회원가입 서버 에러 메시지
+  const [signupError, setSignupError] = useState('');
+
+  // 모달 상태
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // 에러 상태
   const [errors, setErrors] = useState({
@@ -45,6 +63,9 @@ export default function SignupPage() {
     const value = e.target.value;
     setEmail(value);
 
+    if (signupError) setSignupError('');
+    if (isAlertOpen) setIsAlertOpen(false);
+
     setErrors((prev) => ({
       ...prev,
       email: !value
@@ -59,6 +80,9 @@ export default function SignupPage() {
   const handleNicknameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNickname(value);
+
+    if (signupError) setSignupError('');
+    if (isAlertOpen) setIsAlertOpen(false);
 
     setErrors((prev) => ({
       ...prev,
@@ -75,6 +99,9 @@ export default function SignupPage() {
     const value = e.target.value;
     setPassword(value);
 
+    if (signupError) setSignupError('');
+    if (isAlertOpen) setIsAlertOpen(false);
+
     setErrors((prev) => ({
       ...prev,
       password: !value ? '' : value.length < 8 ? '8자 이상 입력해 주세요.' : '',
@@ -90,6 +117,9 @@ export default function SignupPage() {
     const value = e.target.value;
     setPasswordConfirm(value);
 
+    if (signupError) setSignupError('');
+    if (isAlertOpen) setIsAlertOpen(false);
+
     setErrors((prev) => ({
       ...prev,
       passwordConfirm: !value
@@ -104,6 +134,9 @@ export default function SignupPage() {
   const handleAgreeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setAgree(checked);
+
+    if (signupError) setSignupError('');
+    if (isAlertOpen) setIsAlertOpen(false);
 
     setErrors((prev) => ({
       ...prev,
@@ -163,18 +196,57 @@ export default function SignupPage() {
     Object.values(errors).some((error) => error !== '');
 
   // 폼 제출
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validate()) return;
 
-    console.log({
-      email,
-      nickname,
-      password,
-      passwordConfirm,
-      agree,
-    });
+    setSignupError('');
+
+    try {
+      const res = await fetch(`${BASE_URL}/${TEAM_ID}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          nickname,
+          password,
+        }),
+      });
+
+      const rawText = await res.text();
+
+      let data: { message?: string } | null = null;
+
+      try {
+        data = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        data = null;
+      }
+
+      console.log('status:', res.status);
+      console.log('raw response:', rawText);
+      console.log('data:', data);
+
+      if (!res.ok) {
+        setIsSuccess(false);
+        setAlertMessage(data?.message || rawText || '회원가입에 실패했습니다.');
+        setIsAlertOpen(true);
+        return;
+      }
+
+      setAlertMessage('가입이 완료되었습니다.');
+      setIsSuccess(true);
+      setIsAlertOpen(true);
+      return;
+    } catch (error) {
+      console.log('signup error:', error);
+      setIsSuccess(false);
+      setAlertMessage('서버 오류가 발생했습니다.');
+      setIsAlertOpen(true);
+    }
   };
 
   return (
@@ -317,6 +389,21 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+
+      {isAlertOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <AlertModal
+            message={alertMessage}
+            onConfirm={() => {
+              setIsAlertOpen(false);
+
+              if (isSuccess) {
+                router.push('/login');
+              }
+            }}
+          />
+        </div>
+      )}
     </main>
   );
 }
