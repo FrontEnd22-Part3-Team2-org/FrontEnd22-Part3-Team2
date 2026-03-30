@@ -587,6 +587,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
                 totalCount={columnCards[column.id]?.totalCount ?? 0}
                 cursorId={columnCards[column.id]?.cursorId}
                 colorIndex={index}
+                isFirstColumn={index === 0}
                 onAddCard={handleAddCard}
                 onEditColumn={handleEditColumn}
                 onCardClick={handleCardClick}
