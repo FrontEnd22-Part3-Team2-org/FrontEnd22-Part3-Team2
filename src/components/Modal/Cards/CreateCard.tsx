@@ -25,6 +25,7 @@ import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
 import AlertModal from '../AlertModal';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
 
 interface CreateCardForm {
   title: string;
@@ -47,13 +48,68 @@ interface CreateCardProps {
   onModalClose: () => void;
 }
 
+function CreateCardSkeleton({ onModalClose }: { onModalClose: () => void }) {
+  return (
+    <ModalOverlay onClose={onModalClose}>
+      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
+        <header>
+          <Skeleton className="h-8 w-32 rounded-md" />
+        </header>
+
+        {/* 담당자 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 제목 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 설명 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[96px] w-full rounded-md" />
+        </div>
+
+        {/* 마감일 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 태그 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-10 rounded" />
+          <Skeleton className="h-[50px] w-full rounded-md" />
+        </div>
+
+        {/* 이미지 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[76px] w-[76px] rounded-md" />
+        </div>
+
+        {/* 버튼 */}
+        <div className="flex gap-2 h-[54px]">
+          <Skeleton className="flex-1 rounded-lg" />
+          <Skeleton className="flex-1 rounded-lg" />
+        </div>
+      </ModalBase>
+    </ModalOverlay>
+  );
+}
+
 export default function CreateCard({
   dashboardId,
   columnId,
   onModalClose,
 }: CreateCardProps) {
   const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isMembersLoading, setIsMembersLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -64,7 +120,7 @@ export default function CreateCard({
   /** 멤버 목록 조회 */
   useEffect(() => {
     const fetchMembers = async () => {
-      setIsLoading(true);
+      setIsMembersLoading(true);
       try {
         const data = await getMembers(dashboardId);
         setMembers(data.members);
@@ -72,7 +128,7 @@ export default function CreateCard({
         console.error('멤버 조회 실패', error);
         setErrorMessage('멤버 조회 문제가 발생했습니다.');
       } finally {
-        setIsLoading(false);
+        setIsMembersLoading(false);
       }
     };
 
@@ -82,7 +138,7 @@ export default function CreateCard({
   const handleSubmit = async () => {
     if (!formData.title || !formData.description) return;
 
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
@@ -107,7 +163,7 @@ export default function CreateCard({
       console.error('카드 생성 실패', error);
       setErrorMessage('카드 생성에 문제가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -130,6 +186,9 @@ export default function CreateCard({
       tags: prev.tags.filter((_, i) => i !== index),
     }));
   };
+
+  if (isMembersLoading)
+    return <CreateCardSkeleton onModalClose={onModalClose} />;
 
   /** 타이틀 공통 CSS */
   const baseFontStyle = 'text-2lg-medium mb-2';
@@ -241,9 +300,11 @@ export default function CreateCard({
               variant="primary"
               className="flex-1"
               onClick={handleSubmit}
-              disabled={isLoading || !formData.title || !formData.description}
+              disabled={
+                isSubmitting || !formData.title || !formData.description
+              }
             >
-              {isLoading ? '생성 중...' : '생성'}
+              {isSubmitting ? '생성 중...' : '생성'}
             </Button>
           </div>
         </ModalBase>
