@@ -1,25 +1,58 @@
 'use client';
 
+import { deleteInvitation, getInvitations } from '@/api/dashboard';
 import Button from '@/components/common/Button';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
+import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import Pagination from '@/components/common/Pagination';
-import { Member } from '@/types/dashboard';
+import { ConfirmModal } from '@/components/Modal';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 const EMAIL_PER_PAGE = 5;
 
 interface EmailTableProps {
-  data: Member[];
   dashboardId: string;
 }
 
-export default function ManageInvitations({ data }: EmailTableProps) {
+export default function ManageInvitations({ dashboardId }: EmailTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(data.length / EMAIL_PER_PAGE);
+  const [selectedInviterEmail, setSelectedInviterEmail] = useState<
+    number | null
+  >(null);
+  const queryClient = useQueryClient();
 
-  const indexOfLastItem = currentPage * EMAIL_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - EMAIL_PER_PAGE;
-  const currentEmail = data.slice(indexOfFirstItem, indexOfLastItem);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['invitations', dashboardId, currentPage],
+    queryFn: () =>
+      getInvitations(Number(dashboardId), currentPage, EMAIL_PER_PAGE),
+    enabled: !!dashboardId,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (invitationId: number) =>
+      deleteInvitation(Number(dashboardId), invitationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitations', dashboardId] });
+      setSelectedInviterEmail(null);
+    },
+    onError: () => {
+      alert('초대 취소에 실패했습니다. 다시 시도해 주세요.');
+    },
+  });
+
+  const invitations = data?.invitations ?? [];
+  const totalCount = data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / EMAIL_PER_PAGE) || 1;
+
+  if (isLoading) return <div>초대 내역 로딩 중...</div>;
+  if (isError) return <div>데이터를 불러오는 중 에러가 발생했습니다.</div>;
+
+  const handleDeleteConfirm = () => {
+    if (selectedInviterEmail) {
+      deleteMutation.mutate(selectedInviterEmail);
+    }
+  };
 
   return (
     <div className="relative pt-[22px] md:pt-[26px]">
@@ -60,8 +93,8 @@ export default function ManageInvitations({ data }: EmailTableProps) {
         </thead>
 
         <tbody>
-          {currentEmail.map((item, index) => {
-            const overallIndex = indexOfFirstItem + index + 1;
+          {invitations.map((item, index) => {
+            const overallIndex = (currentPage - 1) * EMAIL_PER_PAGE + index + 1;
             const isPageEnd = overallIndex % EMAIL_PER_PAGE === 0;
 
             return (
@@ -74,7 +107,7 @@ export default function ManageInvitations({ data }: EmailTableProps) {
                   font-normal text-left text-md-regular text-gray-700 
                   md:pl-[28px] md:py-[22px] md:gap-[12px] md:text-lg-regular"
                 >
-                  {item.email}
+                  {item.invitee.email}
                 </td>
                 <td className="pr-[16px] text-right md:pr-[28px]">
                   <Button
@@ -82,6 +115,7 @@ export default function ManageInvitations({ data }: EmailTableProps) {
                     size="delete_lg"
                     className="px-[14px] py-[7px] w-[52px] h-[32px] text-xs-medium
                     md:px-[20px] md:py-[4px] md:w-[84px] md:h-[32px] md:text-md-medium"
+                    onClick={() => setSelectedInviterEmail(item.id)}
                   >
                     취소
                   </Button>
@@ -91,6 +125,18 @@ export default function ManageInvitations({ data }: EmailTableProps) {
           })}
         </tbody>
       </table>
+
+      {selectedInviterEmail !== null && (
+        <ModalOverlay onClose={() => setSelectedInviterEmail(null)}>
+          <ConfirmModal
+            message="정말 초대를 취소하시겠습니까?"
+            cancelText="아니요"
+            confirmText="네"
+            onConfirm={handleDeleteConfirm}
+            onCancel={() => setSelectedInviterEmail(null)}
+          />
+        </ModalOverlay>
+      )}
     </div>
   );
 }
