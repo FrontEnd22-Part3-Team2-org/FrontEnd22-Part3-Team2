@@ -25,6 +25,7 @@ import { getMembers, updateCard, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
 import AlertModal from '../AlertModal';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
 
 interface EditCardProps {
   cardData: Card;
@@ -34,6 +35,67 @@ interface EditCardProps {
   onSuccess?: () => void;
 }
 
+function EditCardSkeleton({ onModalClose }: { onModalClose: () => void }) {
+  return (
+    <ModalOverlay onClose={onModalClose}>
+      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
+        {/* 제목 */}
+        <header>
+          <Skeleton className="h-8 w-32 rounded-md" />
+        </header>
+
+        {/* 상태, 담당자 */}
+        <div className="flex flex-col sm:flex-row gap-8">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-10 rounded" />
+            <Skeleton className="h-[48px] w-[217px] rounded-md" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-16 rounded" />
+            <Skeleton className="h-[48px] w-[217px] rounded-md" />
+          </div>
+        </div>
+
+        {/* 제목 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 설명 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[96px] w-full rounded-md" />
+        </div>
+
+        {/* 마감일 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 태그 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-10 rounded" />
+          <Skeleton className="h-[50px] w-full rounded-md" />
+        </div>
+
+        {/* 이미지 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[76px] w-[76px] rounded-md" />
+        </div>
+
+        {/* 버튼 */}
+        <div className="flex gap-2 h-[54px]">
+          <Skeleton className="flex-1 rounded-lg" />
+          <Skeleton className="flex-1 rounded-lg" />
+        </div>
+      </ModalBase>
+    </ModalOverlay>
+  );
+}
+
 export default function EditCard({
   cardData,
   columns,
@@ -41,7 +103,7 @@ export default function EditCard({
   onModalClose,
   onSuccess,
 }: EditCardProps) {
-  /** 원본 데이터 (비교용 - 변하지 않음) */
+  /** 원본 데이터(비교용) */
   const initialData = useRef<Card>({
     ...cardData,
     tags: [...(cardData.tags ?? [])],
@@ -51,7 +113,8 @@ export default function EditCard({
     ...cardData,
     tags: [...(cardData.tags ?? [])],
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isMembersLoading, setIsMembersLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<
     number | null | undefined
@@ -101,7 +164,7 @@ export default function EditCard({
   /** 멤버 목록 조회 */
   useEffect(() => {
     const fetchMembers = async () => {
-      setIsLoading(true);
+      setIsMembersLoading(true);
       try {
         const data = await getMembers(cardData.dashboardId);
         setMembers(data.members);
@@ -109,7 +172,7 @@ export default function EditCard({
         console.error('멤버 조회 실패', error);
         setErrorMessage('멤버 조회에 문제가 발생했습니다.');
       } finally {
-        setIsLoading(false);
+        setIsMembersLoading(false);
       }
     };
     fetchMembers();
@@ -121,7 +184,7 @@ export default function EditCard({
     // 변경된 내용 없으면 제출 방지
     if (!isDirty) return;
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     try {
       // 1️⃣ 이미지 변경된 경우에만 업로드
       let imageUrl: string | null;
@@ -159,7 +222,7 @@ export default function EditCard({
       console.error('카드 수정 실패', error);
       setErrorMessage('카드 수정에 문제가 발생했습니다.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -182,6 +245,8 @@ export default function EditCard({
       tags: prev.tags.filter((_, i) => i !== index),
     }));
   };
+
+  if (isMembersLoading) return <EditCardSkeleton onModalClose={onModalClose} />;
 
   const baseFontStyle = 'text-2lg-medium mb-2';
 
@@ -301,10 +366,13 @@ export default function EditCard({
             className="flex-1"
             onClick={handleSubmit}
             disabled={
-              isLoading || !isDirty || !formData.title || !formData.description
+              isSubmitting ||
+              !isDirty ||
+              !formData.title ||
+              !formData.description
             } // 변경 없으면 비활성화
           >
-            {isLoading ? '수정 중...' : '수정'}
+            {isSubmitting ? '수정 중...' : '수정'}
           </Button>
         </div>
       </ModalBase>

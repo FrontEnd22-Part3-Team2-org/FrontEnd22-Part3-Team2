@@ -16,7 +16,6 @@
  */
 import UserName from '@/components/common/User/UserName';
 import type { Assignee } from '@/types/dashboard';
-import { formatDateTime } from '@/utils/formatDate';
 
 interface Props {
   assignee?: Assignee | null;

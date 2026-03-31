@@ -17,14 +17,16 @@ import DropdownAssignee from '@/components/common/Dropdown/DropdownAssignee';
 import { Input, Textarea } from '@/components/common/Input';
 import ImageUploaderInput from '@/components/common/Input/ImageUploaderInput';
 import Button from '@/components/common/Button';
-import { useEffect, useRef, useState } from 'react';
-import { Member } from '@/types/dashboard';
+import { useRef, useState } from 'react';
 import DateInput from '@/components/common/Input/DateInput';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { createCard, getMembers, uploadCardImage } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import TagChip from '@/components/common/Chip/TagChip';
 import AlertModal from '../AlertModal';
+import Skeleton from '@/components/common/Skeleton/Skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 interface CreateCardForm {
   title: string;
@@ -47,14 +49,67 @@ interface CreateCardProps {
   onModalClose: () => void;
 }
 
+function CreateCardSkeleton({ onModalClose }: { onModalClose: () => void }) {
+  return (
+    <ModalOverlay onClose={onModalClose}>
+      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
+        <header>
+          <Skeleton className="h-8 w-32 rounded-md" />
+        </header>
+
+        {/* 담당자 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 제목 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 설명 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[96px] w-full rounded-md" />
+        </div>
+
+        {/* 마감일 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-16 rounded" />
+          <Skeleton className="h-[48px] w-full rounded-md" />
+        </div>
+
+        {/* 태그 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-10 rounded" />
+          <Skeleton className="h-[50px] w-full rounded-md" />
+        </div>
+
+        {/* 이미지 */}
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-12 rounded" />
+          <Skeleton className="h-[76px] w-[76px] rounded-md" />
+        </div>
+
+        {/* 버튼 */}
+        <div className="flex gap-2 h-[54px]">
+          <Skeleton className="flex-1 rounded-lg" />
+          <Skeleton className="flex-1 rounded-lg" />
+        </div>
+      </ModalBase>
+    </ModalOverlay>
+  );
+}
+
 export default function CreateCard({
   dashboardId,
   columnId,
   onModalClose,
 }: CreateCardProps) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<CreateCardForm>(INITIAL_FORM);
-  const [isLoading, setIsLoading] = useState(false);
-  const [members, setMembers] = useState<Member[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [tagInput, setTagInput] = useState('');
@@ -62,53 +117,48 @@ export default function CreateCard({
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
 
   /** 멤버 목록 조회 */
-  useEffect(() => {
-    const fetchMembers = async () => {
-      setIsLoading(true);
-      try {
-        const data = await getMembers(dashboardId);
-        setMembers(data.members);
-      } catch (error) {
-        console.error('멤버 조회 실패', error);
-        setErrorMessage('멤버 조회 문제가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { data: membersData, isLoading: isMembersLoading } = useQuery({
+    queryKey: ['members', dashboardId],
+    queryFn: () => getMembers(dashboardId),
+    throwOnError: () => {
+      setErrorMessage('멤버 조회에 문제가 발생했습니다.');
+      return false;
+    },
+  });
+  const members = membersData?.members ?? [];
 
-    fetchMembers();
-  }, [dashboardId]);
-
-  const handleSubmit = async () => {
-    if (!formData.title || !formData.description) return;
-
-    setIsLoading(true);
-
-    try {
-      // 1️⃣ 이미지가 있으면 먼저 업로드해서 URL 받기
+  /** 카드 생성 */
+  const { mutateAsync: submitCard, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
       const imageUrl = imageFile
         ? (await uploadCardImage(columnId, imageFile)).imageUrl
         : undefined;
 
-      // 2️⃣ 카드 생성
-      await createCard({
+      return createCard({
         dashboardId,
         columnId,
         title: formData.title,
         description: formData.description,
-        // 선택 필드들은 값이 있을 때만 객체에 포함
         ...(selectedMemberId && { assigneeUserId: selectedMemberId }),
         ...(formData.tags.length > 0 && { tags: formData.tags }),
         ...(formData.dueDate && { dueDate: formData.dueDate }),
         ...(imageUrl && { imageUrl }),
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+      });
       onModalClose();
-    } catch (error) {
-      console.error('카드 생성 실패', error);
+    },
+    onError: () => {
       setErrorMessage('카드 생성에 문제가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.description) return;
+    await submitCard();
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -130,6 +180,9 @@ export default function CreateCard({
       tags: prev.tags.filter((_, i) => i !== index),
     }));
   };
+
+  if (isMembersLoading)
+    return <CreateCardSkeleton onModalClose={onModalClose} />;
 
   /** 타이틀 공통 CSS */
   const baseFontStyle = 'text-2lg-medium mb-2';
@@ -241,9 +294,11 @@ export default function CreateCard({
               variant="primary"
               className="flex-1"
               onClick={handleSubmit}
-              disabled={isLoading || !formData.title || !formData.description}
+              disabled={
+                isSubmitting || !formData.title || !formData.description
+              }
             >
-              {isLoading ? '생성 중...' : '생성'}
+              {isSubmitting ? '생성 중...' : '생성'}
             </Button>
           </div>
         </ModalBase>
