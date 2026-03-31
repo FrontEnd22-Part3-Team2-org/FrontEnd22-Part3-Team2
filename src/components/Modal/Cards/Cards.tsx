@@ -18,6 +18,7 @@
  *
  * - 댓글 버튼
  * 1. 수정/삭제
+ * 2. 10개 이상 시 스크롤 바닥 도달 → 자동으로 다음 댓글 로드 (무한 스크롤)
  *
  * @author 수경
  *
@@ -28,13 +29,12 @@ import TagChip from '../../common/Chip/TagChip';
 import KebabMenuIcon from '../../common/Icon/KebabMenuIcon';
 import XIcon from '../../common/Icon/XIcon';
 import DropdownMenu from '../../common/Dropdown/DropdownMenu';
-import { useCallback, useEffect, useState } from 'react';
-import type { Card, Column, CommentsResponse } from '@/types/dashboard';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Card, Column, Comments } from '@/types/dashboard';
 import AssigneeItem from './AssigneeItem';
 import ReplyItem from './ReplyItem';
 import Image from 'next/image';
 import ModalBase from '@/components/common/ModalBase';
-import ConfirmModal from '../ConfirmModal';
 import EditCard from './EditCard';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import {
@@ -50,11 +50,55 @@ import AlertModal from '../AlertModal';
 import Skeleton from '@/components/common/Skeleton/Skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import Button from '@/components/common/Button';
+
+/** 한 번에 불러올 댓글 수 */
+const COMMENTS_SIZE = 10;
 
 interface CardsProps {
   onModalClose: () => void;
   cardId: number;
   dashboardId: number;
+}
+
+interface ConfirmModalProps {
+  message: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+function DeleteConfirmModal({
+  message,
+  onCancel,
+  onConfirm,
+}: ConfirmModalProps) {
+  return (
+    <ModalBase className="w-[400px] rounded-[16px] p-[24px]">
+      <p className="mb-[24px] text-center text-lg-medium text-gray-700">
+        {message}
+      </p>
+
+      <div className="flex gap-[14px]">
+        <Button
+          variant="secondary"
+          size="modal_sm"
+          onClick={onCancel}
+          className="flex-1"
+        >
+          취소
+        </Button>
+
+        <Button
+          variant="primary"
+          size="modal_sm"
+          onClick={onConfirm}
+          className="flex-1"
+        >
+          삭제
+        </Button>
+      </div>
+    </ModalBase>
+  );
 }
 
 function CardSkeleton({ onModalClose }: { onModalClose: () => void }) {
@@ -143,42 +187,30 @@ export default function Cards({
   const [columnTitle, setColumnTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // API 호출 에러 처리
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false); // 드롭다운 열림 상태
-
-  /** 댓글 관련 상태 관리 */
-  const [commentsList, setCommentsList] = useState<CommentsResponse | null>(
-    null,
-  );
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
-  const {
-    data: card,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['card', cardId],
-    queryFn: () => readCard(cardId),
-  });
 
-  const queryClient = useQueryClient();
-  queryClient.invalidateQueries({
-    queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
-  });
+  /** 댓글 무한 스크롤 상태 */
+  const [commentsList, setCommentsList] = useState<Comments[]>([]); // 누적된 댓글 배열
+  const [cursorId, setCursorId] = useState<number | null>(null); // 다음 페이지 요청에 사용할 커서 ID
+  const [hasMore, setHasMore] = useState(true); // 다음 페이지 존재 여부
+  const [isFetchingMore, setIsFetchingMore] = useState(false); // 추가 로딩 중 여부 (중복 요청 방지용 guard)
+
+  /** IntersectionObserver가 감시할 댓글 맨 마지막 div */
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * 댓글 스크롤 컨테이너 ref
+   * IntersectionObserver의 root로 지정해 뷰포트 대신 이 컨테이너 기준으로 교차를 감지
+   */
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCloseMenu = () => setIsMenuOpen(false);
-
-  /** 카드 수정하기 버튼 클릭 핸들러 */
-  const handleEditClick = () => {
-    setIsEditing(true);
-    handleCloseMenu();
-  };
-
-  /** 카드 삭제하기 버튼 클릭 핸들러 */
-  const handleDeleteClick = () => {
-    setIsDeleting(true);
-  };
+  const menuRef = useDropdownClose(handleCloseMenu); // 드롭다운 외부 클릭 시 닫기 구현
 
   /** 카드 삭제 API 호출 핸들러 */
   const handleDeleteCard = async () => {
@@ -198,7 +230,10 @@ export default function Cards({
     if (!deletingCommentId) return;
     try {
       await deleteComments(deletingCommentId);
-      fetchComments();
+      // 삭제 후 커서 초기화 → 처음부터 다시 조회
+      setCursorId(null);
+      setHasMore(true);
+      await fetchComments(null, true);
     } catch (error) {
       console.error('댓글 삭제 실패', error);
       setErrorMessage('댓글 삭제에 문제가 발생했습니다.');
@@ -218,29 +253,94 @@ export default function Cards({
     });
   };
 
-  /** 드롭다운 외부 클릭 시 닫기 구현 */
-  const menuRef = useDropdownClose(handleCloseMenu);
-
   /** 1️⃣ 카드 조회 */
+  const queryClient = useQueryClient();
 
-  /** 2️⃣ 댓글 목록 조회  */
-  const fetchComments = useCallback(async () => {
-    if (!cardId) return;
+  const {
+    data: card,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['card', cardId],
+    queryFn: () => readCard(cardId),
+  });
 
-    try {
-      const res = await getComments(cardId);
-      setCommentsList(res);
-    } catch (error) {
-      console.error('댓글 조회 실패', error);
-      setErrorMessage('댓글 목록 조회에 문제가 발생했습니다.');
-    }
-  }, [cardId]);
+  /** 2️⃣ 댓글 목록 조회 (cursorId 기반 무한 스크롤) */
+  /**
+   * @param cursor - 요청할 커서 ID. null이면 첫 페이지부터 조회
+   * @param reset  - true면 기존 목록을 비우고 처음부터 재조회 (작성/삭제 후 리셋 시 사용)
+   */
+  const fetchComments = useCallback(
+    async (cursor: number | null = null, reset = false) => {
+      // reset이 아닌 일반 추가 로딩 중에는 중복 요청 방지
+      if (!reset && isFetchingMore) return;
 
+      setIsFetchingMore(true);
+      try {
+        const res = await getComments(
+          cardId,
+          COMMENTS_SIZE,
+          cursor ?? undefined,
+        );
+
+        // reset: 새 배열로 교체 / 일반: 기존 배열에 누적
+        setCommentsList((prev) =>
+          reset ? res.comments : [...prev, ...res.comments],
+        );
+
+        const nextCursor = res.cursorId;
+        setCursorId(nextCursor);
+
+        // 더 이상 없으면 false
+        setHasMore(
+          res.comments.length === COMMENTS_SIZE && nextCursor !== null,
+        );
+
+        // 받아온 개수 < COMMENTS_SIZE → 마지막 페이지
+        setHasMore(
+          res.comments.length === COMMENTS_SIZE && res.cursorId !== null,
+        );
+      } catch (error) {
+        console.error('댓글 조회 실패', error);
+        setErrorMessage('댓글 목록 조회에 문제가 발생했습니다.');
+      } finally {
+        setIsFetchingMore(false);
+      }
+    },
+    // isFetchingMore를 deps에 넣으면 무한 루프 발생 → 의도적으로 제외
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cardId],
+  );
+
+  /** 최초 댓글 로드 */
   useEffect(() => {
-    fetchComments();
+    fetchComments(null, true);
   }, [fetchComments]);
 
-  /** 2️⃣ 컬럼 조회  */
+  /** 3️⃣ IntersectionObserver — sentinel 감지 → 다음 페이지 로드 */
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = scrollContainerRef.current;
+    if (!sentinel || !container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // sentinel이 컨테이너 안에 보이고 + 추가 데이터 있고 + 로딩 중 아닐 때만 fetch
+        if (entry.isIntersecting && hasMore && !isFetchingMore) {
+          fetchComments(cursorId);
+        }
+      },
+      {
+        root: container, // 뷰포트 대신 댓글 스크롤 컨테이너를 기준으로 교차 감지
+        threshold: 0.1,
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingMore, cursorId, fetchComments]);
+
+  /** 2️⃣ 컬럼 조회 + columnTitle 찾기  */
   useEffect(() => {
     if (!card?.dashboardId) return;
 
@@ -257,24 +357,20 @@ export default function Cards({
     fetchColumns();
   }, [card?.dashboardId]);
 
-  /** 3️⃣ columnTitle 찾기 */
   useEffect(() => {
     if (!card?.columnId || columns.length === 0) return;
-
     const foundColumn = columns.find((col) => col.id === card.columnId);
-
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
-  if (isError) {
-    return <CardSkeleton onModalClose={onModalClose} />;
-  }
+  /** 렌더링 분기 */
+  if (isLoading || isError) return <CardSkeleton onModalClose={onModalClose} />;
+  if (!card) return null;
 
-  if (!card) return;
   const { title, description, tags, dueDate, assignee, imageUrl } =
     card as Card;
 
-  /** 수정하기 버튼 클릭시 수정 모달 렌더링 */
+  /** 수정 모달 렌더링 */
   if (isEditing) {
     return (
       <EditCard
@@ -346,24 +442,53 @@ export default function Cards({
                 cardId={cardId}
                 columnId={card.columnId}
                 dashboardId={card.dashboardId}
-                onSuccess={fetchComments}
+                onSuccess={() => {
+                  // 댓글 작성 후 목록 처음부터 리셋
+                  setCursorId(null);
+                  setHasMore(true);
+                  fetchComments(null, true);
+                }}
               />
-              {/* 댓글 리스트 */}
-              <div className="max-h-[100px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-                {commentsList?.comments?.length ? (
+              {/* ──────────────────────────────────────────
+                  댓글 리스트 (무한 스크롤)
+                  - scrollContainerRef: IntersectionObserver의 root
+                  - sentinelRef 목록 끝에 위치, 화면에 진입하면 다음 페이지 로드
+              ────────────────────────────────────────── */}
+              <div
+                ref={scrollContainerRef}
+                className="max-h-[150px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full"
+              >
+                {commentsList.length > 0 ? (
                   <>
-                    {commentsList?.comments.map((comment) => {
-                      return (
-                        <ReplyItem
-                          key={comment.id}
-                          comment={comment}
-                          onDeleteClick={(id) => setDeletingCommentId(id)}
-                        />
-                      );
-                    })}
+                    {commentsList.map((comment) => (
+                      <ReplyItem
+                        key={comment.id}
+                        comment={comment}
+                        onDeleteClick={(id) => setDeletingCommentId(id)}
+                      />
+                    ))}
+
+                    {/* sentinel: 스크롤 끝에 도달하면 다음 페이지 자동 로드 */}
+                    <div ref={sentinelRef} className="h-4" />
+
+                    {/* 추가 로딩 인디케이터 */}
+                    {isFetchingMore && (
+                      <p className="text-md-medium text-gray-400 text-center py-2">
+                        불러오는 중...
+                      </p>
+                    )}
+
+                    {/* 마지막 페이지 안내 (10개 이상일 때만 노출) */}
+                    {!hasMore && commentsList.length >= COMMENTS_SIZE && (
+                      <p className="text-md-medium text-gray-400 text-center py-2">
+                        모든 댓글을 불러왔습니다.
+                      </p>
+                    )}
                   </>
                 ) : (
-                  <div className="text-md-medium">댓글이 없습니다.</div>
+                  <div className="text-md-medium text-gray-400 text-center py-2">
+                    댓글이 없습니다.
+                  </div>
                 )}
               </div>
             </section>
@@ -381,8 +506,11 @@ export default function Cards({
               {isMenuOpen && (
                 <div className="absolute top-8 right-[53px]" ref={menuRef}>
                   <DropdownMenu
-                    onEdit={handleEditClick}
-                    onDelete={handleDeleteClick}
+                    onEdit={() => {
+                      setIsEditing(true);
+                      handleCloseMenu();
+                    }}
+                    onDelete={() => setIsDeleting(true)}
                   />
                 </div>
               )}
@@ -401,26 +529,28 @@ export default function Cards({
         </ModalBase>
         {/* 카드 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
         {isDeleting && (
-          <div className="absolute z-20 flex items-center justify-center shadow-lg">
-            <ConfirmModal
+          <ModalOverlay onClose={() => setIsDeleteOpen(false)}>
+            <DeleteConfirmModal
               message="정말 카드를 삭제하겠습니까?"
               onCancel={() => setIsDeleting(false)}
               onConfirm={() => {
                 handleDeleteCard();
               }}
             />
-          </div>
+          </ModalOverlay>
         )}
 
         {/* 댓글 삭제 버튼 클릭시 확인 모달 렌더링 */}
         {deletingCommentId && (
-          <div className="absolute z-20 flex items-center justify-center shadow-lg">
-            <ConfirmModal
+          <ModalOverlay onClose={() => setIsDeleteOpen(false)}>
+            {/* <div className="absolute z-20 flex items-center justify-center shadow-lg"> */}
+            <DeleteConfirmModal
               message="정말 댓글을 삭제하겠습니까?"
               onCancel={() => setDeletingCommentId(null)}
               onConfirm={handleDeleteCommentConfirm}
             />
-          </div>
+            {/* </div> */}
+          </ModalOverlay>
         )}
 
         {/* API 호출 에러 처리 */}
