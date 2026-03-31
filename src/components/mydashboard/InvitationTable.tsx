@@ -20,6 +20,18 @@ function filterInvitationsByTitle(
   return items.filter((item) => item.dashboard.title.toLowerCase().includes(q));
 }
 
+/** 중복 제거 로직 */
+function getUniqueInvitations(invitations: Invitation[]) {
+  const usedDashboardIds = new Set();
+
+  return invitations.filter((item) => {
+    const dashboardId = item.dashboard.id;
+    if (usedDashboardIds.has(dashboardId)) return false;
+    usedDashboardIds.add(dashboardId);
+    return true;
+  });
+}
+
 export default function InvitationTable({
   data,
   observerRef,
@@ -27,10 +39,11 @@ export default function InvitationTable({
   const queryClient = useQueryClient();
   const mutationInFlightRef = useRef(false);
   const [titleSearch, setTitleSearch] = useState('');
+  const uniqueData = useMemo(() => getUniqueInvitations(data), [data]);
 
   const filteredData = useMemo(
-    () => filterInvitationsByTitle(data, titleSearch),
-    [data, titleSearch],
+    () => filterInvitationsByTitle(uniqueData, titleSearch),
+    [uniqueData, titleSearch],
   );
 
   const { mutate } = useMutation({
