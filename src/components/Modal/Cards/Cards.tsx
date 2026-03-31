@@ -153,19 +153,6 @@ export default function Cards({
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
-  const {
-    data: card,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['card', cardId],
-    queryFn: () => readCard(cardId),
-  });
-
-  const queryClient = useQueryClient();
-  queryClient.invalidateQueries({
-    queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
-  });
 
   const handleCloseMenu = () => setIsMenuOpen(false);
 
@@ -222,6 +209,19 @@ export default function Cards({
   const menuRef = useDropdownClose(handleCloseMenu);
 
   /** 1️⃣ 카드 조회 */
+  const {
+    data: card,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['card', cardId],
+    queryFn: () => readCard(cardId),
+  });
+
+  const queryClient = useQueryClient();
+  queryClient.invalidateQueries({
+    queryKey: [...QUERY_KEYS.columns(dashboardId), 'cards'],
+  });
 
   /** 2️⃣ 댓글 목록 조회  */
   const fetchComments = useCallback(async () => {

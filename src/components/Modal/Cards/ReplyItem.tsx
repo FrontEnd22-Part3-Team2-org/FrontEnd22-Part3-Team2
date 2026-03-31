@@ -13,6 +13,8 @@ import { Comments } from '@/types/dashboard';
 import { updateComments } from '@/api/dashboard';
 import { formatDateTime } from '@/utils/formatDate';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getMe } from '@/api/auth';
 
 interface Props {
   comment: Comments;
@@ -20,6 +22,14 @@ interface Props {
 }
 
 export default function ReplyItem({ comment, onDeleteClick }: Props) {
+  /** 댓글 작성 id 비교 */
+  const { data: me } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => getMe(), // 현재 유저 조회 API
+  });
+
+  const isAuthor = me?.id === comment.author.id;
+
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [displayContent, setDisplayContent] = useState(comment.content);
@@ -53,8 +63,6 @@ export default function ReplyItem({ comment, onDeleteClick }: Props) {
             </span>
             <p className="text-gray-400 text-xs-regular">{formatted}</p>
           </div>
-
-          {/* TODO : [수경] 댓글 작성자 확인 필요 */}
           {/* 댓글 내용 or 수정 input */}
           {isEditing ? (
             <input
@@ -68,26 +76,28 @@ export default function ReplyItem({ comment, onDeleteClick }: Props) {
             <div className="text-md-regular leading-4">{displayContent}</div>
           )}
 
-          {/* 댓글 수정, 삭제 버튼 */}
-          <div className="flex items-center gap-2 md:gap-[14px]">
-            <button
-              type="button"
-              className="text-xs text-gray-400 underline underline-offset-2"
-              onClick={() =>
-                isEditing ? handleEditConfirm() : setIsEditing(true)
-              }
-            >
-              {isEditing ? '확인' : '수정'}
-            </button>
+          {/* 댓글 수정, 삭제 버튼 - 작성자만 표시 */}
+          {isAuthor && (
+            <div className="flex items-center gap-2 md:gap-[14px]">
+              <button
+                type="button"
+                className="text-xs text-gray-400 underline underline-offset-2"
+                onClick={() =>
+                  isEditing ? handleEditConfirm() : setIsEditing(true)
+                }
+              >
+                {isEditing ? '확인' : '수정'}
+              </button>
 
-            <button
-              type="button"
-              className="text-xs text-gray-400 underline underline-offset-2"
-              onClick={() => onDeleteClick(id)}
-            >
-              삭제
-            </button>
-          </div>
+              <button
+                type="button"
+                className="text-xs text-gray-400 underline underline-offset-2"
+                onClick={() => onDeleteClick(id)}
+              >
+                삭제
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>
