@@ -144,7 +144,7 @@ export async function updateCard(
   cardId: number,
   payload: {
     columnId?: number;
-    assigneeUserId?: number;
+    assigneeUserId?: number | null;
     title?: string;
     description?: string;
     dueDate?: string | null;

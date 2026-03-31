@@ -24,14 +24,13 @@ import UserName from '../User/UserName';
 import { Assignee, Member } from '@/types/dashboard';
 import DropdownList from './DropdownList';
 
-// TODO : [수경] 인풋 입력값에 따른 리스트 변화 기능 구현
 interface AssigneeProps {
   /** 드롭다운에 보여줄 전체 멤버 목록 */
   members: Member[];
   /** 이미 선택된 담당자 초기값 */
   defaultAssignee?: Assignee | null;
   /** 담당자 선택 시 선택된 유저를 부모로 전달하는 콜백 함수 */
-  onSelect?: (user: number) => void;
+  onSelect?: (user: number | null) => void;
   /** @defalut '이름을 입력해 주세요' */
   placeholder?: string;
 }
@@ -47,6 +46,10 @@ export default function DropdownAssignee({
   const [selectedUser, setSelectedUser] = useState<Assignee | null>(
     defaultAssignee,
   ); // 초기값 적용
+
+  const filteredMembers = members.filter((member) =>
+    member.nickname.includes(query),
+  );
 
   /** Input과 담당자가 선택된 박스의 공통 css */
   const baseStyle =
@@ -94,7 +97,7 @@ export default function DropdownAssignee({
       {/* 담당자 리스트 */}
       <DropdownList
         open={open}
-        items={members}
+        items={filteredMembers}
         onSelect={(user) => {
           setQuery(user.nickname);
           setOpen(false);
@@ -104,6 +107,15 @@ export default function DropdownAssignee({
         getKey={(user) => user.userId}
         renderItem={(user) => <UserName profile={user} />}
         onClose={() => setOpen(false)}
+        onClear={
+          defaultAssignee
+            ? () => {
+                setSelectedUser(null);
+                setOpen(false);
+                onSelect?.(null);
+              }
+            : undefined
+        }
       />
     </div>
   );

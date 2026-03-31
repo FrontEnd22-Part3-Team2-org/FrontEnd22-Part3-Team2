@@ -587,6 +587,7 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
                 totalCount={columnCards[column.id]?.totalCount ?? 0}
                 cursorId={columnCards[column.id]?.cursorId}
                 colorIndex={index}
+                isFirstColumn={index === 0}
                 onAddCard={handleAddCard}
                 onEditColumn={handleEditColumn}
                 onCardClick={handleCardClick}
@@ -629,7 +630,11 @@ export default function DashboardBoard({ dashboardId }: DashboardBoardProps) {
 
       {/* 카드 상세 모달 (오버레이는 Cards.tsx 내부에서 처리) */}
       {isCardModalOpen && (
-        <Cards onModalClose={handleCardModalClose} cardId={selectedCardId!} />
+        <Cards
+          onModalClose={handleCardModalClose}
+          cardId={selectedCardId!}
+          dashboardId={dashboardId}
+        />
       )}
 
       {/* 칼럼 추가 모달 */}
