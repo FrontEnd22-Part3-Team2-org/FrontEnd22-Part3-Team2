@@ -15,11 +15,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import axios from 'axios';
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_PER_PAGE = 5;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface EmailTableProps {
-  dashboardId: string;
+  dashboardId: number;
 }
 
 export default function ManageInvitations({ dashboardId }: EmailTableProps) {
@@ -38,14 +38,13 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['invitations', dashboardId, currentPage],
-    queryFn: () =>
-      getInvitations(Number(dashboardId), currentPage, EMAIL_PER_PAGE),
+    queryFn: () => getInvitations(dashboardId, currentPage, EMAIL_PER_PAGE),
     enabled: !!dashboardId,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (invitationId: number) =>
-      deleteInvitation(Number(dashboardId), invitationId),
+      deleteInvitation(dashboardId, invitationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invitations', dashboardId] });
       setSelectedInviterEmail(null);
@@ -55,9 +54,10 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
     },
   });
 
+  // 초대하기 API 호출 함수
   const inviteMutation = useMutation({
     mutationFn: (inviteeEmail: string) =>
-      inviteMember(Number(dashboardId), inviteeEmail),
+      inviteMember(dashboardId, inviteeEmail),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ['invitations', dashboardId],
@@ -118,6 +118,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
     }
   };
 
+  // 이메일 입력값을 state에 저장하고 유효성 검사를 수행하는 함수
   const handleEmailChange = (value: string) => {
     setEmail(value);
 
@@ -134,6 +135,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
     setErrorText('');
   };
 
+  // 초대하기 버튼 클릭 시 실제 초대 로직을 실행하는 함수
   const handleInviteConfirm = async () => {
     const trimmedEmail = email.trim();
 
@@ -154,6 +156,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
     }
   };
 
+  // 초대하기 버튼 활성화 여부 결정
   const isInviteButtonDisabled = !email.trim() || !!errorText || isSubmitting;
 
   return (
@@ -162,10 +165,12 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
         <span className="pl-[16px] text-xl-bold md:pl-[28px] md:text-2xl-bold">
           초대 내역
         </span>
+
         <div className="pr-[16px] flex items-center gap-[12px] md:pr-[28px] md:gap-[16px]">
           <span className="text-xs-regular text-gray-500 md:text-md-regular">
             {totalPages} 페이지 중 {currentPage}
           </span>
+
           <Pagination
             size="sm"
             currentPage={currentPage}
@@ -173,6 +178,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
             onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
             onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
           />
+
           <Button
             variant="primary"
             onClick={() => setIsInviteModalOpen(true)}
@@ -187,15 +193,6 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
       </div>
 
       <table className="mt-[18px] w-full text-lg-regular text-gray-500 md:mt-[27px]">
-        <thead className="text-lg-regular text-gray-400">
-          <tr>
-            <th className="pl-[16px] pb-[26px] font-normal text-left md:pl-[28px] md:pb-[1px]">
-              이메일
-            </th>
-            <th></th>
-          </tr>
-        </thead>
-
         <tbody>
           {invitations.map((item, index) => {
             const overallIndex = (currentPage - 1) * EMAIL_PER_PAGE + index + 1;
@@ -206,19 +203,14 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
                 key={item.id}
                 className={`border-gray-200 border-b ${isPageEnd ? 'border-b-0' : ''}`}
               >
-                <td
-                  className="flex items-center gap-[8px] pl-[16px] py-[15px] 
-                  font-normal text-left text-md-regular text-gray-700 
-                  md:pl-[28px] md:py-[22px] md:gap-[12px] md:text-lg-regular"
-                >
+                <td className="pl-[16px] py-[15px] md:pl-[28px] md:py-[22px]">
                   {item.invitee.email}
                 </td>
+
                 <td className="pr-[16px] text-right md:pr-[28px]">
                   <Button
                     variant="secondary"
                     size="delete_lg"
-                    className="px-[14px] py-[7px] w-[52px] h-[32px] text-xs-medium
-                    md:px-[20px] md:py-[4px] md:w-[84px] md:h-[32px] md:text-md-medium"
                     onClick={() => setSelectedInviterEmail(item.id)}
                   >
                     취소
