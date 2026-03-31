@@ -7,7 +7,7 @@ import { Input } from '@/components/common/Input';
 import { useDashboardFormSync } from '@/hooks/useDashboardFormSync';
 import { Dashboard } from '@/types/dashboard';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface EditDashboardFormProps {
   dashboardId: string;
