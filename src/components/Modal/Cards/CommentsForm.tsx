@@ -59,6 +59,7 @@ export default function CommentsForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         buttonText="입력"
+        buttonDisabled={!content.trim()}
       />
     </form>
   );
