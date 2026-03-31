@@ -1,14 +1,21 @@
 'use client';
 
-import { deleteInvitation, getInvitations } from '@/api/dashboard';
+import {
+  deleteInvitation,
+  getInvitations,
+  inviteMember,
+} from '@/api/dashboard';
 import Button from '@/components/common/Button';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import Pagination from '@/components/common/Pagination';
+import FormModal from '@/components/Modal/FormModal';
 import { ConfirmModal } from '@/components/Modal';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import axios from 'axios';
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_PER_PAGE = 5;
 
 interface EmailTableProps {
@@ -20,6 +27,13 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
   const [selectedInviterEmail, setSelectedInviterEmail] = useState<
     number | null
   >(null);
+
+  // 초대하기 모달용 state
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [errorText, setErrorText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
@@ -41,6 +55,45 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
     },
   });
 
+  const inviteMutation = useMutation({
+    mutationFn: (inviteeEmail: string) =>
+      inviteMember(Number(dashboardId), inviteeEmail),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['invitations', dashboardId],
+      });
+      setCurrentPage(1);
+      closeInviteModal();
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message;
+
+        if (message === '이미 대시보드에 초대된 멤버입니다.') {
+          setErrorText('이미 대시보드에 초대된 멤버입니다.');
+          return;
+        }
+
+        if (message === '이메일 형식이 올바르지 않습니다') {
+          setErrorText('이메일 형식으로 작성해 주세요.');
+          return;
+        }
+
+        if (message === '대시보드 초대 권한이 없습니다.') {
+          setErrorText('초대 권한이 없습니다.');
+          return;
+        }
+
+        if (message === '대시보드가 존재하지 않습니다.') {
+          setErrorText('대시보드를 찾을 수 없습니다.');
+          return;
+        }
+      }
+
+      setErrorText('초대에 실패했습니다. 다시 시도해 주세요.');
+    },
+  });
+
   const invitations = data?.invitations ?? [];
   const totalCount = data?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / EMAIL_PER_PAGE) || 1;
@@ -48,11 +101,60 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
   if (isLoading) return <div>초대 내역 로딩 중...</div>;
   if (isError) return <div>데이터를 불러오는 중 에러가 발생했습니다.</div>;
 
+  const resetInviteModal = () => {
+    setEmail('');
+    setErrorText('');
+    setIsSubmitting(false);
+  };
+
+  const closeInviteModal = () => {
+    resetInviteModal();
+    setIsInviteModalOpen(false);
+  };
+
   const handleDeleteConfirm = () => {
     if (selectedInviterEmail) {
       deleteMutation.mutate(selectedInviterEmail);
     }
   };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+
+    if (!value.trim()) {
+      setErrorText('');
+      return;
+    }
+
+    if (!emailRegex.test(value.trim())) {
+      setErrorText('이메일 형식으로 작성해 주세요.');
+      return;
+    }
+
+    setErrorText('');
+  };
+
+  const handleInviteConfirm = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) return;
+
+    if (!emailRegex.test(trimmedEmail)) {
+      setErrorText('이메일 형식으로 작성해 주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setErrorText('');
+
+      await inviteMutation.mutateAsync(trimmedEmail);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isInviteButtonDisabled = !email.trim() || !!errorText || isSubmitting;
 
   return (
     <div className="relative pt-[22px] md:pt-[26px]">
@@ -73,6 +175,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
           />
           <Button
             variant="primary"
+            onClick={() => setIsInviteModalOpen(true)}
             className="absolute right-[16px] top-[72px]
             px-[0px] w-[86px] h-[26px] justify-center text-white text-xs-medium gap-[6px] 
             md:static md:w-[105px] md:h-[32px] md:text-md-medium md:gap-[8px]"
@@ -135,6 +238,26 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
             confirmText="네"
             onConfirm={handleDeleteConfirm}
             onCancel={() => setSelectedInviterEmail(null)}
+          />
+        </ModalOverlay>
+      )}
+
+      {isInviteModalOpen && (
+        <ModalOverlay onClose={closeInviteModal}>
+          <FormModal
+            title="멤버 초대"
+            label="이메일"
+            value={email}
+            placeholder="이메일을 입력해 주세요"
+            cancelText="취소"
+            confirmText="초대"
+            errorText={errorText}
+            showCloseButton
+            disabled={isInviteButtonDisabled}
+            onChange={handleEmailChange}
+            onCancel={closeInviteModal}
+            onClose={closeInviteModal}
+            onConfirm={handleInviteConfirm}
           />
         </ModalOverlay>
       )}
