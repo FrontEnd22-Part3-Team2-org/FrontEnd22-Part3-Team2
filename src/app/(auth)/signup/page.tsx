@@ -27,26 +27,22 @@ const BASE_URL = 'https://sp-taskify-api.vercel.app';
 export default function SignupPage() {
   const router = useRouter();
 
-  // 입력값 상태
   const [email, setEmail] = useState('');
   const [nickname, setNickname] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [agree, setAgree] = useState(false);
 
-  // 비밀번호 보기/숨기기 상태
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
-  // 회원가입 서버 에러 메시지
   const [signupError, setSignupError] = useState('');
 
-  // 모달 상태
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 에러 상태
   const [errors, setErrors] = useState({
     email: '',
     nickname: '',
@@ -55,10 +51,8 @@ export default function SignupPage() {
     agree: '',
   });
 
-  // 이메일 정규식
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // 이메일 입력 시 실시간 검사
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
@@ -76,7 +70,6 @@ export default function SignupPage() {
     }));
   };
 
-  // 닉네임 입력 시 실시간 검사
   const handleNicknameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setNickname(value);
@@ -94,7 +87,6 @@ export default function SignupPage() {
     }));
   };
 
-  // 비밀번호 입력 시 실시간 검사
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
@@ -112,7 +104,6 @@ export default function SignupPage() {
     }));
   };
 
-  // 비밀번호 확인 입력 시 실시간 검사
   const handlePasswordConfirmChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPasswordConfirm(value);
@@ -130,7 +121,6 @@ export default function SignupPage() {
     }));
   };
 
-  // 체크박스 변경
   const handleAgreeChange = (e: ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setAgree(checked);
@@ -144,7 +134,6 @@ export default function SignupPage() {
     }));
   };
 
-  // 전체 유효성 검사
   const validate = () => {
     const nextErrors = {
       email: '',
@@ -186,22 +175,22 @@ export default function SignupPage() {
     return !Object.values(nextErrors).some(Boolean);
   };
 
-  // 버튼 활성화 조건
   const isButtonDisabled =
     !email.trim() ||
     !nickname.trim() ||
     !password.trim() ||
     !passwordConfirm.trim() ||
     !agree ||
-    Object.values(errors).some((error) => error !== '');
+    Object.values(errors).some((error) => error !== '') ||
+    isSubmitting;
 
-  // 폼 제출
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate() || isSubmitting) return;
 
     setSignupError('');
+    setIsSubmitting(true);
 
     try {
       const res = await fetch(`${BASE_URL}/${TEAM_ID}/users`, {
@@ -226,10 +215,6 @@ export default function SignupPage() {
         data = null;
       }
 
-      console.log('status:', res.status);
-      console.log('raw response:', rawText);
-      console.log('data:', data);
-
       if (!res.ok) {
         setIsSuccess(false);
         setAlertMessage(data?.message || rawText || '회원가입에 실패했습니다.');
@@ -240,12 +225,12 @@ export default function SignupPage() {
       setAlertMessage('가입이 완료되었습니다.');
       setIsSuccess(true);
       setIsAlertOpen(true);
-      return;
-    } catch (error) {
-      console.log('signup error:', error);
+    } catch {
       setIsSuccess(false);
       setAlertMessage('서버 오류가 발생했습니다.');
       setIsAlertOpen(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -376,7 +361,7 @@ export default function SignupPage() {
                 disabled={isButtonDisabled}
                 className="h-[50px] w-full rounded-[8px]"
               >
-                가입하기
+                {isSubmitting ? '가입 중...' : '가입하기'}
               </Button>
             </form>
 
