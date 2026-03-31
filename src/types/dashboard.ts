@@ -22,6 +22,12 @@ export interface GetInvitationsResponse {
   invitations: Invitation[];
 }
 
+/** 대시보드 초대 목록 조회 응답 */
+export interface DashboardInvitationsResponse {
+  totalCount: number;
+  invitations: Invitation[];
+}
+
 /** 대시보드 (한 개) */
 export interface Dashboard {
   id: number;

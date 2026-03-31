@@ -1,30 +1,66 @@
 'use client';
 
+import { getDashboard, updateDashboard } from '@/api/dashboard';
 import Button from '@/components/common/Button';
 import ColorChip from '@/components/common/Chip/ColorChip';
 import { Input } from '@/components/common/Input';
+import { useDashboardFormSync } from '@/hooks/useDashboardFormSync';
 import { Dashboard } from '@/types/dashboard';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 interface EditDashboardFormProps {
-  initialTitle: Dashboard['title'];
-  initialColor: Dashboard['color'];
+  dashboardId: string;
 }
 
 export default function EditDashboardForm({
-  initialTitle,
-  initialColor,
+  dashboardId,
 }: EditDashboardFormProps) {
-  const [staticTitle] = useState(initialTitle);
-  const [title, setTitle] = useState(initialTitle);
-  const [selectedColor, setSelectedColor] = useState(initialColor);
+  const queryClient = useQueryClient();
 
-  const isUnchanged = title === initialTitle && selectedColor === initialColor;
+  /** 초기값 세팅 */
+  const { data: dashboard, isLoading } = useQuery({
+    queryKey: ['dashboard', dashboardId],
+    queryFn: () => getDashboard(Number(dashboardId)),
+    enabled: !!dashboardId,
+  });
+
+  /** 대시보드 제목, 색상 수정 */
+  const mutation = useMutation({
+    mutationFn: (body: Pick<Dashboard, 'title' | 'color'>) =>
+      updateDashboard(Number(dashboardId), body),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard', dashboardId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboards'] });
+    },
+    onError: () => {
+      alert('수정에 실패했습니다. 다시 시도해주세요.');
+    },
+  });
+
+  const [title, setTitle] = useState('');
+  const [selectedColor, setSelectedColor] = useState('');
+
+  /** 초기값 채우기 */
+  useDashboardFormSync({
+    dashboard,
+    title,
+    setTitle,
+    selectedColor,
+    setSelectedColor,
+  });
+
+  const isUnchanged =
+    title === (dashboard?.title ?? '') &&
+    selectedColor === (dashboard?.color ?? '');
 
   return (
     <div className="px-[16px] py-[20px] md:px-[28px] md:py-[32px]">
       <div>
-        <span className="text-xl-bold md:text-2xl-bold">{staticTitle}</span>
+        <span className="text-xl-bold md:text-2xl-bold">
+          {dashboard?.title ?? '대시보드 불러오는 중...'}
+        </span>
       </div>
       <div className="pt-[24px]">
         <span className="inline-block mb-[8px] text-lg-medium text-gray-700 md:text-2lg-medium">
@@ -36,16 +72,26 @@ export default function EditDashboardForm({
           placeholder="수정할 이름을 입력하세요"
         />
         <div className="mt-[16px]">
-          <ColorChip
-            onSelectedColor={(hex) => setSelectedColor(hex)}
-            defaultColor={selectedColor}
-          />
+          {dashboard && (
+            <ColorChip
+              key={dashboard.color}
+              onSelectedColor={(hex) => setSelectedColor(hex)}
+              defaultColor={dashboard.color}
+            />
+          )}
         </div>
         <div>
           <Button
             className="w-full h-[54px] mt-[32px] text-lg-semibold md:mt-[40px]"
             variant="primary"
             disabled={isUnchanged || !title.trim()}
+            onClick={() => {
+              if (!dashboard) return;
+              mutation.mutate({
+                title: title.trim(),
+                color: selectedColor,
+              });
+            }}
           >
             변경
           </Button>
