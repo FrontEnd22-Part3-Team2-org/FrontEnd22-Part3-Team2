@@ -1,7 +1,7 @@
 /**
  * @file 로그인 페이지 ( /login )
  * @description 이메일과 비밀번호를 입력받아 유저 인증을 처리하는 화면입니다.
- * @note 로그인 성공 시 토큰을 저장하고 `/mydashboard`로 리다이렉트 해야 합니다.
+ * @note 로그인 성공 시 토큰을 저장하고 `/mydashboard`로 리다이렉트 합니다.
  */
 
 'use client';
@@ -39,8 +39,14 @@ export default function LoginPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const isButtonDisabled =
-    !email.trim() || !password.trim() || isEmailError || isPasswordError;
+    !email.trim() ||
+    !password.trim() ||
+    isEmailError ||
+    isPasswordError ||
+    isSubmitting;
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -81,7 +87,9 @@ export default function LoginPage() {
       hasError = true;
     }
 
-    if (hasError) return;
+    if (hasError || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     try {
       const res = await fetch(`${BASE_URL}/${TEAM_ID}/auth/login`, {
@@ -92,23 +100,29 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
 
-      console.log('status:', res.status);
-      console.log('data:', data);
+      let data: { accessToken?: string; message?: string } | null = null;
 
-      if (!res.ok || !data.accessToken) {
-        setAlertMessage(data.message || '비밀번호가 일치하지 않습니다.');
+      try {
+        data = rawText ? JSON.parse(rawText) : null;
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok || !data?.accessToken) {
+        setAlertMessage(data?.message || '비밀번호가 일치하지 않습니다.');
         setIsAlertOpen(true);
         return;
       }
 
       setToken(data.accessToken);
       router.push('/mydashboard');
-    } catch (error) {
-      console.log('error:', error);
+    } catch {
       setAlertMessage('서버 오류가 발생했습니다.');
       setIsAlertOpen(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,7 +130,6 @@ export default function LoginPage() {
     <main className="min-h-screen bg-gray-100 px-4 sm:px-6">
       <div className="mx-auto flex min-h-screen w-full items-center justify-center py-10">
         <div className="flex w-full max-w-[520px] flex-col items-center gap-6">
-          {/* 로고 */}
           <Link href="/">
             <div className="flex cursor-pointer flex-col items-center gap-3">
               <Image
@@ -135,7 +148,6 @@ export default function LoginPage() {
             </div>
           </Link>
 
-          {/* 로그인 폼 */}
           <form onSubmit={handleSubmit} noValidate className="w-full">
             <Input
               label="이메일"
@@ -161,6 +173,9 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
+                  }
                 >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
@@ -172,7 +187,7 @@ export default function LoginPage() {
               disabled={isButtonDisabled}
               className="mt-4 w-full"
             >
-              로그인
+              {isSubmitting ? '로그인 중...' : '로그인'}
             </Button>
           </form>
 
