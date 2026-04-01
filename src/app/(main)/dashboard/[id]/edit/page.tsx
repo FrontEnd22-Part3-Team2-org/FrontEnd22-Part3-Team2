@@ -40,7 +40,7 @@ export default async function DashboardEditPage({ params }: PageProps) {
         </div>
 
         <div className="mt-[16px] h-[407px] bg-white rounded-[8px] md:h-[477px]">
-          <ManageInvitations dashboardId={id} />
+          <ManageInvitations dashboardId={Number(id)} />
         </div>
 
         <div className="mt-[24px] mb-[57px]">
