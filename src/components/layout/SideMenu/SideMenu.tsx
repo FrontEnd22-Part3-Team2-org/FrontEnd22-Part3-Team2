@@ -23,6 +23,8 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   useDndMonitor,
@@ -128,6 +130,7 @@ function SortableDashboardItem({
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 10 : undefined,
     position: 'relative',
+    touchAction: 'none',
   };
 
   return (
@@ -364,6 +367,15 @@ const SideMenu = () => {
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     }),
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 6,
+      },
+    }),
   );
 
   // ── 초기 너비 설정 + 창 크기 변화 시 breakpoint 전환 ──────────
@@ -403,22 +415,34 @@ const SideMenu = () => {
   const handleResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    e.currentTarget.setPointerCapture?.(e.pointerId);
 
     const startX = e.clientX;
     const startWidth = currentWidthRef.current;
+    let rafId: number | null = null;
+    let nextWidth = startWidth;
 
     const handleMove = (moveEvent: PointerEvent) => {
-      const newWidth = Math.max(
+      nextWidth = Math.max(
         MIN_WIDTH,
         Math.min(MAX_WIDTH, startWidth + (moveEvent.clientX - startX)),
       );
-      currentWidthRef.current = newWidth;
-      setSidebarWidth(newWidth);
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        currentWidthRef.current = nextWidth;
+        setSidebarWidth(nextWidth);
+        rafId = null;
+      });
     };
 
     const handleUp = () => {
       document.removeEventListener('pointermove', handleMove);
       document.removeEventListener('pointerup', handleUp);
+      document.removeEventListener('pointercancel', handleUp);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       try {
         const bp = getBreakpoint();
         localStorage.setItem(
@@ -432,6 +456,7 @@ const SideMenu = () => {
 
     document.addEventListener('pointermove', handleMove);
     document.addEventListener('pointerup', handleUp);
+    document.addEventListener('pointercancel', handleUp);
   }, []);
 
   // ── 페이지네이션 쿼리 (tablet / desktop) ─────────────────────
@@ -791,7 +816,7 @@ const SideMenu = () => {
 
       {/* ── 드래그 리사이즈 핸들 ── */}
       <div
-        className="absolute right-0 top-0 h-full w-1 cursor-col-resize z-10 hover:bg-brand-violet/30 active:bg-brand-violet/50 transition-colors"
+        className="absolute right-0 top-0 h-full w-1 cursor-col-resize touch-none z-10 hover:bg-brand-violet/30 active:bg-brand-violet/50 transition-colors"
         onPointerDown={handleResizeStart}
       />
     </aside>
