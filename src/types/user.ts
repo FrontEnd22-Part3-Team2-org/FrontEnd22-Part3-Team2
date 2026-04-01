@@ -10,3 +10,15 @@ export interface ProfileOwner {
   nickname: string;
   id?: number;
 }
+
+/**
+ * 로그인한 유저 정보
+ */
+export interface User {
+  id: number;
+  email: string;
+  nickname: string;
+  profileImageUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

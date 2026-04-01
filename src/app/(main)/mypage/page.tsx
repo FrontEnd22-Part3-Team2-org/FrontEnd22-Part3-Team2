@@ -9,32 +9,35 @@
 import Image from 'next/image';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
+import { getMyInfo, updateMyInfo, uploadProfileImage } from '@/api/user';
+import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export default function MyPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const queryClient = useQueryClient();
 
-  const mockMyInfo = {
-    id: 1,
-    email: 'test1@test.com',
-    nickname: 'seungmi',
-    profileImageUrl: null,
-    createdAt: '2026-03-24T04:23:25.506Z',
-    updatedAt: '2026-03-24T04:23:25.506Z',
-  };
+  const { data: myInfo, isLoading } = useQuery({
+    queryKey: QUERY_KEYS.me(),
+    queryFn: getMyInfo,
+  });
 
-  const initialEmail = mockMyInfo.email;
-  const initialNickname = mockMyInfo.nickname;
-  const initialProfileImageUrl = mockMyInfo.profileImageUrl;
+  const initialEmail = myInfo?.email ?? '';
+  const initialNickname = myInfo?.nickname ?? '';
+  const initialProfileImageUrl = myInfo?.profileImageUrl ?? null;
 
-  const [nickname, setNickname] = useState(initialNickname);
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(
-    initialProfileImageUrl,
+  const [nickname, setNickname] = useState<string | undefined>(undefined);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | undefined>(
+    undefined,
   );
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+
+  const currentNickname = nickname ?? initialNickname;
+  const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
   // 비밀번호 상태
   const [currentPassword, setCurrentPassword] = useState('');
@@ -44,20 +47,36 @@ export default function MyPage() {
   // 에러 상태
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false);
 
-  const isNicknameChanged = nickname !== initialNickname;
+  const isNicknameChanged =
+    nickname !== undefined && currentNickname !== initialNickname;
   const isImageChanged = selectedImageFile !== null;
   const isProfileChanged = isNicknameChanged || isImageChanged;
 
   const isPasswordFormValid =
     currentPassword !== '' && newPassword !== '' && confirmPassword !== '';
 
+  const uploadProfileImageMutation = useMutation({
+    mutationFn: uploadProfileImage,
+  });
+
+  const updateMyInfoMutation = useMutation({
+    mutationFn: updateMyInfo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me() });
+      alert('프로필이 업데이트되었습니다');
+    },
+    onError: () => {
+      alert('프로필 수정에 실패했습니다');
+    },
+  });
+
   useEffect(() => {
     return () => {
-      if (previewImageUrl && selectedImageFile) {
+      if (previewImageUrl) {
         URL.revokeObjectURL(previewImageUrl);
       }
     };
-  }, [previewImageUrl, selectedImageFile]);
+  }, [previewImageUrl]);
 
   const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentPassword(e.target.value);
@@ -88,7 +107,7 @@ export default function MyPage() {
     const mockCurrentPassword = '1234'; // TODO: API 연동 시 제거
 
     if (currentPassword !== mockCurrentPassword) {
-      alert('현재 비밀번호가 틀립니다');
+      alert('현재 비밀번호가 틀립니다.');
       return;
     }
 
@@ -127,16 +146,34 @@ export default function MyPage() {
     event.target.value = '';
   };
 
-  const handleProfileSave = () => {
+  const handleProfileSave = async () => {
     if (!isProfileChanged) {
       return;
     }
 
-    console.log({
-      nickname,
-      selectedImageFile,
-    });
+    try {
+      let profileImageUrl = currentPreviewImageUrl ?? null;
+
+      if (selectedImageFile) {
+        const uploadResult =
+          await uploadProfileImageMutation.mutateAsync(selectedImageFile);
+        profileImageUrl = uploadResult.profileImageUrl;
+      }
+
+      await updateMyInfoMutation.mutateAsync({
+        nickname: currentNickname,
+        profileImageUrl,
+      });
+
+      setSelectedImageFile(null);
+    } catch {
+      alert('프로필 저장 중 오류가 발생했습니다.');
+    }
   };
+
+  if (isLoading) {
+    return <div className="p-6">로딩 중...</div>;
+  }
 
   return (
     <div className="flex flex-col p-6">
@@ -170,10 +207,10 @@ export default function MyPage() {
                 className="h-full w-full"
                 aria-label="프로필 이미지 업로드"
               >
-                {previewImageUrl ? (
+                {currentPreviewImageUrl ? (
                   <div className="relative h-full w-full">
                     <Image
-                      src={previewImageUrl}
+                      src={currentPreviewImageUrl}
                       alt="프로필 미리보기"
                       fill
                       className="object-cover"
@@ -198,7 +235,7 @@ export default function MyPage() {
 
               <Input
                 label="닉네임"
-                value={nickname}
+                value={currentNickname}
                 onChange={handleNicknameChange}
                 placeholder="닉네임 입력"
                 maxLength={10}
@@ -249,7 +286,7 @@ export default function MyPage() {
                 isError={isPasswordMismatch}
                 errorMessage={
                   isPasswordMismatch
-                    ? '비밀번호가 일치하지 않습니다'
+                    ? '비밀번호가 일치하지 않습니다.'
                     : undefined
                 }
               />
