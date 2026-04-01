@@ -6,6 +6,7 @@ import ColorChip from '@/components/common/Chip/ColorChip';
 import { Input } from '@/components/common/Input';
 import { useDashboardFormSync } from '@/hooks/useDashboardFormSync';
 import { Dashboard } from '@/types/dashboard';
+import { validateDashboardName } from '@/utils/validate';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -38,9 +39,11 @@ export default function EditDashboardForm({
       alert('수정에 실패했습니다. 다시 시도해주세요.');
     },
   });
+  const initialName = dashboard?.title ?? '';
+  const initialColor = dashboard?.color ?? '';
 
-  const [title, setTitle] = useState('');
-  const [selectedColor, setSelectedColor] = useState('');
+  const [title, setTitle] = useState(initialName);
+  const [selectedColor, setSelectedColor] = useState(initialColor);
 
   /** 초기값 채우기 */
   useDashboardFormSync({
@@ -51,9 +54,11 @@ export default function EditDashboardForm({
     setSelectedColor,
   });
 
-  const isUnchanged =
-    title === (dashboard?.title ?? '') &&
-    selectedColor === (dashboard?.color ?? '');
+  const isTitleValid = validateDashboardName(title);
+  const isUnchanged = title === initialName && selectedColor === initialColor;
+  const isSubmitDisabled =
+    isUnchanged || !isTitleValid || isLoading || mutation.isPending;
+  const hasErrorMessage = title.length > 0 && !isTitleValid;
 
   return (
     <div className="px-[16px] py-[20px] md:px-[28px] md:py-[32px]">
@@ -70,11 +75,16 @@ export default function EditDashboardForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="수정할 이름을 입력하세요"
+          isError={hasErrorMessage || !isTitleValid}
+          errorMessage={
+            hasErrorMessage
+              ? '대시보드 이름은 2자 이상의 완성된 한글, 영문, 숫자여야 합니다.'
+              : ''
+          }
         />
         <div className="mt-[16px]">
           {dashboard && (
             <ColorChip
-              key={dashboard.color}
               onSelectedColor={(hex) => setSelectedColor(hex)}
               defaultColor={dashboard.color}
             />
@@ -84,13 +94,10 @@ export default function EditDashboardForm({
           <Button
             className="w-full h-[54px] mt-[32px] text-lg-semibold md:mt-[40px]"
             variant="primary"
-            disabled={isUnchanged || !title.trim()}
+            disabled={isSubmitDisabled}
             onClick={() => {
               if (!dashboard) return;
-              mutation.mutate({
-                title: title.trim(),
-                color: selectedColor,
-              });
+              mutation.mutate({ title, color: selectedColor });
             }}
           >
             변경

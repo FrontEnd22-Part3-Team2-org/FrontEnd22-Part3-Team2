@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import ColorChip, { COLORS } from '../common/Chip/ColorChip';
 import api from '@/api/axios';
 import { Dashboard } from '@/types/dashboard';
+import { validateDashboardName } from '@/utils/validate';
 
 interface DashboardCreateModalProps {
   isOpen: boolean;
@@ -38,8 +39,7 @@ export default function DashboardCreateModal({
     return isDuplicateDashboard(dashboards, dashboardName, selectedColor);
   }, [dashboards, dashboardName, selectedColor]);
 
-  const isTitleValid =
-    /[a-zA-Z0-9가-힣]/.test(dashboardName) && dashboardName.trim().length >= 2;
+  const isTitleValid = validateDashboardName(dashboardName);
   const isSubmitDisabled = !isTitleValid || isLoading || isDuplicate;
 
   const handleCreate = async () => {
@@ -89,6 +89,11 @@ export default function DashboardCreateModal({
           onChange={setDashboardName}
           onConfirm={handleCreate}
           onCancel={handleClose}
+          errorText={
+            !isTitleValid
+              ? '대시보드 이름은 2자 이상의 완성된 한글, 영문, 숫자여야 합니다.'
+              : ''
+          }
           disabled={isSubmitDisabled}
         >
           <ColorChip

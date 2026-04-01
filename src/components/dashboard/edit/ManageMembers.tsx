@@ -80,13 +80,13 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
           />
         </div>
       </div>
-      <table className="mt-[18px] w-full text-lg-regular text-gray-500 md:mt-[27px]">
+      <table className="mt-[18px] w-full table-fixed text-lg-regular text-gray-500 md:mt-[27px]">
         <thead className="text-lg-regular text-gray-400">
           <tr>
-            <th className="pl-[16px] font-normal text-left md:pl-[28px]">
+            <th className="w-[80%] pl-[16px] font-normal text-left md:pl-[28px]">
               이름
             </th>
-            <th></th>
+            <th className="w-[20px]"></th>
           </tr>
         </thead>
 
@@ -105,7 +105,7 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
                   font-normal text-left text-md-regular text-gray-700 
                   md:pl-[28px] md:py-[16px] md:gap-[12px] md:text-lg-regular"
                 >
-                  <div className="relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full overflow-hidden">
+                  <div className="flex-shrink-0 relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full overflow-hidden">
                     {item.profileImageUrl ? (
                       <Image
                         src={item.profileImageUrl}
@@ -119,7 +119,9 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
                       </div>
                     )}
                   </div>
-                  {item.nickname}
+                  <span className="truncate min-w-0 flex-1">
+                    {item.nickname}
+                  </span>
                 </td>
                 <td className="pr-[16px] text-right md:pr-[28px]">
                   {!isMe && (
