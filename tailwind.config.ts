@@ -88,6 +88,11 @@ const config: Config = {
         'xs-medium': ['12px', { lineHeight: '18px', fontWeight: '500' }],
         'xs-regular': ['12px', { lineHeight: '18px', fontWeight: '400' }],
       },
+      screens: {
+        mobile: '375px', // 모바일
+        tablet: '744px', // 태블릿
+        desktop: '1280px', // 데스크탑
+      },
     },
   },
   plugins: [],

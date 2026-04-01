@@ -56,14 +56,13 @@ export default function DropdownAssignee({
     'w-full h-[48px] border border-gray-300 px-4 py-2 rounded-md flex justify-between items-center bg-white';
 
   return (
-    <div className="relative min-w-[217px]">
+    <div className="relative sm:min-w-[217px]">
       {/* 선택을 안했을 때는 입력 input 렌더링, 선택 했을 때는 사용자 이름 및 아이콘 렌더링 */}
       {selectedUser ? (
         <button
           type="button"
           className={`${baseStyle}`}
           onClick={() => {
-            setSelectedUser(null);
             setOpen(true);
           }}
         >
@@ -107,15 +106,12 @@ export default function DropdownAssignee({
         getKey={(user) => user.userId}
         renderItem={(user) => <UserName profile={user} />}
         onClose={() => setOpen(false)}
-        onClear={
-          defaultAssignee
-            ? () => {
-                setSelectedUser(null);
-                setOpen(false);
-                onSelect?.(null);
-              }
-            : undefined
-        }
+        onClear={() => {
+          setSelectedUser(null);
+          setOpen(false);
+          onSelect?.(null);
+          setQuery('');
+        }}
       />
     </div>
   );

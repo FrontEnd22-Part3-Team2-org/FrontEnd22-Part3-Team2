@@ -27,12 +27,15 @@ export default function AssigneeItem({ assignee, dueDate }: Props) {
   const titleClass = 'text-xs-semibold';
 
   return (
-    <div className="flex md:flex-col flex-row items-center md:gap-4 gap-1 md:w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
+    <div className="flex md:flex-col flex-row flex-wrap mobile:flex-nowrap items-center md:gap-4 gap-1 md:w-[200px] px-4 py-[14px] border border-gray-300 rounded-lg">
       <div className={sectionClass}>
         <p className={titleClass}>담당자</p>
         <div>
           {assignee ? (
-            <UserName profile={assignee} />
+            <UserName
+              profile={assignee}
+              fontSize={'text-md-regular md:text-lg-regular'}
+            />
           ) : (
             <span className="md:h-5 h-4">-</span>
           )}

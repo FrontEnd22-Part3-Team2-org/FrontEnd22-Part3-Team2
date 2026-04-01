@@ -252,7 +252,7 @@ export default function EditCard({
 
   return (
     <ModalOverlay onClose={onModalClose}>
-      <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
+      <ModalBase className="px-4 mobile:px-[30px] max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
         <header>
           <h2 className="text-2xl-bold break-words">할 일 수정</h2>
         </header>
@@ -284,6 +284,7 @@ export default function EditCard({
         <Input
           label="제목"
           placeholder="제목을 입력해 주세요"
+          required={true}
           value={formData.title}
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, title: e.target.value }))
@@ -294,6 +295,7 @@ export default function EditCard({
         <Textarea
           label="설명"
           placeholder="설명을 입력해 주세요"
+          required={true}
           value={formData.description}
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, description: e.target.value }))

@@ -35,7 +35,7 @@ export default function DropdownProgress({
   };
   return (
     <>
-      <div className="relative min-w-[217px]">
+      <div className="relative sm:min-w-[217px]">
         {/* 선택된 값 */}
         <button
           type="button"
