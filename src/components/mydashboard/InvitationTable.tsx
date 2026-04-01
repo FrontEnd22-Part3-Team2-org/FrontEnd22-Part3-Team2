@@ -69,7 +69,7 @@ export default function InvitationTable({
   return (
     <div className="py-[24px] bg-white md:py-[18px] lg:py-[32px]">
       <div>
-        <h2 className="px-[20px] text-lg-bold md:px-[40px] md:text-2xl-bold">
+        <h2 className="px-[20px] text-gray-700 text-lg-bold md:px-[40px] md:text-2xl-bold">
           초대받은 대시보드
         </h2>
       </div>
