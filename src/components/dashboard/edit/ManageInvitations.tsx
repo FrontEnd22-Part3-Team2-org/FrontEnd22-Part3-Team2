@@ -145,6 +145,13 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
       setErrorText('이메일 형식으로 작성해 주세요.');
       return;
     }
+    const isAlreadyInvited = invitations.some(
+      (item) => item.invitee.email === trimmedEmail,
+    );
+    if (isAlreadyInvited) {
+      setErrorText('이미 초대 목록에 있는 이메일입니다.');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -192,7 +199,15 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
         </div>
       </div>
 
-      <table className="mt-[18px] w-full text-lg-regular text-gray-500 md:mt-[27px]">
+      <table className="table-fixed mt-[18px] w-full text-lg-regular text-gray-500 md:mt-[27px]">
+        <thead>
+          <tr className="text-left text-gray-400 text-md-regular md:text-lg-regular">
+            <th className="w-[60%] pl-[20px] pb-[24px] font-normal md:pl-[28px] md:pb-[1px] md:w-[70%]">
+              이메일
+            </th>
+            <th className="w-[40%] pr-[20px] pb-[24px] md:pr-[28px] md:pb-[1px] md:w-[30%]"></th>
+          </tr>
+        </thead>
         <tbody>
           {invitations.map((item, index) => {
             const overallIndex = (currentPage - 1) * EMAIL_PER_PAGE + index + 1;
@@ -203,11 +218,11 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
                 key={item.id}
                 className={`border-gray-200 border-b ${isPageEnd ? 'border-b-0' : ''}`}
               >
-                <td className="pl-[16px] py-[15px] md:pl-[28px] md:py-[22px]">
-                  {item.invitee.email}
+                <td className="pl-[20px] py-[15px] md:pl-[28px] md:py-[22px]">
+                  <div className="truncate">{item.invitee.email}</div>
                 </td>
 
-                <td className="pr-[16px] text-right md:pr-[28px]">
+                <td className="pl-[20px] pr-[20px] text-right md:pr-[28px]">
                   <Button
                     variant="secondary"
                     size="delete_lg"
