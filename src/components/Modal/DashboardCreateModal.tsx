@@ -2,26 +2,48 @@
 
 import { useRouter } from 'next/navigation';
 import FormModal from './FormModal';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import ColorChip, { COLORS } from '../common/Chip/ColorChip';
 import api from '@/api/axios';
+import { Dashboard } from '@/types/dashboard';
 
 interface DashboardCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
+  dashboards: Dashboard[];
+}
+
+function isDuplicateDashboard(
+  existingDashboards: Dashboard[],
+  newTitle: string,
+  newColor: string,
+): boolean {
+  return existingDashboards.some(
+    (db) =>
+      db.createdByMe && db.title === newTitle.trim() && db.color === newColor,
+  );
 }
 
 export default function DashboardCreateModal({
   isOpen,
   onClose,
+  dashboards,
 }: DashboardCreateModalProps) {
   const router = useRouter();
   const [dashboardName, setDashboardName] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0].hex);
   const [isLoading, setIsLoading] = useState(false);
 
+  const isDuplicate = useMemo(() => {
+    return isDuplicateDashboard(dashboards, dashboardName, selectedColor);
+  }, [dashboards, dashboardName, selectedColor]);
+
+  const isTitleValid =
+    /[a-zA-Z0-9가-힣]/.test(dashboardName) && dashboardName.trim().length >= 2;
+  const isSubmitDisabled = !isTitleValid || isLoading || isDuplicate;
+
   const handleCreate = async () => {
-    if (!dashboardName.trim() || isLoading) return;
+    if (!isTitleValid) return;
     setIsLoading(true);
 
     try {
@@ -67,7 +89,7 @@ export default function DashboardCreateModal({
           onChange={setDashboardName}
           onConfirm={handleCreate}
           onCancel={handleClose}
-          disabled={!dashboardName.trim() || isLoading}
+          disabled={isSubmitDisabled}
         >
           <ColorChip
             onSelectedColor={(hex) => setSelectedColor(hex)}

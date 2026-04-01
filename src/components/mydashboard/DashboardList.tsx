@@ -11,13 +11,13 @@ import DashboardCard from './DashboardCard';
 import Pagination from '../common/Pagination';
 import DashboardCreateModal from '../Modal/DashboardCreateModal';
 
-const DASHBOARD_LIMIT = 5;
+const DASHBOARD_LIMIT = 6;
 
 export default function DashboardList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data, isPlaceholderData } = useQuery({
+  const { data } = useQuery({
     queryKey: ['dashboards', currentPage],
     queryFn: () => getDashboards(currentPage, DASHBOARD_LIMIT),
     placeholderData: (previousData) => previousData,
@@ -25,13 +25,8 @@ export default function DashboardList() {
 
   const isFirstPage = currentPage === 1;
   const rawDashboards = data?.dashboards || [];
-  const isTransitioningFromFirst =
-    isPlaceholderData && isFirstPage === false && rawDashboards.length > 5;
 
-  const dashboards =
-    isFirstPage || isTransitioningFromFirst
-      ? rawDashboards.slice(0, 5)
-      : rawDashboards;
+  const dashboards = isFirstPage ? rawDashboards.slice(0, 5) : rawDashboards;
 
   const totalCount = data?.totalCount || 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / DASHBOARD_LIMIT));
@@ -62,7 +57,11 @@ export default function DashboardList() {
           <DashboardCard key={board.id} board={board} />
         ))}
 
-        <DashboardCreateModal isOpen={isModalOpen} onClose={closeModal} />
+        <DashboardCreateModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          dashboards={data?.dashboards || []}
+        />
       </div>
 
       {dashboards.length > 0 && (
