@@ -24,7 +24,9 @@ import { getDashboard, getMembers, inviteMember } from '@/api/dashboard';
 import { getMe } from '@/api/auth';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import { useDashboardStore } from '@/store/useDashboardStore';
-import UserProfileImage from '@/components/common/User/UserProfileImage';
+import UserProfileImage, {
+  CHIP_COLORS,
+} from '@/components/common/User/UserProfileImage';
 import Skeleton from '@/components/common/Skeleton/Skeleton';
 import FormModal from '@/components/Modal/FormModal';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
@@ -93,6 +95,10 @@ export default function Header() {
   const members = membersData?.members ?? [];
   const visibleMembers = members.slice(0, maxVisibleMembers);
   const extraCount = Math.max(0, members.length - maxVisibleMembers);
+
+  const myMemberIndex = me ? members.findIndex((m) => m.userId === me.id) : -1;
+  const myChipColor =
+    CHIP_COLORS[(myMemberIndex >= 0 ? myMemberIndex : 0) % CHIP_COLORS.length];
 
   const handleManageClick = () => {
     if (dashboardId) {
@@ -276,7 +282,10 @@ export default function Header() {
                 onClick={() => router.push('/mypage')}
                 className="ml-2 md:ml-4 lg:ml-6 flex items-center gap-2 md:gap-3 border-l border-gray-300 pl-2 md:pl-4 lg:pl-6 hover:opacity-80 transition-opacity shrink-0"
               >
-                <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden bg-[#A3C4A2] text-lg-medium text-white shrink-0">
+                <div
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden text-lg-medium text-white shrink-0"
+                  style={{ backgroundColor: myChipColor }}
+                >
                   {me?.profileImageUrl ? (
                     <Image
                       src={me.profileImageUrl}

@@ -72,6 +72,7 @@ export default function MyPage() {
     mutationFn: updateMyInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me() });
+      queryClient.invalidateQueries({ queryKey: ['members'] });
       alert('프로필이 업데이트되었습니다.');
     },
   });

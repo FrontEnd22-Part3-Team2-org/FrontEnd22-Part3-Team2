@@ -14,7 +14,7 @@ import { ProfileOwner } from '@/types/user';
 import Image from 'next/image';
 
 /** 프로필 이미지 없을 때 순서에 따라 순환하는 배경색 */
-const CHIP_COLORS = [
+export const CHIP_COLORS = [
   '#FFC85A',
   '#FDD446',
   '#9DD7ED',

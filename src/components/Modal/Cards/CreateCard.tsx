@@ -190,7 +190,7 @@ export default function CreateCard({
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="px-4 mobile:px-[30px] max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
+        <ModalBase className="px-4 mobile:px-[30px] max-h-[calc(100vh-160px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
           <header>
             <h2 className="text-2xl-bold break-words">할 일 생성</h2>
           </header>
