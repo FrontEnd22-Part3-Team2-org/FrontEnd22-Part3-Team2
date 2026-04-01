@@ -22,7 +22,6 @@ import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
   MouseSensor,
   TouchSensor,
   useSensor,
@@ -130,7 +129,7 @@ function SortableDashboardItem({
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 10 : undefined,
     position: 'relative',
-    touchAction: 'none',
+    touchAction: 'pan-y',
   };
 
   return (
@@ -364,16 +363,13 @@ const SideMenu = () => {
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
     useSensor(MouseSensor, {
       activationConstraint: { distance: 6 },
     }),
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 150,
-        tolerance: 6,
+        delay: 220,
+        tolerance: 10,
       },
     }),
   );
