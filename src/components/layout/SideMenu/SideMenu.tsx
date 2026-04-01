@@ -816,9 +816,11 @@ const SideMenu = () => {
 
       {/* ── 드래그 리사이즈 핸들 ── */}
       <div
-        className="absolute right-0 top-0 h-full w-1 cursor-col-resize touch-none z-10 hover:bg-brand-violet/30 active:bg-brand-violet/50 transition-colors"
+        className="absolute -right-2 top-0 h-full w-5 touch-none z-20 cursor-col-resize"
         onPointerDown={handleResizeStart}
-      />
+      >
+        <div className="absolute right-2 top-0 h-full w-1 hover:bg-brand-violet/30 active:bg-brand-violet/50 transition-colors" />
+      </div>
     </aside>
   );
 };
