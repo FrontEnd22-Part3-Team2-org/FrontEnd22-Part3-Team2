@@ -57,7 +57,7 @@ export default function Textarea({
 
       <div
         className={clsx(
-          'rounded-md border bg-white px-4 py-[11px] flex flex-col',
+          'rounded-md border bg-white px-4 py-[11px] flex flex-col min-h-[110px] ',
           hasError
             ? 'border-red focus-within:border-red'
             : 'border-gray-300 focus-within:border-brand-violet',
@@ -68,7 +68,7 @@ export default function Textarea({
           name="content"
           {...props}
           className={clsx(
-            'w-full min-h-[110px] resize-none text-lg-regular outline-none flex-1',
+            'w-full resize-none text-lg-regular outline-none flex-1',
             'placeholder:text-gray-400 ',
             'bg-transparent text-gray-900',
             className,

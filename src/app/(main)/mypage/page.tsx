@@ -17,9 +17,18 @@ export default function MyPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const initialEmail = 'johndoe@gmail.com';
-  const initialNickname = '배유철';
-  const initialProfileImageUrl = null;
+  const mockMyInfo = {
+    id: 1,
+    email: 'test1@test.com',
+    nickname: 'seungmi',
+    profileImageUrl: null,
+    createdAt: '2026-03-24T04:23:25.506Z',
+    updatedAt: '2026-03-24T04:23:25.506Z',
+  };
+
+  const initialEmail = mockMyInfo.email;
+  const initialNickname = mockMyInfo.nickname;
+  const initialProfileImageUrl = mockMyInfo.profileImageUrl;
 
   const [nickname, setNickname] = useState(initialNickname);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
