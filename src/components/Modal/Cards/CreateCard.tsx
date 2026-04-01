@@ -186,12 +186,11 @@ export default function CreateCard({
 
   /** 타이틀 공통 CSS */
   const baseFontStyle = 'text-2lg-medium mb-2';
-  // const baseFontStyle = 'mb-1 block text-xs font-medium text-gray-600';
 
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8 mx-6 md:m-0">
+        <ModalBase className="px-4 mobile:px-[30px] max-h-[calc(100vh-110px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
           <header>
             <h2 className="text-2xl-bold break-words">할 일 생성</h2>
           </header>
@@ -210,8 +209,8 @@ export default function CreateCard({
           {/* 제목 */}
           <Input
             label="제목"
-            // placeholder="제목을 입력해 주세요"
-            placeholder="(임시) 필수 입력 값입니다."
+            placeholder="제목을 입력해 주세요"
+            required={true}
             value={formData.title}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, title: e.target.value }))
@@ -221,8 +220,8 @@ export default function CreateCard({
           {/* 설명 */}
           <Textarea
             label="설명"
-            // placeholder="설명을 입력해 주세요"
-            placeholder="(임시) 필수 입력 값입니다."
+            placeholder="설명을 입력해 주세요"
+            required={true}
             value={formData.description}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, description: e.target.value }))

@@ -73,17 +73,17 @@ function DeleteConfirmModal({
   onConfirm,
 }: ConfirmModalProps) {
   return (
-    <ModalBase className="w-[400px] rounded-[16px] p-[24px]">
+    <ModalBase className="w-screen mobile:w-[400px] rounded-[16px] p-[24px]">
       <p className="mb-[24px] text-center text-lg-medium text-gray-700">
         {message}
       </p>
 
-      <div className="flex gap-[14px]">
+      <div className="flex gap-[14px] flex-col mobile:flex-row">
         <Button
           variant="secondary"
           size="modal_sm"
           onClick={onCancel}
-          className="flex-1"
+          className="w-auto mobile:flex-1"
         >
           취소
         </Button>
@@ -92,7 +92,7 @@ function DeleteConfirmModal({
           variant="primary"
           size="modal_sm"
           onClick={onConfirm}
-          className="flex-1"
+          className="w-auto mobile:flex-1"
         >
           삭제
         </Button>
@@ -386,7 +386,7 @@ export default function Cards({
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="relative w-full md:w-fit max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg px-[30px] py-6 mx-6 md:m-0">
+        <ModalBase className="px-4 mobile:px-[30px] py-6 relative w-full md:w-fit max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
@@ -400,17 +400,19 @@ export default function Cards({
             </div>
 
             {/* 진행 상태 및 태그 */}
-            <div className="flex items-center gap-5 mb-4 md:mb-[17px] min-h-8">
+            <div className="flex items-center mb-4 md:mb-[17px] h-8">
               {/* 진행 상태 */}
-              <StatusChip status={columnTitle} />
+              <div className="w-fit max-w-[140px] mr-5">
+                <StatusChip status={columnTitle} />
+              </div>
               {/* 구분선 */}
-              <div className="w-[1px] h-5 bg-gray-300"></div>
+              <div className="w-[1px] h-5 bg-gray-300 mr-5"></div>
               {/* 태그 */}
-              <div className="flex items-center gap-[6px]">
+              <div className="flex items-center gap-[6px] overflow-x-auto">
                 {tags.map((tag) => {
                   return (
                     <div key={tag}>
-                      <TagChip label={tag} />
+                      <TagChip label={tag} className={'w-max'} />
                     </div>
                   );
                 })}
@@ -424,7 +426,7 @@ export default function Cards({
 
             {/* 이미지 섹션: 이미지가 있을 때만 렌더링 */}
             {imageUrl && (
-              <div className="relative w-full h-[160px] md:max-w-[445px] overflow-hidden md:h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4">
+              <div className="relative w-full min-h-[160px] md:max-w-[445px] overflow-hidden md:h-[260px] rounded-md bg-gray-300 mb-6 md:mb-4">
                 <Image
                   src={imageUrl}
                   alt="할 일 카드 이미지"
@@ -456,7 +458,7 @@ export default function Cards({
               ────────────────────────────────────────── */}
               <div
                 ref={scrollContainerRef}
-                className="max-h-[150px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full"
+                className="max-h-[80px] mb-0 mt-4 md:mb-6 md:mt-6 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-gray-300 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded-full"
               >
                 {commentsList.length > 0 ? (
                   <>
