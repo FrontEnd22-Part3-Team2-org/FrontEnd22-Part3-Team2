@@ -386,7 +386,7 @@ export default function Cards({
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="px-4 mobile:px-[30px] py-6 relative w-full md:w-fit max-h-[calc(100vh-110px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg">
+        <ModalBase className="px-4 mobile:px-[30px] py-6 relative w-full md:w-fit max-h-[calc(100vh-160px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg">
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
@@ -498,10 +498,10 @@ export default function Cards({
 
           {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
           <div className="flex flex-col items-end gap-6 min-w-[200px] w-full">
-            <div className="flex gap-6 relative">
+            <div className="flex gap-2 md:gap-6 relative">
               {/* 메뉴 */}
               <button onClick={() => setIsMenuOpen((prev) => !prev)}>
-                <KebabMenuIcon className="w-7 aspect-square" />
+                <KebabMenuIcon width={22} className="w-7 aspect-square" />
               </button>
 
               {/* 드롭다운 메뉴 */}
