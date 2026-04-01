@@ -20,11 +20,21 @@ import {
   changePassword,
 } from '@/api/user';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { clearToken, getToken } from '@/lib/auth'; // ✅ 추가
 
 export default function MyPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
+
+  // ✅ 추가 (로그인 체크)
+  useEffect(() => {
+    const token = getToken();
+
+    if (!token) {
+      router.replace('/');
+    }
+  }, [router]);
 
   const { data: myInfo, isLoading } = useQuery({
     queryKey: QUERY_KEYS.me(),
@@ -41,16 +51,13 @@ export default function MyPage() {
   );
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
-  // NOTE: 서버에서 받아온 초기값과 사용자가 수정 중인 값을 분리해서 다루기 위한 값
   const currentNickname = nickname ?? initialNickname;
   const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
-  // 비밀번호 상태
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // 에러 상태
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false);
 
   const isNicknameChanged =
@@ -61,12 +68,10 @@ export default function MyPage() {
   const isPasswordFormValid =
     currentPassword !== '' && newPassword !== '' && confirmPassword !== '';
 
-  // NOTE: 이미지 업로드와 프로필 수정은 요청 흐름이 달라 mutation을 분리했습니다.
   const uploadProfileImageMutation = useMutation({
     mutationFn: uploadProfileImage,
   });
 
-  // NOTE: 수정 성공 후 최신 사용자 정보를 다시 조회하기 위해 캐시를 무효화합니다.
   const updateMyInfoMutation = useMutation({
     mutationFn: updateMyInfo,
     onSuccess: () => {
@@ -86,7 +91,6 @@ export default function MyPage() {
     },
   });
 
-  // NOTE: 이미지 미리보기용으로 생성한 object URL이 남지 않도록 정리합니다.
   useEffect(() => {
     return () => {
       if (previewImageUrl) {
@@ -107,7 +111,6 @@ export default function MyPage() {
     setConfirmPassword(e.target.value);
   };
 
-  // blur 시 검증
   const handleConfirmPasswordBlur = () => {
     if (newPassword !== confirmPassword) {
       setIsPasswordMismatch(true);
@@ -116,11 +119,8 @@ export default function MyPage() {
     }
   };
 
-  // 변경 버튼 클릭
   const handlePasswordChange = async () => {
-    if (!isPasswordFormValid) {
-      return;
-    }
+    if (!isPasswordFormValid) return;
 
     if (newPassword !== confirmPassword) {
       setIsPasswordMismatch(true);
@@ -147,24 +147,18 @@ export default function MyPage() {
 
   const handleProfileImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const imageFile = event.target.files?.[0];
-
-    if (!imageFile) {
-      return;
-    }
+    if (!imageFile) return;
 
     const objectUrl = URL.createObjectURL(imageFile);
 
     setSelectedImageFile(imageFile);
     setPreviewImageUrl(objectUrl);
 
-    // NOTE: 같은 파일을 다시 선택해도 change 이벤트가 동작하도록 value를 초기화합니다.
     event.target.value = '';
   };
 
   const handleProfileSave = async () => {
-    if (!isProfileChanged) {
-      return;
-    }
+    if (!isProfileChanged) return;
 
     try {
       let profileImageUrl = currentPreviewImageUrl ?? null;
@@ -185,6 +179,12 @@ export default function MyPage() {
     } catch {
       alert('프로필 저장 중 오류가 발생했습니다.');
     }
+  };
+
+  // ✅ 추가 (로그아웃)
+  const handleLogout = () => {
+    clearToken();
+    router.replace('/');
   };
 
   if (isLoading) {
@@ -221,20 +221,17 @@ export default function MyPage() {
                 type="button"
                 onClick={handleProfileImageButtonClick}
                 className="h-full w-full"
-                aria-label="프로필 이미지 업로드"
               >
                 {currentPreviewImageUrl ? (
-                  <div className="relative h-full w-full">
-                    <Image
-                      src={currentPreviewImageUrl}
-                      alt="프로필 미리보기"
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
+                  <Image
+                    src={currentPreviewImageUrl}
+                    alt="프로필"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-3xl-semibold text-brand-violet">
+                  <div className="flex h-full w-full items-center justify-center text-3xl text-brand-violet">
                     +
                   </div>
                 )}
@@ -242,19 +239,11 @@ export default function MyPage() {
             </div>
 
             <div className="flex w-full flex-col gap-4">
-              <Input
-                label="이메일"
-                value={initialEmail}
-                readOnly
-                className="bg-white"
-              />
-
+              <Input label="이메일" value={initialEmail} readOnly />
               <Input
                 label="닉네임"
                 value={currentNickname}
                 onChange={handleNicknameChange}
-                placeholder="닉네임 입력"
-                maxLength={10}
               />
 
               <Button
@@ -278,37 +267,26 @@ export default function MyPage() {
             <Input
               label="현재 비밀번호"
               type="password"
-              placeholder="비밀번호 입력"
               value={currentPassword}
               onChange={handleCurrentPasswordChange}
             />
-
             <Input
               label="새 비밀번호"
               type="password"
-              placeholder="새 비밀번호 입력"
               value={newPassword}
               onChange={handleNewPasswordChange}
             />
-
-            <div>
-              <Input
-                label="새 비밀번호 확인"
-                type="password"
-                placeholder="새 비밀번호 입력"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                onBlur={handleConfirmPasswordBlur}
-                isError={isPasswordMismatch}
-                errorMessage={
-                  isPasswordMismatch
-                    ? '비밀번호가 일치하지 않습니다.'
-                    : undefined
-                }
-              />
-              {/* 에러메시지 공간 확보 */}
-              <div className="mt-1 h-5" />
-            </div>
+            <Input
+              label="비밀번호 확인"
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              onBlur={handleConfirmPasswordBlur}
+              isError={isPasswordMismatch}
+              errorMessage={
+                isPasswordMismatch ? '비밀번호가 일치하지 않습니다.' : undefined
+              }
+            />
 
             <Button
               size="modal_lg"
@@ -320,6 +298,16 @@ export default function MyPage() {
             </Button>
           </div>
         </section>
+
+        {/* ✅ 로그아웃 버튼 추가 */}
+        <Button
+          variant="secondary"
+          size="modal_lg"
+          className="w-full mt-6"
+          onClick={handleLogout}
+        >
+          로그아웃
+        </Button>
       </div>
     </div>
   );
