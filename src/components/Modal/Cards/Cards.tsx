@@ -363,6 +363,12 @@ export default function Cards({
     setColumnTitle(foundColumn?.title ?? '');
   }, [card?.columnId, columns]);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    modalRef.current?.scrollTo({ top: 0 });
+  }, []);
+
   /** 렌더링 분기 */
   if (isLoading || isError) return <CardSkeleton onModalClose={onModalClose} />;
   if (!card) return null;
@@ -386,7 +392,62 @@ export default function Cards({
   return (
     <>
       <ModalOverlay onClose={onModalClose}>
-        <ModalBase className="px-4 mobile:px-[30px] py-6 relative w-full md:w-fit max-h-[calc(100vh-160px)] overflow-y-auto flex flex-col-reverse md:flex-row md:gap-[14px] gap-4 text-gray-700 rounded-lg">
+        <ModalBase
+          ref={modalRef}
+          className="px-4 mobile:px-[30px] py-6 relative w-full md:w-fit max-h-[calc(100vh-160px)] overflow-y-auto flex flex-col md:flex-row-reverse md:gap-[14px] gap-4 text-gray-700 rounded-lg"
+        >
+          {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
+          <div className="flex flex-col items-end gap-6 min-w-[200px] w-full">
+            <div className="flex gap-2 md:gap-6 relative">
+              {/* 메뉴 */}
+              <button onClick={() => setIsMenuOpen((prev) => !prev)}>
+                <KebabMenuIcon width={22} className="w-7 aspect-square" />
+              </button>
+
+              {/* 드롭다운 메뉴 */}
+              {isMenuOpen && (
+                <div className="absolute top-8 right-[53px]" ref={menuRef}>
+                  <DropdownMenu
+                    onEdit={() => {
+                      setIsEditing(true);
+                      handleCloseMenu();
+                    }}
+                    onDelete={() => setIsDeleting(true)}
+                  />
+                </div>
+              )}
+
+              {/* 모달 닫기 버튼 */}
+              <button onClick={onModalClose}>
+                {/* <XIcon className="w-7 aspect-square" /> */}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 aspect-square"
+                >
+                  <path
+                    d="M17 7L7 17"
+                    stroke="#333236"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M7 7L17 17"
+                    stroke="#333236"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* 담당자 컴포넌트 - 데스크탑 */}
+            <div className="hidden md:block">
+              <AssigneeItem assignee={assignee} dueDate={dueDate} />
+            </div>
+          </div>
+
           {/* 좌측 영역 - 제목, 진행 상태 및 태그, 내용, 댓글 */}
           <div className="flex flex-col md:max-w-[450px] md:min-w-[450px]">
             {/* 제목 */}
@@ -494,58 +555,6 @@ export default function Cards({
                 )}
               </div>
             </section>
-          </div>
-
-          {/* 우측 영역 - 메뉴, 닫기 버튼, 담당자 */}
-          <div className="flex flex-col items-end gap-6 min-w-[200px] w-full">
-            <div className="flex gap-2 md:gap-6 relative">
-              {/* 메뉴 */}
-              <button onClick={() => setIsMenuOpen((prev) => !prev)}>
-                <KebabMenuIcon width={22} className="w-7 aspect-square" />
-              </button>
-
-              {/* 드롭다운 메뉴 */}
-              {isMenuOpen && (
-                <div className="absolute top-8 right-[53px]" ref={menuRef}>
-                  <DropdownMenu
-                    onEdit={() => {
-                      setIsEditing(true);
-                      handleCloseMenu();
-                    }}
-                    onDelete={() => setIsDeleting(true)}
-                  />
-                </div>
-              )}
-
-              {/* 모달 닫기 버튼 */}
-              <button onClick={onModalClose}>
-                {/* <XIcon className="w-7 aspect-square" /> */}
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-7 aspect-square"
-                >
-                  <path
-                    d="M17 7L7 17"
-                    stroke="#333236"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M7 7L17 17"
-                    stroke="#333236"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* 담당자 컴포넌트 - 데스크탑 */}
-            <div className="hidden md:block">
-              <AssigneeItem assignee={assignee} dueDate={dueDate} />
-            </div>
           </div>
         </ModalBase>
         {/* 카드 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
