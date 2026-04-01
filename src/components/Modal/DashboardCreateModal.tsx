@@ -12,6 +12,7 @@ interface DashboardCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   dashboards: Dashboard[];
+  onSuccess?: (newId: number) => void;
 }
 
 function isDuplicateDashboard(
@@ -29,6 +30,7 @@ export default function DashboardCreateModal({
   isOpen,
   onClose,
   dashboards,
+  onSuccess,
 }: DashboardCreateModalProps) {
   const router = useRouter();
   const [dashboardName, setDashboardName] = useState('');
@@ -55,6 +57,7 @@ export default function DashboardCreateModal({
       const createdData = response.data;
 
       if (createdData?.id) {
+        onSuccess?.(createdData.id);
         router.push(`/dashboard/${createdData.id}`);
         router.refresh();
         onClose();
