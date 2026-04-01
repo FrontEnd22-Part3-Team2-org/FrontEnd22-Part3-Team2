@@ -57,7 +57,7 @@ export default function TaskCard({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0 : 1,
-    touchAction: 'none',
+    touchAction: 'pan-y',
   };
 
   return (
