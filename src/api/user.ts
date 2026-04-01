@@ -43,3 +43,15 @@ export async function updateMyInfo(
   const { data } = await api.put<User>('/users/me', payload);
   return data;
 }
+
+export interface ChangePasswordPayload {
+  password: string;
+  newPassword: string;
+}
+
+/** 비밀번호 변경 */
+export async function changePassword(
+  payload: ChangePasswordPayload,
+): Promise<void> {
+  await api.put('/auth/password', payload);
+}

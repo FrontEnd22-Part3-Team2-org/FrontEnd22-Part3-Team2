@@ -13,7 +13,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
-import { getMyInfo, updateMyInfo, uploadProfileImage } from '@/api/user';
+import {
+  getMyInfo,
+  updateMyInfo,
+  uploadProfileImage,
+  changePassword,
+} from '@/api/user';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 
 export default function MyPage() {
@@ -36,6 +41,7 @@ export default function MyPage() {
   );
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
 
+  // NOTE: 서버에서 받아온 초기값과 사용자가 수정 중인 값을 분리해서 다루기 위한 값
   const currentNickname = nickname ?? initialNickname;
   const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
@@ -55,21 +61,32 @@ export default function MyPage() {
   const isPasswordFormValid =
     currentPassword !== '' && newPassword !== '' && confirmPassword !== '';
 
+  // NOTE: 이미지 업로드와 프로필 수정은 요청 흐름이 달라 mutation을 분리했습니다.
   const uploadProfileImageMutation = useMutation({
     mutationFn: uploadProfileImage,
   });
 
+  // NOTE: 수정 성공 후 최신 사용자 정보를 다시 조회하기 위해 캐시를 무효화합니다.
   const updateMyInfoMutation = useMutation({
     mutationFn: updateMyInfo,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me() });
-      alert('프로필이 업데이트되었습니다');
-    },
-    onError: () => {
-      alert('프로필 수정에 실패했습니다');
+      alert('프로필이 업데이트되었습니다.');
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: changePassword,
+    onSuccess: () => {
+      alert('비밀번호가 변경되었습니다.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsPasswordMismatch(false);
+    },
+  });
+
+  // NOTE: 이미지 미리보기용으로 생성한 object URL이 남지 않도록 정리합니다.
   useEffect(() => {
     return () => {
       if (previewImageUrl) {
@@ -100,14 +117,8 @@ export default function MyPage() {
   };
 
   // 변경 버튼 클릭
-  const handlePasswordChange = () => {
-    if (!isPasswordFormValid) return;
-
-    // 현재 비밀번호 검증 (임시)
-    const mockCurrentPassword = '1234'; // TODO: API 연동 시 제거
-
-    if (currentPassword !== mockCurrentPassword) {
-      alert('현재 비밀번호가 틀립니다.');
+  const handlePasswordChange = async () => {
+    if (!isPasswordFormValid) {
       return;
     }
 
@@ -116,12 +127,16 @@ export default function MyPage() {
       return;
     }
 
-    // TODO: 비밀번호 변경 API 연결
-    console.log({
-      currentPassword,
-      newPassword,
-    });
+    try {
+      await changePasswordMutation.mutateAsync({
+        password: currentPassword,
+        newPassword,
+      });
+    } catch {
+      alert('비밀번호 변경에 실패했습니다.');
+    }
   };
+
   const handleNicknameChange = (event: ChangeEvent<HTMLInputElement>) => {
     setNickname(event.target.value);
   };
@@ -166,6 +181,7 @@ export default function MyPage() {
       });
 
       setSelectedImageFile(null);
+      setPreviewImageUrl(undefined);
     } catch {
       alert('프로필 저장 중 오류가 발생했습니다.');
     }
