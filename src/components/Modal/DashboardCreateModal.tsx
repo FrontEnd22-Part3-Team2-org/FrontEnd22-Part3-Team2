@@ -38,8 +38,12 @@ export default function DashboardCreateModal({
     return isDuplicateDashboard(dashboards, dashboardName, selectedColor);
   }, [dashboards, dashboardName, selectedColor]);
 
+  const isTitleValid =
+    /[a-zA-Z0-9가-힣]/.test(dashboardName) && dashboardName.trim().length >= 2;
+  const isSubmitDisabled = !isTitleValid || isLoading || isDuplicate;
+
   const handleCreate = async () => {
-    if (!dashboardName.trim() || isLoading || isDuplicate) return;
+    if (!isTitleValid) return;
     setIsLoading(true);
 
     try {
@@ -85,7 +89,7 @@ export default function DashboardCreateModal({
           onChange={setDashboardName}
           onConfirm={handleCreate}
           onCancel={handleClose}
-          disabled={!dashboardName.trim() || isLoading || isDuplicate}
+          disabled={isSubmitDisabled}
         >
           <ColorChip
             onSelectedColor={(hex) => setSelectedColor(hex)}
