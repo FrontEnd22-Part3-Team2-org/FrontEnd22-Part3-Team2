@@ -252,7 +252,7 @@ export default function EditCard({
 
   return (
     <ModalOverlay onClose={onModalClose}>
-      <ModalBase className="px-4 mobile:px-[30px] max-h-[calc(100dvh-160px)] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
+      <ModalBase className="h-modal px-4 mobile:px-[30px] overflow-y-auto w-[584px] h-auto rounded-2xl text-gray-700 p-8 flex flex-col gap-8">
         <header>
           <h2 className="text-2xl-bold break-words">할 일 수정</h2>
         </header>

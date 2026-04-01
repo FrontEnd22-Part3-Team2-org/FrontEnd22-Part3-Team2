@@ -123,3 +123,9 @@ a {
     color-scheme: dark;
   }
 }
+
+/* 노치/홈 인디케이터 영역 계산 */
+.h-modal {
+  height: calc(100vh - 110px); /* 구형 폴백 */
+  height: calc(100dvh - 110px); /* 최신 브라우저 */
+}

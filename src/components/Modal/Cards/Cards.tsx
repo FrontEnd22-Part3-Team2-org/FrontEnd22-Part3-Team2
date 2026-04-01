@@ -519,7 +519,26 @@ export default function Cards({
 
               {/* 모달 닫기 버튼 */}
               <button onClick={onModalClose}>
-                <XIcon className="w-7 aspect-square" />
+                {/* <XIcon className="w-7 aspect-square" /> */}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-7 aspect-square"
+                >
+                  <path
+                    d="M17 7L7 17"
+                    stroke="#333236"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M7 7L17 17"
+                    stroke="#333236"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </button>
             </div>
 
