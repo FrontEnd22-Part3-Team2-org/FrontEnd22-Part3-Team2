@@ -20,6 +20,7 @@ import {
   changePassword,
 } from '@/api/user';
 import { QUERY_KEYS } from '@/constants/queryKeys';
+import { clearToken, getToken } from '@/lib/auth';
 
 export default function MyPage() {
   const router = useRouter();
@@ -95,6 +96,15 @@ export default function MyPage() {
       }
     };
   }, [previewImageUrl]);
+
+  // NOTE: 로그인하지 않은 사용자는 메인페이지로 이동
+  useEffect(() => {
+    const token = getToken();
+
+    if (!token) {
+      router.replace('/');
+    }
+  }, [router]);
 
   const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentPassword(e.target.value);
@@ -186,6 +196,12 @@ export default function MyPage() {
     } catch {
       alert('프로필 저장 중 오류가 발생했습니다.');
     }
+  };
+
+  // NOTE: 로그아웃 처리 (토큰 삭제 후 메인페이지 이동)
+  const handleLogout = () => {
+    clearToken();
+    router.replace('/');
   };
 
   if (isLoading) {
@@ -321,6 +337,15 @@ export default function MyPage() {
             </Button>
           </div>
         </section>
+
+        <Button
+          variant="secondary"
+          size="modal_lg"
+          className="w-full mt-6"
+          onClick={handleLogout}
+        >
+          로그아웃
+        </Button>
       </div>
     </div>
   );
