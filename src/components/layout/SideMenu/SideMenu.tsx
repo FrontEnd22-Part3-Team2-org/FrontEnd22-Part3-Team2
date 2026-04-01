@@ -18,7 +18,11 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   DndContext,
   closestCenter,
@@ -45,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { getDashboards } from '@/api/dashboard';
 import { QUERY_KEYS } from '@/constants/queryKeys';
 import type { Dashboard } from '@/types/dashboard';
+import DashboardCreateModal from '@/components/Modal/DashboardCreateModal';
 
 const PAGE_SIZE = 15;
 const MIN_WIDTH = 67;
@@ -351,7 +356,9 @@ function SideMenuSkeleton({ layout }: { layout: LayoutType | null }) {
 
 const SideMenu = () => {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   /** 인라인 스타일 너비. null이면 CSS 클래스 기반 반응형 유지 */
   const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
@@ -699,6 +706,7 @@ const SideMenu = () => {
           type="button"
           className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
           aria-label="대시보드 추가"
+          onClick={() => setIsCreateModalOpen(true)}
         >
           <AddBoxIcon width={20} height={20} />
         </button>
@@ -817,6 +825,28 @@ const SideMenu = () => {
       >
         <div className="absolute right-2 top-0 h-full w-1 hover:bg-brand-violet/30 active:bg-brand-violet/50 transition-colors" />
       </div>
+
+      <DashboardCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboards() });
+        }}
+        onSuccess={(newId) => {
+          const key = 'dashboard-order-page-1';
+          try {
+            const saved = localStorage.getItem(key);
+            const existing: number[] = saved ? JSON.parse(saved) : [];
+            const next = [newId, ...existing.filter((id) => id !== newId)];
+            localStorage.setItem(key, JSON.stringify(next));
+            setLocalOrderMap((prev) => ({ ...prev, [key]: next }));
+          } catch {
+            /* 시크릿 모드 등 */
+          }
+          setPage(1);
+        }}
+        dashboards={dashboards}
+      />
     </aside>
   );
 };
