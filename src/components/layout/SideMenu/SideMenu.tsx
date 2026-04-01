@@ -467,6 +467,7 @@ const SideMenu = () => {
     queryKey: [...QUERY_KEYS.dashboards(), page],
     queryFn: () => getDashboards(page, PAGE_SIZE),
     enabled: !isMobileLayout,
+    staleTime: 0,
   });
 
   // ── 무한스크롤 쿼리 (mobile) ─────────────────────────────────
@@ -518,8 +519,13 @@ const SideMenu = () => {
   const orderedDashboards = useMemo(() => {
     if (dashboards.length === 0) return [];
 
+    const uniqueDashboards = dashboards.filter(
+      (board, index, self) =>
+        index === self.findIndex((b) => b.id === board.id),
+    );
+
     const applyOrder = (ids: number[]) =>
-      [...dashboards].sort((a, b) => {
+      [...uniqueDashboards].sort((a, b) => {
         const ai = ids.indexOf(a.id);
         const bi = ids.indexOf(b.id);
         if (ai === -1) return 1;
@@ -537,7 +543,7 @@ const SideMenu = () => {
       /* ignore */
     }
 
-    return dashboards;
+    return uniqueDashboards;
   }, [dashboards, localOrderMap, storageKey]);
 
   /**
@@ -576,9 +582,15 @@ const SideMenu = () => {
       return items;
     };
 
-    return infiniteData.pages.flatMap((pageData, i) =>
+    const allOrderedItems = infiniteData.pages.flatMap((pageData, i) =>
       applyPageOrder(pageData.dashboards, `dashboard-order-page-${i + 1}`),
     );
+
+    const finalUniqueItems = allOrderedItems.filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id),
+    );
+
+    return finalUniqueItems;
   }, [infiniteData, localOrderMap]);
 
   const handlePrevPage = () => setPage((prev) => Math.max(1, prev - 1));
@@ -830,7 +842,6 @@ const SideMenu = () => {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dashboards() });
         }}
         onSuccess={(newId) => {
           const key = 'dashboard-order-page-1';
@@ -839,11 +850,20 @@ const SideMenu = () => {
             const existing: number[] = saved ? JSON.parse(saved) : [];
             const next = [newId, ...existing.filter((id) => id !== newId)];
             localStorage.setItem(key, JSON.stringify(next));
-            setLocalOrderMap((prev) => ({ ...prev, [key]: next }));
+            setLocalOrderMap((prev) => ({
+              ...prev,
+              [key]: next,
+            }));
+
+            setPage(1);
           } catch {
             /* 시크릿 모드 등 */
           }
-          setPage(1);
+
+          queryClient.invalidateQueries({
+            queryKey: QUERY_KEYS.dashboards(),
+            exact: false,
+          });
         }}
         dashboards={dashboards}
       />

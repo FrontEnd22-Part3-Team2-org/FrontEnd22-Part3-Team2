@@ -77,9 +77,7 @@ export default function EditDashboardForm({
           placeholder="수정할 이름을 입력하세요"
           isError={hasErrorMessage || !isTitleValid}
           errorMessage={
-            hasErrorMessage
-              ? '대시보드 이름은 2자 이상의 완성된 한글, 영문, 숫자여야 합니다.'
-              : ''
+            hasErrorMessage ? '한글·영문·숫자 조합 2자 이상 입력해 주세요.' : ''
           }
         />
         <div className="mt-[16px]">
