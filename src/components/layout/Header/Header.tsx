@@ -15,7 +15,7 @@
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import CrownIcon from '@/components/common/Icon/CrownIcon';
 import AddBoxIcon from '@/components/common/Icon/AddBoxIcon';
@@ -29,7 +29,8 @@ import Skeleton from '@/components/common/Skeleton/Skeleton';
 import FormModal from '@/components/Modal/FormModal';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 
-const MAX_VISIBLE_MEMBERS = 4;
+const MAX_VISIBLE_MEMBERS_DESKTOP = 4;
+const MAX_VISIBLE_MEMBERS_COMPACT = 2;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Header() {
@@ -43,6 +44,9 @@ export default function Header() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [maxVisibleMembers, setMaxVisibleMembers] = useState(
+    MAX_VISIBLE_MEMBERS_DESKTOP,
+  );
 
   const PAGE_TITLES: Record<string, string> = {
     '/mydashboard': '내 대시보드',
@@ -72,9 +76,23 @@ export default function Header() {
     queryFn: getMe,
   });
 
+  useEffect(() => {
+    const updateVisibleMembers = () => {
+      setMaxVisibleMembers(
+        window.innerWidth < 1024
+          ? MAX_VISIBLE_MEMBERS_COMPACT
+          : MAX_VISIBLE_MEMBERS_DESKTOP,
+      );
+    };
+
+    updateVisibleMembers();
+    window.addEventListener('resize', updateVisibleMembers);
+    return () => window.removeEventListener('resize', updateVisibleMembers);
+  }, []);
+
   const members = membersData?.members ?? [];
-  const visibleMembers = members.slice(0, MAX_VISIBLE_MEMBERS);
-  const extraCount = Math.max(0, members.length - MAX_VISIBLE_MEMBERS);
+  const visibleMembers = members.slice(0, maxVisibleMembers);
+  const extraCount = Math.max(0, members.length - maxVisibleMembers);
 
   const handleManageClick = () => {
     if (dashboardId) {
@@ -154,7 +172,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="flex h-[64px] w-full items-center justify-between shrink-0 border-b border-gray-200 bg-white px-8">
+      <header className="flex h-[64px] w-full items-center justify-between shrink-0 border-b border-gray-200 bg-white px-3 md:px-5 lg:px-8">
         {/* ── 좌측: 대시보드 타이틀 ── */}
         <div className="flex min-w-0 items-center gap-2">
           {isDashboardLoading && !staticTitle ? (
@@ -172,7 +190,7 @@ export default function Header() {
         </div>
 
         {/* ── 우측: 버튼 + 멤버 아바타 + 프로필 ── */}
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex min-w-0 items-center gap-2 md:gap-3 lg:gap-4">
           {isDashboardLoading && dashboardId ? (
             <>
               <Skeleton className="h-[40px] w-[72px] rounded-[8px]" />
@@ -184,25 +202,25 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={handleManageClick}
-                  className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
+                  className="flex h-[32px] md:h-[36px] lg:h-[40px] items-center gap-1.5 md:gap-2 rounded-[8px] border border-gray-300 bg-white px-2 md:px-3 lg:px-4 text-xs-medium md:text-md-medium text-gray-500 shrink-0"
                 >
-                  <SettingIcon className="h-[20px] w-[20px]" />
-                  관리
+                  <SettingIcon className="h-[16px] w-[16px] md:h-[18px] md:w-[18px] lg:h-[20px] lg:w-[20px]" />
+                  <span className="hidden md:inline">관리</span>
                 </button>
               )}
 
               <button
                 type="button"
                 onClick={() => setIsInviteModalOpen(true)}
-                className="flex h-[40px] items-center gap-2 rounded-[8px] border border-gray-300 bg-white px-4 text-md-medium text-gray-500"
+                className="flex h-[32px] md:h-[36px] lg:h-[40px] items-center gap-1.5 md:gap-2 rounded-[8px] border border-gray-300 bg-white px-2 md:px-3 lg:px-4 text-xs-medium md:text-md-medium text-gray-500 shrink-0"
               >
-                <AddBoxIcon className="h-[20px] w-[20px]" />
-                초대하기
+                <AddBoxIcon className="h-[16px] w-[16px] md:h-[18px] md:w-[18px] lg:h-[20px] lg:w-[20px]" />
+                <span className="hidden md:inline">초대하기</span>
               </button>
             </>
           )}
 
-          <div className="ml-1 flex items-center gap-0">
+          <div className="ml-1 flex min-w-0 items-center gap-0">
             {/* 멤버 아바타 */}
             {isMembersLoading && dashboardId ? (
               <div className="flex items-center">
@@ -216,7 +234,7 @@ export default function Header() {
               </div>
             ) : (
               visibleMembers.length > 0 && (
-                <div className="flex items-center">
+                <div className="flex items-center shrink-0">
                   {visibleMembers.map((member, index) => (
                     <div
                       key={member.id}
@@ -248,7 +266,7 @@ export default function Header() {
 
             {/* 내 프로필 */}
             {isMeLoading ? (
-              <div className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6">
+              <div className="ml-2 md:ml-4 lg:ml-6 flex items-center gap-2 md:gap-3 border-l border-gray-300 pl-2 md:pl-4 lg:pl-6 shrink-0">
                 <Skeleton className="w-[38px] h-[38px] rounded-full shrink-0" />
                 <Skeleton className="h-4 w-20 rounded hidden lg:block" />
               </div>
@@ -256,7 +274,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => router.push('/mypage')}
-                className="ml-6 flex items-center gap-3 border-l border-gray-300 pl-6 hover:opacity-80 transition-opacity"
+                className="ml-2 md:ml-4 lg:ml-6 flex items-center gap-2 md:gap-3 border-l border-gray-300 pl-2 md:pl-4 lg:pl-6 hover:opacity-80 transition-opacity shrink-0"
               >
                 <div className="flex h-[38px] w-[38px] items-center justify-center rounded-full overflow-hidden bg-[#A3C4A2] text-lg-medium text-white shrink-0">
                   {me?.profileImageUrl ? (
@@ -272,7 +290,7 @@ export default function Header() {
                     (me?.nickname?.[0]?.toUpperCase() ?? 'U')
                   )}
                 </div>
-                <span className="text-lg-medium text-gray-700">
+                <span className="hidden lg:inline text-lg-medium text-gray-700">
                   {me?.nickname ?? ''}
                 </span>
               </button>
