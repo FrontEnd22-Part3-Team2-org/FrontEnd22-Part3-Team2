@@ -263,14 +263,14 @@ export default function MyPageContent() {
         </span>
       </button>
 
-      <div className="flex max-w-[624px] flex-col mt-4 gap-6">
-        <section className="rounded-2xl bg-white p-6">
+      <div className="flex w-full max-w-[624px] flex-col mt-4 gap-4 md:gap-6">
+        <section className="rounded-2xl bg-white px-4 py-5 md:p-6">
           <h2 className="mb-6 text-2xl-bold leading-none text-gray-900">
             프로필
           </h2>
 
-          <div className="flex items-start gap-[42px]">
-            <div className="relative h-[180px] w-[180px] shrink-0 overflow-hidden rounded-md bg-[#f5f5f5]">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-[42px]">
+            <div className="relative h-[100px] w-[100px] shrink-0 overflow-hidden rounded-md bg-[#f5f5f5] ms:h-[180px] ms:w-[180px]">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -303,7 +303,7 @@ export default function MyPageContent() {
               </button>
             </div>
 
-            <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full min-w-0 flex-col gap-4">
               <Input
                 label="이메일"
                 value={initialEmail}
@@ -331,7 +331,7 @@ export default function MyPageContent() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white p-6">
+        <section className="rounded-2xl bg-white px-4 py-5 md:p-6">
           <h2 className="mb-6 text-2xl-bold leading-none text-gray-700">
             비밀번호 변경
           </h2>
