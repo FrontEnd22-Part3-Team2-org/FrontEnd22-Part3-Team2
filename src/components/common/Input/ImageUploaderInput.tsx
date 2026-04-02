@@ -18,6 +18,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ImageUploaderChip from '../Chip/ImageUploaderChip';
 import Image from 'next/image';
+// import heic2any from 'heic2any';
 
 interface Props {
   /**
@@ -30,6 +31,24 @@ interface Props {
   defaultUrl?: string | null;
 }
 
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'image/svg+xml',
+];
+const HEIC_TYPES = ['image/heic', 'image/heif'];
+
+/** HEIC 파일을 JPEG File 객체로 변환합니다. */
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const heic2any = (await import('heic2any')).default;
+  const converted = await heic2any({ blob: file, toType: 'image/jpeg' });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  const fileName = file.name.replace(/\.heic$/i, '.jpg');
+  return new File([blob], fileName, { type: 'image/jpeg' });
+}
+
 /**
  * 이미지 업로드 및 미리보기 컴포넌트입니다.
  */
@@ -38,49 +57,67 @@ export default function ImageUploaderInput({
   onUpload,
   defaultUrl = null,
 }: Props) {
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>(defaultUrl ?? '');
+  const [isConverting, setIsConverting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleClick = () => {
-    setFile(null);
-    setImageUrl(''); // ✅ 버튼 클릭 시점에 바로 초기화
-    onUpload(null);
-  };
-
   /** 파일(input[type="file"]) 변경 시 실행되는 핸들러 */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    /** 선택된 파일 중 첫 번째 파일 가져오기 */
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
 
-    /** 파일이 선택되지 않은 경우 */
+    // input value 초기화 — 같은 파일 재선택 시에도 onChange가 트리거되도록
+    e.target.value = '';
+
     if (!selected) {
-      setFile(null);
       setImageUrl('');
       onUpload(null);
       return;
     }
 
-    if (!selected.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드할 수 있습니다.');
+    const isHeic =
+      HEIC_TYPES.includes(selected.type) || /\.heic$/i.test(selected.name);
+
+    if (!isHeic && !ALLOWED_TYPES.includes(selected.type)) {
+      alert('JPG, PNG, GIF, WEBP, SVG 파일만 업로드할 수 있습니다.');
+      return;
+    }
+
+    // HEIC 변환
+    if (isHeic) {
+      setIsConverting(true);
+      try {
+        const jpegFile = await convertHeicToJpeg(selected);
+        const blobUrl = URL.createObjectURL(jpegFile);
+        setImageUrl(blobUrl);
+        onUpload(jpegFile);
+      } catch {
+        alert(
+          'HEIC 파일 변환에 실패했습니다. 다른 형식으로 변환 후 업로드해주세요.',
+        );
+      } finally {
+        setIsConverting(false);
+      }
       return;
     }
 
     const blobUrl = URL.createObjectURL(selected);
-    setFile(selected); // 실제 파일 저장 (서버 업로드용)
-    setImageUrl(blobUrl); // 미리보기용 URL 저장
+    setImageUrl(blobUrl);
     onUpload(selected);
   };
 
   /** 업로드 버튼 클릭 시 숨겨진 input[type="file"]을 트리거하는 함수 */
   const handleUploadClick = () => {
+    // ✅ 클릭 시점에 바로 초기화
+    setImageUrl('');
+    onUpload(null);
     inputRef.current?.click();
   };
 
+  // imageUrl이 바뀔 때마다 이전 blob URL 메모리 해제
   useEffect(() => {
     return () => {
-      /** 기존에 생성된 blob URL이 있다면 메모리에서 해제 */
-      if (imageUrl) URL.revokeObjectURL(imageUrl);
+      if (imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
     };
   }, [imageUrl]);
 
@@ -89,9 +126,8 @@ export default function ImageUploaderInput({
       {/* 숨겨진 input */}
       <input
         type="file"
-        accept="image/*"
+        accept={[...ALLOWED_TYPES, ...HEIC_TYPES].join(',')}
         onChange={handleChange}
-        onClick={handleClick}
         ref={inputRef}
         className="hidden"
       />
@@ -104,7 +140,11 @@ export default function ImageUploaderInput({
         style={{ width: size, height: size }}
       >
         {/* 이미지 업로드 여부에 따라 미리보기 또는 업로드 버튼 UI 렌더링 */}
-        {imageUrl ? (
+        {isConverting ? (
+          <div className="w-full h-full flex items-center justify-center rounded-md bg-gray-100">
+            <span className="text-xs text-gray-400">변환 중...</span>
+          </div>
+        ) : imageUrl ? (
           <>
             <Image
               src={imageUrl}
@@ -113,10 +153,8 @@ export default function ImageUploaderInput({
               className="object-cover rounded-md"
               unoptimized
             />
-
             {/* hover 오버레이 */}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition rounded-md flex items-center justify-center">
-              {/* 펜 아이콘 */}
               <svg
                 width="22"
                 height="22"

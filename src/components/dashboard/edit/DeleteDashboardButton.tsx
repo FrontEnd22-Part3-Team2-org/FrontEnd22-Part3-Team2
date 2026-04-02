@@ -6,7 +6,7 @@ import { deleteDashboard } from '@/api/dashboard';
 import Button from '@/components/common/Button';
 import { useState } from 'react';
 import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
-import { ConfirmModal } from '@/components/Modal';
+import { ConfirmModal } from '@/components/modal';
 
 interface Props {
   dashboardId: string;

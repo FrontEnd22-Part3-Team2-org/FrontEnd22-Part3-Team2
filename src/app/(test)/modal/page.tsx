@@ -5,9 +5,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-import AlertModal from '@/components/Modal/AlertModal';
-import ConfirmModal from '@/components/Modal/ConfirmModal';
-import FormModal from '@/components/Modal/FormModal';
+import AlertModal from '@/components/modal/AlertModal';
+import ConfirmModal from '@/components/modal/ConfirmModal';
+import FormModal from '@/components/modal/FormModal';
 import { inviteMember } from '@/api/dashboard';
 
 type ModalType =

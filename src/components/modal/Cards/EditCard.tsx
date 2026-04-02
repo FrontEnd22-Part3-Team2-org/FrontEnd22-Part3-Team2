@@ -179,11 +179,10 @@ export default function EditCard({
   }, [cardData.dashboardId]);
 
   const handleSubmit = async () => {
-    const changedFields = getChangedFields();
-
     // 변경된 내용 없으면 제출 방지
     if (!isDirty) return;
 
+    const changedFields = getChangedFields();
     setIsSubmitting(true);
     try {
       // 1️⃣ 이미지 변경된 경우에만 업로드
@@ -200,7 +199,7 @@ export default function EditCard({
         imageUrl = cardData.imageUrl ?? null;
       }
 
-      // 2️⃣ 변경된 필드만 추출해서 전송
+      // 2️⃣ 카드 수정 APi 호출 - 변경된 필드만 추출해서 전송
       await updateCard(cardData.id, {
         columnId: (changedFields.columnId as number) ?? cardData.columnId,
         title: (changedFields.title as string) ?? cardData.title,
@@ -218,6 +217,8 @@ export default function EditCard({
         imageUrl,
       });
       onSuccess?.();
+      onModalClose();
+      console.log('수정 완료');
     } catch (error) {
       console.error('카드 수정 실패', error);
       setErrorMessage('카드 수정에 문제가 발생했습니다.');
@@ -284,7 +285,7 @@ export default function EditCard({
         <Input
           label="제목"
           placeholder="제목을 입력해 주세요"
-          required={true}
+          required
           value={formData.title}
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, title: e.target.value }))
@@ -295,7 +296,7 @@ export default function EditCard({
         <Textarea
           label="설명"
           placeholder="설명을 입력해 주세요"
-          required={true}
+          required
           value={formData.description}
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, description: e.target.value }))
