@@ -39,7 +39,6 @@ import ModalOverlay from '@/components/common/ModalBase/ModalOverlay';
 import { useDropdownClose } from '@/hooks/useToggle';
 import CommentsForm from './CommentsForm';
 import AlertModal from '../AlertModal';
-import Skeleton from '@/components/common/Skeleton/Skeleton';
 import Button from '@/components/common/Button';
 import useComments from '@/hooks/useComments';
 import useCardData from '@/hooks/useCardData';
@@ -193,7 +192,6 @@ export default function Cards({
 
               {/* 모달 닫기 버튼 */}
               <button onClick={onModalClose}>
-                {/* <XIcon className="w-7 aspect-square" /> */}
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -279,12 +277,7 @@ export default function Cards({
                 cardId={cardId}
                 columnId={card.columnId}
                 dashboardId={card.dashboardId}
-                onSuccess={() => {
-                  // 댓글 작성 후 목록 처음부터 리셋
-                  setCursorId(null);
-                  setHasMore(true);
-                  fetchComments(null, true);
-                }}
+                onSuccess={resetAndFetch}
               />
               {/* ──────────────────────────────────────────
                   댓글 리스트 (무한 스크롤)
@@ -301,7 +294,7 @@ export default function Cards({
                       <ReplyItem
                         key={comment.id}
                         comment={comment}
-                        onDeleteClick={(id) => setDeletingCommentId(id)}
+                        onDeleteClick={setDeletingCommentId}
                       />
                     ))}
 
@@ -331,21 +324,20 @@ export default function Cards({
             </section>
           </div>
         </ModalBase>
-        {/* 카드 삭제하기 버튼 클릭시 확인 모달 렌더링 */}
+        {/* 카드 삭제 확인 모달 */}
         {isDeleting && (
           <ModalOverlay onClose={() => setIsDeleting(false)}>
             <DeleteConfirmModal
               message="정말 카드를 삭제하겠습니까?"
               onCancel={() => setIsDeleting(false)}
-              onConfirm={handleDeleteCommentConfirm}
+              onConfirm={() => handleDeleteCard(onModalClose)}
             />
           </ModalOverlay>
         )}
 
-        {/* 댓글 삭제 버튼 클릭시 확인 모달 렌더링 */}
+        {/* 댓글 삭제확인 모달 */}
         {deletingCommentId && (
           <ModalOverlay onClose={() => setIsDeleting(false)}>
-            {/* <div className="absolute z-20 flex items-center justify-center shadow-lg"> */}
             <DeleteConfirmModal
               message="정말 댓글을 삭제하겠습니까?"
               onCancel={() => setDeletingCommentId(null)}
