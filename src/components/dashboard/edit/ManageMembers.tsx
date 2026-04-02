@@ -64,7 +64,7 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
   return (
     <div className="pt-[22px] md:pt-[26px]">
       <div className="flex items-center justify-between">
-        <span className="pl-[16px] text-xl-bold md:pl-[28px] md:text-2xl-bold">
+        <span className="pl-[16px] text-xl-bold text-gray-700 md:pl-[28px] md:text-2xl-bold">
           구성원
         </span>
         <div className="pr-[16px] flex justify-end items-center gap-[16px] md:pr-[28px]">
