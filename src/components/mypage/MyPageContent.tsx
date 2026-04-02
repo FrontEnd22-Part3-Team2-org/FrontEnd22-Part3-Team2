@@ -110,7 +110,12 @@ export default function MyPageContent() {
     isVisible: boolean,
     onToggle: () => void,
   ) => (
-    <button type="button" onClick={onToggle} aria-label="비밀번호 표시 전환">
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label="비밀번호 표시 전환"
+      className="flex items-center justify-center h-full"
+    >
       {isVisible ? <EyeOff size={24} /> : <Eye size={24} />}
     </button>
   );
