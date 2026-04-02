@@ -144,11 +144,17 @@ export default function LoginPage() {
                 width={198}
                 height={55}
               />
-              <p>오늘도 만나서 반가워요!</p>
+              <p className="text-lg-medium text-gray-900">
+                오늘도 만나서 반가워요!
+              </p>
             </div>
           </Link>
 
-          <form onSubmit={handleSubmit} noValidate className="w-full">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="w-full flex flex-col gap-4"
+          >
             <Input
               label="이메일"
               type="text"
@@ -173,6 +179,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  className="flex h-full items-center justify-center px-2"
                   aria-label={
                     showPassword ? '비밀번호 숨기기' : '비밀번호 보기'
                   }
