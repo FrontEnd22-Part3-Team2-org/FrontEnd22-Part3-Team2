@@ -6,6 +6,7 @@
 
 'use client';
 
+import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -46,10 +47,14 @@ export default function MyPage() {
   const currentNickname = nickname ?? initialNickname;
   const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
-  // 비밀번호 상태
+  // 비밀번호 state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // 에러 상태
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false);
@@ -97,6 +102,16 @@ export default function MyPage() {
     };
   }, [previewImageUrl]);
 
+
+  const renderPasswordToggleButton = (
+    isVisible: boolean,
+    onToggle: () => void,
+  ) => (
+    <button type="button" onClick={onToggle} aria-label="비밀번호 표시 전환">
+      {isVisible ? <EyeOff size={24} /> : <Eye size={24} />}
+    </button>
+  );
+
   // NOTE: 로그인하지 않은 사용자는 메인페이지로 이동
   useEffect(() => {
     const token = getToken();
@@ -105,6 +120,7 @@ export default function MyPage() {
       router.replace('/');
     }
   }, [router]);
+
 
   const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentPassword(e.target.value);
@@ -213,13 +229,27 @@ export default function MyPage() {
       <button
         type="button"
         onClick={() => router.back()}
-        className="mb-6 flex items-center gap-2 text-md-medium text-gray-700"
+        className="flex items-center gap-[6px] md:gap-[8px]"
       >
-        ← 돌아가기
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-[18px] rotate-180 md:w-[20px]"
+        >
+          <path
+            d="M12.359 9.99933L6.08176 3.72208C5.91616 3.55648 5.8355 3.35937 5.8355 3.13043C5.8355 2.90149 5.91616 2.70437 6.08176 2.53878C6.24735 2.37318 6.44447 2.29252 6.67341 2.29252C6.90235 2.29252 7.09947 2.37318 7.26506 2.53878L13.9411 9.21483C14.0578 9.33153 14.1455 9.46047 14.2044 9.60164C14.2632 9.74281 14.2926 9.88838 14.2926 10.0383C14.2926 10.1882 14.2632 10.3338 14.2044 10.4749C14.1455 10.6161 14.0578 10.7451 13.9411 10.8618L7.26506 17.5378C7.09947 17.7034 6.90235 17.7841 6.67341 17.7841C6.44447 17.7841 6.24735 17.7034 6.08176 17.5378C5.91616 17.3722 5.8355 17.1751 5.8355 16.9462C5.8355 16.7172 5.91616 16.5201 6.08176 16.3545L12.359 10.0773C12.4757 9.96059 12.5346 9.82664 12.5346 9.67545C12.5346 9.52426 12.4757 9.39031 12.359 9.27361V9.99933Z"
+            fill="#333236"
+          />
+        </svg>
+
+        <span className="text-md-medium md:text-lg-medium mt-[1px] text-gray-700">
+          돌아가기
+        </span>
       </button>
 
-      <div className="flex max-w-[624px] flex-col gap-6">
-        <section className="rounded-2xl bg-white px-7 py-8">
+      <div className="flex max-w-[624px] flex-col mt-4 gap-6">
+        <section className="rounded-2xl bg-white p-6">
           <h2 className="mb-6 text-2xl-bold leading-none text-gray-900">
             프로필
           </h2>
@@ -286,7 +316,7 @@ export default function MyPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white p-4">
+        <section className="rounded-2xl bg-white p-6">
           <h2 className="mb-6 text-2xl-bold leading-none text-gray-700">
             비밀번호 변경
           </h2>
@@ -294,24 +324,30 @@ export default function MyPage() {
           <div className="flex flex-col gap-4">
             <Input
               label="현재 비밀번호"
-              type="password"
+              type={showCurrentPassword ? 'text' : 'password'}
               placeholder="비밀번호 입력"
               value={currentPassword}
               onChange={handleCurrentPasswordChange}
+              rightIcon={renderPasswordToggleButton(showCurrentPassword, () =>
+                setShowCurrentPassword((prev) => !prev),
+              )}
             />
 
             <Input
               label="새 비밀번호"
-              type="password"
+              type={showNewPassword ? 'text' : 'password'}
               placeholder="새 비밀번호 입력"
               value={newPassword}
               onChange={handleNewPasswordChange}
+              rightIcon={renderPasswordToggleButton(showNewPassword, () =>
+                setShowNewPassword((prev) => !prev),
+              )}
             />
 
             <div>
               <Input
                 label="새 비밀번호 확인"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="새 비밀번호 입력"
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
@@ -322,6 +358,9 @@ export default function MyPage() {
                     ? '비밀번호가 일치하지 않습니다.'
                     : undefined
                 }
+                rightIcon={renderPasswordToggleButton(showConfirmPassword, () =>
+                  setShowConfirmPassword((prev) => !prev),
+                )}
               />
               {/* 에러메시지 공간 확보 */}
               <div className="mt-1 h-5" />
