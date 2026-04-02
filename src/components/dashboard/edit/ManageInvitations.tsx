@@ -169,7 +169,7 @@ export default function ManageInvitations({ dashboardId }: EmailTableProps) {
   return (
     <div className="relative pt-[22px] md:pt-[26px]">
       <div className="flex items-center justify-between">
-        <span className="pl-[16px] text-xl-bold md:pl-[28px] md:text-2xl-bold">
+        <span className="pl-[16px] text-xl-bold text-gray-700 md:pl-[28px] md:text-2xl-bold">
           초대 내역
         </span>
 

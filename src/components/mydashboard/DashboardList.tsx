@@ -10,6 +10,7 @@ import AddItemChip from '../common/Chip/AddItemChip';
 import DashboardCard from './DashboardCard';
 import Pagination from '../common/Pagination';
 import DashboardCreateModal from '../Modal/DashboardCreateModal';
+import Skeleton from '../common/Skeleton/Skeleton';
 
 const DASHBOARD_LIMIT = 6;
 
@@ -17,7 +18,7 @@ export default function DashboardList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ['dashboards', currentPage],
     queryFn: () => getDashboards(currentPage, DASHBOARD_LIMIT),
     placeholderData: (previousData) => previousData,
@@ -26,13 +27,32 @@ export default function DashboardList() {
   const isFirstPage = currentPage === 1;
   const rawDashboards = data?.dashboards || [];
 
-  const dashboards = isFirstPage ? rawDashboards.slice(0, 5) : rawDashboards;
+  const uniqueDashboards = rawDashboards.filter(
+    (board, index, self) => index === self.findIndex((b) => b.id === board.id),
+  );
+
+  const dashboards = isFirstPage
+    ? uniqueDashboards.slice(0, 5)
+    : uniqueDashboards;
 
   const totalCount = data?.totalCount || 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / DASHBOARD_LIMIT));
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const renderSkeletons = () => {
+    return Array.from({ length: DASHBOARD_LIMIT }).map((_, i) => (
+      <div
+        key={`skeleton-${i}`}
+        className="flex h-[58px] items-center gap-[10px] border border-gray-200 rounded-lg px-5 md:h-[68px] lg:h-[70px] animate-pulse"
+      >
+        <Skeleton className="h-2 w-2 rounded-full bg-gray-300" />
+        <Skeleton className="h-4 w-24 bg-gray-200" />
+        <Skeleton className="ml-auto h-4 w-4 bg-gray-200" />
+      </div>
+    ));
+  };
 
   return (
     <div className="pt-[40px] flex flex-col w-full">
@@ -48,14 +68,16 @@ export default function DashboardList() {
             className="!w-full"
             onClick={openModal}
           >
-            새로운 대시보드
+            <span className="text-gray-700">새로운 대시보드</span>
             <AddItemChip asIcon={true} />
           </Button>
         )}
 
-        {dashboards.map((board: Dashboard) => (
-          <DashboardCard key={board.id} board={board} />
-        ))}
+        {isPending
+          ? renderSkeletons().slice(isFirstPage ? 1 : 0)
+          : dashboards.map((board: Dashboard) => (
+              <DashboardCard key={board.id} board={board} />
+            ))}
 
         <DashboardCreateModal
           isOpen={isModalOpen}
@@ -64,7 +86,7 @@ export default function DashboardList() {
         />
       </div>
 
-      {dashboards.length > 0 && (
+      {!isPending && dashboards.length > 0 && (
         <div className="mt-[8px] flex justify-end items-center gap-[16px]">
           <span className="text-xs-regular text-gray-500 md:text-md-regular">
             {totalPages} 페이지 중 {currentPage}

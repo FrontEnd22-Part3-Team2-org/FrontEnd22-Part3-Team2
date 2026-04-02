@@ -7,6 +7,7 @@ import ColorChip, { COLORS } from '../common/Chip/ColorChip';
 import api from '@/api/axios';
 import { Dashboard } from '@/types/dashboard';
 import { validateDashboardName } from '@/utils/validate';
+import ModalOverlay from '../common/ModalBase/ModalOverlay';
 
 interface DashboardCreateModalProps {
   isOpen: boolean;
@@ -57,10 +58,12 @@ export default function DashboardCreateModal({
       const createdData = response.data;
 
       if (createdData?.id) {
-        onSuccess?.(createdData.id);
-        router.push(`/dashboard/${createdData.id}`);
-        router.refresh();
-        onClose();
+        const newId = createdData.id;
+        onSuccess?.(newId);
+        setTimeout(() => {
+          router.push(`/dashboard/${newId}`);
+          onClose();
+        }, 200);
       }
     } catch {
       alert('대시보드 생성에 실패했습니다.');
@@ -78,11 +81,11 @@ export default function DashboardCreateModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/70"
-      onClick={handleClose}
-    >
-      <div onClick={(e) => e.stopPropagation()}>
+    <ModalOverlay onClose={handleClose}>
+      <div
+        className="w-full max-w-[568px] [&>div]:w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
         <FormModal
           title="새로운 대시보드"
           label="대시보드 이름"
@@ -93,9 +96,7 @@ export default function DashboardCreateModal({
           onConfirm={handleCreate}
           onCancel={handleClose}
           errorText={
-            !isTitleValid
-              ? '대시보드 이름은 2자 이상의 완성된 한글, 영문, 숫자여야 합니다.'
-              : ''
+            !isTitleValid ? '한글·영문·숫자 조합 2자 이상 입력해 주세요.' : ''
           }
           disabled={isSubmitDisabled}
         >
@@ -105,6 +106,6 @@ export default function DashboardCreateModal({
           />
         </FormModal>
       </div>
-    </div>
+    </ModalOverlay>
   );
 }
