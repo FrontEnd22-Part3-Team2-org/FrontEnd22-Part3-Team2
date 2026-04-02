@@ -8,6 +8,7 @@ import api from '@/api/axios';
 import { Dashboard } from '@/types/dashboard';
 import { validateDashboardName } from '@/utils/validate';
 import ModalOverlay from '../common/ModalBase/ModalOverlay';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DashboardCreateModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export default function DashboardCreateModal({
   onSuccess,
 }: DashboardCreateModalProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [dashboardName, setDashboardName] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0].hex);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +60,10 @@ export default function DashboardCreateModal({
       const createdData = response.data;
 
       if (createdData?.id) {
+        await queryClient.invalidateQueries({
+          queryKey: ['dashboards'],
+          exact: false,
+        });
         const newId = createdData.id;
         onSuccess?.(newId);
         setTimeout(() => {
