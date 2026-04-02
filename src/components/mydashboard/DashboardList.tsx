@@ -9,7 +9,7 @@ import Button from '@/components/common/Button';
 import AddItemChip from '../common/Chip/AddItemChip';
 import DashboardCard from './DashboardCard';
 import Pagination from '../common/Pagination';
-import DashboardCreateModal from '../Modal/DashboardCreateModal';
+import DashboardCreateModal from '../modal/DashboardCreateModal';
 import Skeleton from '../common/Skeleton/Skeleton';
 
 const DASHBOARD_LIMIT = 6;

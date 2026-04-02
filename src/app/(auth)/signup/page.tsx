@@ -16,7 +16,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Input } from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Checkbox from '@/components/common/Checkbox';
-import AlertModal from '@/components/Modal/AlertModal';
+import AlertModal from '@/components/modal/AlertModal';
 
 // 팀 ID
 const TEAM_ID = '22-2';
