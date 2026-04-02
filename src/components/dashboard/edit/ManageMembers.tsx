@@ -84,10 +84,10 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
       <table className="mt-[18px] w-full table-fixed text-lg-regular text-gray-500 md:mt-[27px]">
         <thead className="text-lg-regular text-gray-400">
           <tr>
-            <th className="w-[80%] pl-[16px] font-normal text-left md:pl-[28px]">
+            <th className="w-[70%] pl-[16px] font-normal text-left md:pl-[28px]">
               이름
             </th>
-            <th className="w-[20px]"></th>
+            <th className="w-[30%]"></th>
           </tr>
         </thead>
 
