@@ -12,6 +12,8 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import ModalOverlay from '../common/ModalBase/ModalOverlay';
+import AlertModal from '@/components/modal/AlertModal';
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
 import {
@@ -47,6 +49,8 @@ export default function MyPageContent() {
   const currentNickname = nickname ?? initialNickname;
   const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+
   // 비밀번호 state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -78,14 +82,14 @@ export default function MyPageContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me() });
       queryClient.invalidateQueries({ queryKey: ['members'] });
-      alert('프로필이 업데이트되었습니다.');
+      openAlert('프로필이 업데이트되었습니다.');
     },
   });
 
   const changePasswordMutation = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
-      alert('비밀번호가 변경되었습니다.');
+      openAlert('비밀번호가 변경되었습니다.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -119,6 +123,14 @@ export default function MyPageContent() {
       router.replace('/');
     }
   }, [router]);
+
+  const openAlert = (message: string) => {
+    setAlertMessage(message);
+  };
+
+  const closeAlert = () => {
+    setAlertMessage(null);
+  };
 
   const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentPassword(e.target.value);
@@ -158,7 +170,7 @@ export default function MyPageContent() {
         newPassword,
       });
     } catch {
-      alert('비밀번호 변경에 실패했습니다.');
+      openAlert('비밀번호 변경에 실패했습니다.');
     }
   };
 
@@ -208,7 +220,7 @@ export default function MyPageContent() {
       setSelectedImageFile(null);
       setPreviewImageUrl(undefined);
     } catch {
-      alert('프로필 저장 중 오류가 발생했습니다.');
+      openAlert('프로필 저장 중 오류가 발생했습니다.');
     }
   };
 
@@ -383,6 +395,12 @@ export default function MyPageContent() {
         >
           로그아웃
         </Button>
+
+        {alertMessage && (
+          <ModalOverlay onClose={closeAlert}>
+            <AlertModal message={alertMessage} onConfirm={closeAlert} />
+          </ModalOverlay>
+        )}
       </div>
     </div>
   );
