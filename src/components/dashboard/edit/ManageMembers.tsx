@@ -2,7 +2,7 @@
 
 import Button from '@/components/common/Button';
 import Pagination from '@/components/common/Pagination';
-import { ConfirmModal } from '@/components/Modal';
+import { ConfirmModal } from '@/components/modal';
 import { Member } from '@/types/dashboard';
 import Image from 'next/image';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

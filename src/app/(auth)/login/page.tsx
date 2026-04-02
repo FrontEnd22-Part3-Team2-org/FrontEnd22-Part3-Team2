@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/common/Input/Input';
 import Button from '@/components/common/Button';
-import AlertModal from '@/components/Modal/AlertModal';
+import AlertModal from '@/components/modal/AlertModal';
 import { setToken } from '@/lib/auth';
 
 // 팀 ID
