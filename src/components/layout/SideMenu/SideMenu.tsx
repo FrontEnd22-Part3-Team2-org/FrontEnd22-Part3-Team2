@@ -42,8 +42,8 @@ function applyOrder(items: Dashboard[], ids: number[]): Dashboard[] {
   return [...items].sort((a, b) => {
     const ai = ids.indexOf(a.id);
     const bi = ids.indexOf(b.id);
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
+    if (ai === -1) return -1;
+    if (bi === -1) return 1;
     return ai - bi;
   });
 }
