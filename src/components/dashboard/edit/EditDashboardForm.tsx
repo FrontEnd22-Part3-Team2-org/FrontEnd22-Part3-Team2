@@ -63,7 +63,7 @@ export default function EditDashboardForm({
   return (
     <div className="px-[16px] py-[20px] md:px-[28px] md:py-[32px]">
       <div>
-        <span className="text-xl-bold md:text-2xl-bold">
+        <span className="text-xl-bold text-gray-700 md:text-2xl-bold">
           {dashboard?.title ?? '대시보드 불러오는 중...'}
         </span>
       </div>
