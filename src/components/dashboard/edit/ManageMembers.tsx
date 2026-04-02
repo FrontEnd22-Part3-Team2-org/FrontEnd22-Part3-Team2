@@ -2,7 +2,7 @@
 
 import Button from '@/components/common/Button';
 import Pagination from '@/components/common/Pagination';
-import { ConfirmModal } from '@/components/Modal';
+import { ConfirmModal } from '@/components/modal';
 import { Member } from '@/types/dashboard';
 import Image from 'next/image';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ interface MembersTableProps {
 
 export default function ManageMembers({ dashboardId }: MembersTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isImageError, setIsImageError] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
@@ -106,12 +107,14 @@ export default function ManageMembers({ dashboardId }: MembersTableProps) {
                   md:pl-[28px] md:py-[16px] md:gap-[12px] md:text-lg-regular"
                 >
                   <div className="flex-shrink-0 relative w-[34px] h-[34px] md:w-[38px] md:h-[38px] rounded-full overflow-hidden">
-                    {item.profileImageUrl ? (
+                    {item.profileImageUrl && !isImageError ? (
                       <Image
                         src={item.profileImageUrl}
                         alt={item.nickname}
                         fill
+                        unoptimized
                         className="object-cover"
+                        onError={() => setIsImageError(true)}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-green text-white">
