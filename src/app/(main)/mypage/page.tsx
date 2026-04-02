@@ -6,6 +6,7 @@
 
 'use client';
 
+import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,10 +46,14 @@ export default function MyPage() {
   const currentNickname = nickname ?? initialNickname;
   const currentPreviewImageUrl = previewImageUrl ?? initialProfileImageUrl;
 
-  // 비밀번호 상태
+  // 비밀번호 state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // 에러 상태
   const [isPasswordMismatch, setIsPasswordMismatch] = useState(false);
@@ -95,6 +100,15 @@ export default function MyPage() {
       }
     };
   }, [previewImageUrl]);
+
+  const renderPasswordToggleButton = (
+    isVisible: boolean,
+    onToggle: () => void,
+  ) => (
+    <button type="button" onClick={onToggle} aria-label="비밀번호 표시 전환">
+      {isVisible ? <EyeOff size={24} /> : <Eye size={24} />}
+    </button>
+  );
 
   const handleCurrentPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setCurrentPassword(e.target.value);
@@ -292,24 +306,30 @@ export default function MyPage() {
           <div className="flex flex-col gap-4">
             <Input
               label="현재 비밀번호"
-              type="password"
+              type={showCurrentPassword ? 'text' : 'password'}
               placeholder="비밀번호 입력"
               value={currentPassword}
               onChange={handleCurrentPasswordChange}
+              rightIcon={renderPasswordToggleButton(showCurrentPassword, () =>
+                setShowCurrentPassword((prev) => !prev),
+              )}
             />
 
             <Input
               label="새 비밀번호"
-              type="password"
+              type={showNewPassword ? 'text' : 'password'}
               placeholder="새 비밀번호 입력"
               value={newPassword}
               onChange={handleNewPasswordChange}
+              rightIcon={renderPasswordToggleButton(showNewPassword, () =>
+                setShowNewPassword((prev) => !prev),
+              )}
             />
 
             <div>
               <Input
                 label="새 비밀번호 확인"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="새 비밀번호 입력"
                 value={confirmPassword}
                 onChange={handleConfirmPasswordChange}
@@ -320,6 +340,9 @@ export default function MyPage() {
                     ? '비밀번호가 일치하지 않습니다.'
                     : undefined
                 }
+                rightIcon={renderPasswordToggleButton(showConfirmPassword, () =>
+                  setShowConfirmPassword((prev) => !prev),
+                )}
               />
               {/* 에러메시지 공간 확보 */}
               <div className="mt-1 h-5" />
